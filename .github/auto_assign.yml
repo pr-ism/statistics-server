@@ -1,0 +1,10 @@
+addReviewers: true
+
+addAssignees: author
+
+reviewers:
+  - apptie
+  - gyunnybot
+  - HyNS00
+
+numberOfReviewers: 0
