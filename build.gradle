@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.9'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
 }
 
 group = 'com.prism'
@@ -27,13 +28,98 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'com.mysql:mysql-connector-j'
-	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy tasks.named('jacocoTestReport')
+}
+
+jacoco {
+	toolVersion = "0.8.12"
+}
+
+def jacocoExcludePatterns = [
+		"**/*Application*",
+		"**/*Config*",
+		"**/*Configuration*",
+
+		"**/*Dto",
+		"**/*Dto.*",
+		"**/*DTO",
+		"**/*DTO.*",
+		"**/*Request",
+		"**/*Request.*",
+		"**/*Response",
+		"**/*Response.*",
+		"**/*View",
+		"**/*View.*",
+
+		"**/dto/**",
+		"**/request/**",
+		"**/requests/**",
+		"**/response/**",
+		"**/responses/**",
+		"**/view/**",
+		"**/views/**",
+
+		"**/Q*",
+		"**/generated/**",
+		"**/generated-src/**",
+		"**/generated-sources/**"
+]
+
+tasks.named('jacocoTestReport') {
+	dependsOn tasks.named('test')
+	reports {
+		html.required.set(true)
+		xml.required.set(true)
+		csv.required.set(false)
+	}
+	classDirectories.setFrom(
+			files(classDirectories.files.collect { dir ->
+				fileTree(dir: dir, exclude: jacocoExcludePatterns)
+			})
+	)
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+	dependsOn tasks.named('jacocoTestReport')
+	classDirectories.setFrom(
+			files(classDirectories.files.collect { dir ->
+				fileTree(dir: dir, exclude: jacocoExcludePatterns)
+			})
+	)
+	violationRules {
+		rule {
+			enabled = true
+			element = 'METHOD'
+			limit {
+				counter = 'BRANCH'
+				value = 'COVEREDRATIO'
+				minimum = 0.50
+			}
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 0.70
+			}
+		}
+	}
+}
+
+tasks.register('jacocoTestCoverage') {
+	group = 'verification'
+	dependsOn tasks.named('test'),
+			tasks.named('jacocoTestReport'),
+			tasks.named('jacocoTestCoverageVerification')
+}
+
+tasks.named('check') {
+	dependsOn tasks.named('jacocoTestCoverageVerification')
 }
