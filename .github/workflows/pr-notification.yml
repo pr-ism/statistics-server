@@ -46,75 +46,52 @@ jobs:
           AUTHOR_NAME="$GIT_ID"
           AUTHOR_ID=""
 
-          if [ "$GIT_ID" == "apptie" ]; then
-            AUTHOR_NAME="${{ secrets.apptie_slack_display_name }}"
-            AUTHOR_ID="${{ secrets.apptie_slack_id }}"
-          elif [ "$GIT_ID" == "gyunnybot" ]; then
-            AUTHOR_NAME="${{ secrets.gyunnybot_slack_display_name }}"
-            AUTHOR_ID="${{ secrets.gyunnybot_slack_id }}"
-          elif [ "$GIT_ID" == "HyNS00" ]; then
-            AUTHOR_NAME="${{ secrets.HyNS00_slack_display_name }}"
-            AUTHOR_ID="${{ secrets.HyNS00_slack_id }}"
+          if [ "$GIT_ID" = "apptie" ]; then
+            AUTHOR_NAME="${{ secrets.APPTIE_SLACK_DISPLAY_NAME }}"
+            AUTHOR_ID="${{ secrets.APPTIE_SLACK_ID }}"
+          elif [ "$GIT_ID" = "gyunnybot" ]; then
+            AUTHOR_NAME="${{ secrets.GYUNNYBOT_SLACK_DISPLAY_NAME }}"
+            AUTHOR_ID="${{ secrets.GYUNNYBOT_SLACK_ID }}"
+          elif [ "$GIT_ID" = "HyNS00" ] || [ "$GIT_ID" = "hyns00" ]; then
+            AUTHOR_NAME="${{ secrets.HYNS00_SLACK_DISPLAY_NAME }}"
+            AUTHOR_ID="${{ secrets.HYNS00_SLACK_ID }}"
           fi
 
           echo "AUTHOR_GIT_ID=${GIT_ID}" >> $GITHUB_OUTPUT
           echo "AUTHOR_NAME=${AUTHOR_NAME}" >> $GITHUB_OUTPUT
           echo "AUTHOR_ID=${AUTHOR_ID}" >> $GITHUB_OUTPUT
 
-      - name: set variables
-        id: variables
+      - name: fetch latest reviewers (GitHub API)
+        if: always()
+        id: pr-live
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          AUTHOR_GIT_ID="${{ steps.author-slack.outputs.AUTHOR_GIT_ID }}"
-          AUTHOR_NAME="${{ steps.author-slack.outputs.AUTHOR_NAME }}"
-          AUTHOR_ID="${{ steps.author-slack.outputs.AUTHOR_ID }}"
+          PR_JSON="$(gh api "repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}")"
 
-          if [ -n "$AUTHOR_ID" ]; then
-            AUTHOR_SLACK_MENTION="<@${AUTHOR_ID}>"
-          else
-            AUTHOR_SLACK_MENTION="${AUTHOR_NAME}"
-          fi
+          REVIEWERS_GIT_ID="$(echo "$PR_JSON" | jq -r '[.requested_reviewers[].login] | if length==0 then "(none)" else join(", ") end')"
+          reviewers="$(echo "$PR_JSON" | jq -r '.requested_reviewers[].login' || true)"
 
-          REVIEWERS_GIT_JSON='${{ toJson(github.event.pull_request.requested_reviewers[*].login) }}'
-
-          if [ "$REVIEWERS_GIT_JSON" == "[]" ] || [ -z "$REVIEWERS_GIT_JSON" ]; then
-            reviewers=""
-          else
-            reviewers=$(echo "$REVIEWERS_GIT_JSON" | jq -r '.[]')
-          fi
-
-          REVIEWERS_GIT_ID=""
           REVIEWERS_SLACK_ID=""
-
           for reviewer in $reviewers; do
-            if [ -z "$REVIEWERS_GIT_ID" ]; then
-              REVIEWERS_GIT_ID="$reviewer"
-            else
-              REVIEWERS_GIT_ID="$REVIEWERS_GIT_ID, $reviewer"
-            fi
-
-            if [ "$reviewer" == "apptie" ]; then
-              REVIEWERS_SLACK_ID+="<@${{ secrets.apptie_slack_id }}> "
-            elif [ "$reviewer" == "gyunnybot" ]; then
-              REVIEWERS_SLACK_ID+="<@${{ secrets.gyunnybot_slack_id }}> "
-            elif [ "$reviewer" == "HyNS00" ]; then
-              REVIEWERS_SLACK_ID+="<@${{ secrets.HyNS00_slack_id }}> "
+            if [ "$reviewer" = "apptie" ]; then
+              REVIEWERS_SLACK_ID+="<@${{ secrets.APPTIE_SLACK_ID }}> "
+            elif [ "$reviewer" = "gyunnybot" ]; then
+              REVIEWERS_SLACK_ID+="<@${{ secrets.GYUNNYBOT_SLACK_ID }}> "
+            elif [ "$reviewer" = "HyNS00" ] || [ "$reviewer" = "hyns00" ]; then
+              REVIEWERS_SLACK_ID+="<@${{ secrets.HYNS00_SLACK_ID }}> "
             else
               REVIEWERS_SLACK_ID+="$reviewer "
             fi
           done
 
-          if [ -z "$REVIEWERS_GIT_ID" ]; then
-            REVIEWERS_GIT_ID="(none)"
-          fi
-
           if [ -z "$REVIEWERS_SLACK_ID" ]; then
             REVIEWERS_SLACK_ID="(none)"
           fi
 
-          echo "AUTHOR_GIT_ID=${AUTHOR_GIT_ID}" >> $GITHUB_OUTPUT
-          echo "AUTHOR_NAME=${AUTHOR_NAME}" >> $GITHUB_OUTPUT
-          echo "AUTHOR_ID=${AUTHOR_ID}" >> $GITHUB_OUTPUT
-          echo "AUTHOR_SLACK_MENTION=${AUTHOR_SLACK_MENTION}" >> $GITHUB_OUTPUT
           echo "REVIEWERS_GIT_ID=${REVIEWERS_GIT_ID}" >> $GITHUB_OUTPUT
           echo "REVIEWERS_SLACK_ID=${REVIEWERS_SLACK_ID}" >> $GITHUB_OUTPUT
 
@@ -132,9 +109,9 @@ jobs:
           fi
 
           SLACK_MESSAGE='{"text":"PR 브랜치 분석","blocks":[{"type":"section","text":{"type":"mrkdwn","text":">*PR 브랜치 분석* \n>\n>*PR Author*\n>'
-          SLACK_MESSAGE+="${{ steps.variables.outputs.AUTHOR_NAME }}"
+          SLACK_MESSAGE+="${{ steps.author-slack.outputs.AUTHOR_NAME }}"
           SLACK_MESSAGE+="\n>"
-          SLACK_MESSAGE+="(${{ steps.variables.outputs.AUTHOR_GIT_ID }})"
+          SLACK_MESSAGE+="(${{ steps.author-slack.outputs.AUTHOR_GIT_ID }})"
           SLACK_MESSAGE+="\n>\n>*PR 링크*\n><"
           SLACK_MESSAGE+="${{ github.event.pull_request.html_url }}"
           SLACK_MESSAGE+=">\n>\n>*PR 제목*\n>"
@@ -142,9 +119,9 @@ jobs:
           SLACK_MESSAGE+="\n>\n>분석 결과\n>"
           SLACK_MESSAGE+="$ICON"
           SLACK_MESSAGE+="\n>\n>*리뷰어(GitHub)*\n>"
-          SLACK_MESSAGE+="${{ steps.variables.outputs.REVIEWERS_GIT_ID }}"
+          SLACK_MESSAGE+="${{ steps.pr-live.outputs.REVIEWERS_GIT_ID }}"
           SLACK_MESSAGE+="\n>\n>*리뷰어(Slack)*\n>"
-          SLACK_MESSAGE+="${{ steps.variables.outputs.REVIEWERS_SLACK_ID }}"
+          SLACK_MESSAGE+="${{ steps.pr-live.outputs.REVIEWERS_SLACK_ID }}"
           SLACK_MESSAGE+='"}}]}'
 
-          curl -X POST ${{ secrets.SLACK_WEBHOOK }} -d "${SLACK_MESSAGE}"
+          curl -X POST "${{ secrets.SLACK_WEBHOOK }}" -d "${SLACK_MESSAGE}"
