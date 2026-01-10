@@ -31,18 +31,8 @@ jobs:
           distribution: "temurin"
           cache: "gradle"
 
-      - name: cache gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: chmod gradle
-        run: chmod +x gradlew
+      - name: chmod gradlew
+        run: chmod +x ./gradlew
 
       - name: run jacocoTestCoverage
         run: ./gradlew jacocoTestCoverage
@@ -129,8 +119,18 @@ jobs:
           echo "REVIEWERS_SLACK_ID=${REVIEWERS_SLACK_ID}" >> $GITHUB_OUTPUT
 
       - name: slack notification
-        if: github.event_name == 'pull_request' && github.event.action != 'synchronize'
+        if: always()
         run: |
+          STATUS="${{ job.status }}"
+
+          if [ "$STATUS" = "success" ]; then
+            ICON=":white_check_mark:"
+          elif [ "$STATUS" = "failure" ]; then
+            ICON=":x:"
+          else
+            ICON=":black_square_for_stop:"
+          fi
+
           SLACK_MESSAGE='{"text":"PR 브랜치 분석","blocks":[{"type":"section","text":{"type":"mrkdwn","text":">*PR 브랜치 분석* \n>\n>*PR Author*\n>'
           SLACK_MESSAGE+="${{ steps.variables.outputs.AUTHOR_NAME }}"
           SLACK_MESSAGE+="\n>"
@@ -140,43 +140,9 @@ jobs:
           SLACK_MESSAGE+=">\n>\n>*PR 제목*\n>"
           SLACK_MESSAGE+="${{ github.event.pull_request.title }}"
           SLACK_MESSAGE+="\n>\n>분석 결과\n>"
-          SLACK_MESSAGE+=":white_check_mark:"
+          SLACK_MESSAGE+="$ICON"
           SLACK_MESSAGE+="\n>\n>*리뷰어(GitHub)*\n>"
           SLACK_MESSAGE+="${{ steps.variables.outputs.REVIEWERS_GIT_ID }}"
-          SLACK_MESSAGE+="\n>\n>*리뷰어(Slack)*\n>"
-          SLACK_MESSAGE+="${{ steps.variables.outputs.REVIEWERS_SLACK_ID }}"
-          SLACK_MESSAGE+='"}}]}'
-
-          curl -X POST ${{ secrets.SLACK_WEBHOOK }} -d "${SLACK_MESSAGE}"
-
-      - name: slack failed notification
-        if: failure()
-        run: |
-          SLACK_MESSAGE='{"text":"PR 브랜치 분석","blocks":[{"type":"section","text":{"type":"mrkdwn","text":">*PR 브랜치 분석* \n>\n>*PR Author*\n>'
-          SLACK_MESSAGE+="${{ steps.variables.outputs.AUTHOR_SLACK_MENTION }}"
-          SLACK_MESSAGE+="\n>\n>*PR 링크*\n><"
-          SLACK_MESSAGE+="${{ github.event.pull_request.html_url }}"
-          SLACK_MESSAGE+=">\n>\n>*PR 제목*\n>"
-          SLACK_MESSAGE+="${{ github.event.pull_request.title }}"
-          SLACK_MESSAGE+="\n>\n>분석 결과\n>"
-          SLACK_MESSAGE+=":x:"
-          SLACK_MESSAGE+="\n>\n>*리뷰어(Slack)*\n>"
-          SLACK_MESSAGE+="${{ steps.variables.outputs.REVIEWERS_SLACK_ID }}"
-          SLACK_MESSAGE+='"}}]}'
-
-          curl -X POST ${{ secrets.SLACK_WEBHOOK }} -d "${SLACK_MESSAGE}"
-
-      - name: slack cancelled notification
-        if: cancelled()
-        run: |
-          SLACK_MESSAGE='{"text":"PR 브랜치 분석","blocks":[{"type":"section","text":{"type":"mrkdwn","text":">*PR 브랜치 분석* \n>\n>*PR Author*\n>'
-          SLACK_MESSAGE+="${{ steps.variables.outputs.AUTHOR_SLACK_MENTION }}"
-          SLACK_MESSAGE+="\n>\n>*PR 링크*\n><"
-          SLACK_MESSAGE+="${{ github.event.pull_request.html_url }}"
-          SLACK_MESSAGE+=">\n>\n>*PR 제목*\n>"
-          SLACK_MESSAGE+="${{ github.event.pull_request.title }}"
-          SLACK_MESSAGE+="\n>\n>분석 결과\n>"
-          SLACK_MESSAGE+=":black_square_for_stop:"
           SLACK_MESSAGE+="\n>\n>*리뷰어(Slack)*\n>"
           SLACK_MESSAGE+="${{ steps.variables.outputs.REVIEWERS_SLACK_ID }}"
           SLACK_MESSAGE+='"}}]}'
