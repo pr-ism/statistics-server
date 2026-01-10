@@ -72,7 +72,7 @@ jobs:
         run: |
           set -e
 
-          read -r -d '' QUERY <<'EOF'
+          QUERY="$(cat <<'EOF'
           query($owner:String!, $repo:String!, $number:Int!) {
             repository(owner:$owner, name:$repo) {
               pullRequest(number:$number) {
@@ -89,6 +89,7 @@ jobs:
             }
           }
           EOF
+          )"
 
           attempts=0
           while true; do
@@ -96,8 +97,8 @@ jobs:
 
             RESP="$(gh api graphql -f query="$QUERY" -f owner="$OWNER" -f repo="$REPO" -F number="$PR_NUMBER")"
 
-            USER_REVIEWERS="$(echo "$RESP" | jq -r '[.data.repository.pullRequest.reviewRequests.nodes[].requestedReviewer | select(.__typename=="User") | .login] | unique | if length==0 then "" else .[] end')"
-            TEAM_REVIEWERS="$(echo "$RESP" | jq -r '[.data.repository.pullRequest.reviewRequests.nodes[].requestedReviewer | select(.__typename=="Team") | .slug]  | unique | if length==0 then "" else .[] end')"
+            USER_REVIEWERS="$(echo "$RESP" | jq -r '[.data.repository.pullRequest.reviewRequests.nodes[].requestedReviewer | select(.__typename=="User") | .login] | unique | .[]?')"
+            TEAM_REVIEWERS="$(echo "$RESP" | jq -r '[.data.repository.pullRequest.reviewRequests.nodes[].requestedReviewer | select(.__typename=="Team") | .slug] | unique | .[]?')"
 
             if [ -n "$USER_REVIEWERS" ] || [ -n "$TEAM_REVIEWERS" ] || [ "$attempts" -ge 3 ]; then
               break
