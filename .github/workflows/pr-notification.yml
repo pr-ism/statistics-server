@@ -61,7 +61,7 @@ jobs:
           echo "AUTHOR_NAME=${AUTHOR_NAME}" >> $GITHUB_OUTPUT
           echo "AUTHOR_ID=${AUTHOR_ID}" >> $GITHUB_OUTPUT
 
-      - name: fetch latest reviewers (GitHub API)
+      - name: fetch latest reviewers (GraphQL)
         if: always()
         id: pr-live
         env:
@@ -70,29 +70,64 @@ jobs:
           REPO: ${{ github.event.repository.name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          PR_JSON="$(gh api "repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}")"
+          set -e
 
-          REVIEWERS_GIT_ID="$(echo "$PR_JSON" | jq -r '[.requested_reviewers[].login] | if length==0 then "(none)" else join(", ") end')"
-          reviewers="$(echo "$PR_JSON" | jq -r '.requested_reviewers[].login' || true)"
+          read -r -d '' QUERY <<'EOF'
+          query($owner:String!, $repo:String!, $number:Int!) {
+            repository(owner:$owner, name:$repo) {
+              pullRequest(number:$number) {
+                reviewRequests(first:100) {
+                  nodes {
+                    requestedReviewer {
+                      __typename
+                      ... on User { login }
+                      ... on Team { slug }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          EOF
+
+          attempts=0
+          while true; do
+            attempts=$((attempts+1))
+
+            RESP="$(gh api graphql -f query="$QUERY" -f owner="$OWNER" -f repo="$REPO" -F number="$PR_NUMBER")"
+
+            USER_REVIEWERS="$(echo "$RESP" | jq -r '[.data.repository.pullRequest.reviewRequests.nodes[].requestedReviewer | select(.__typename=="User") | .login] | unique | if length==0 then "" else .[] end')"
+            TEAM_REVIEWERS="$(echo "$RESP" | jq -r '[.data.repository.pullRequest.reviewRequests.nodes[].requestedReviewer | select(.__typename=="Team") | .slug]  | unique | if length==0 then "" else .[] end')"
+
+            if [ -n "$USER_REVIEWERS" ] || [ -n "$TEAM_REVIEWERS" ] || [ "$attempts" -ge 3 ]; then
+              break
+            fi
+
+            sleep "$attempts"
+          done
 
           REVIEWERS_SLACK_ID=""
-          for reviewer in $reviewers; do
-            if [ "$reviewer" = "apptie" ]; then
+
+          for user in $USER_REVIEWERS; do
+            if [ "$user" = "apptie" ]; then
               REVIEWERS_SLACK_ID+="<@${{ secrets.APPTIE_SLACK_ID }}> "
-            elif [ "$reviewer" = "gyunnybot" ]; then
+            elif [ "$user" = "gyunnybot" ]; then
               REVIEWERS_SLACK_ID+="<@${{ secrets.GYUNNYBOT_SLACK_ID }}> "
-            elif [ "$reviewer" = "HyNS00" ] || [ "$reviewer" = "hyns00" ]; then
+            elif [ "$user" = "HyNS00" ] || [ "$user" = "hyns00" ]; then
               REVIEWERS_SLACK_ID+="<@${{ secrets.HYNS00_SLACK_ID }}> "
             else
-              REVIEWERS_SLACK_ID+="$reviewer "
+              REVIEWERS_SLACK_ID+="$user "
             fi
+          done
+
+          for team in $TEAM_REVIEWERS; do
+            REVIEWERS_SLACK_ID+="@${team} "
           done
 
           if [ -z "$REVIEWERS_SLACK_ID" ]; then
             REVIEWERS_SLACK_ID="(none)"
           fi
 
-          echo "REVIEWERS_GIT_ID=${REVIEWERS_GIT_ID}" >> $GITHUB_OUTPUT
           echo "REVIEWERS_SLACK_ID=${REVIEWERS_SLACK_ID}" >> $GITHUB_OUTPUT
 
       - name: slack notification
@@ -118,9 +153,7 @@ jobs:
           SLACK_MESSAGE+="${{ github.event.pull_request.title }}"
           SLACK_MESSAGE+="\n>\n>분석 결과\n>"
           SLACK_MESSAGE+="$ICON"
-          SLACK_MESSAGE+="\n>\n>*리뷰어(GitHub)*\n>"
-          SLACK_MESSAGE+="${{ steps.pr-live.outputs.REVIEWERS_GIT_ID }}"
-          SLACK_MESSAGE+="\n>\n>*리뷰어(Slack)*\n>"
+          SLACK_MESSAGE+="\n>\n>*리뷰어*\n>"
           SLACK_MESSAGE+="${{ steps.pr-live.outputs.REVIEWERS_SLACK_ID }}"
           SLACK_MESSAGE+='"}}]}'
 
