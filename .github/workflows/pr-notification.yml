@@ -42,7 +42,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: chmod gradle
-        run: chmod +x backend/ddang/gradlew
+        run: chmod +x gradlew
 
       - name: run jacocoTestCoverage
         working-directory: backend/ddang
