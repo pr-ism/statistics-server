@@ -45,7 +45,6 @@ jobs:
         run: chmod +x gradlew
 
       - name: run jacocoTestCoverage
-        working-directory: backend/ddang
         run: ./gradlew jacocoTestCoverage
 
       - name: set author slack id
