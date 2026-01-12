@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(TokenProperties.class)
 public class TokenConfig {
 
+    private static final int KEY_LENGTH = 32;
     private static final String HMAC_SHA_256 = "HmacSHA256";
     private static final String AES = "AES";
 
@@ -84,27 +85,44 @@ public class TokenConfig {
     }
 
     @Bean
-    public JWEDecrypter jweDecrypter(SecretKey gcmAesSecretKey) throws KeyLengthException {
-        return new AESDecrypter(gcmAesSecretKey);
+    public JWEDecrypter jweDecrypter(SecretKey aesSecretKey) throws KeyLengthException {
+        return new AESDecrypter(aesSecretKey);
     }
 
     @Bean
-    public JWEEncrypter jweEncrypter(SecretKey gcmAesSecretKey) throws KeyLengthException {
-        return new AESEncrypter(gcmAesSecretKey);
+    public JWEEncrypter jweEncrypter(SecretKey aesSecretKey) throws KeyLengthException {
+        return new AESEncrypter(aesSecretKey);
     }
 
     @Bean
-    public SecretKeySpec gcmAesSecretKey() {
-        return new SecretKeySpec(decodeKey(), 0, 24, AES);
+    public SecretKeySpec aesSecretKey() {
+        byte[] keyBytes = decodeKey();
+
+        if (keyBytes.length != KEY_LENGTH) {
+            throw new IllegalStateException("암호화 키 길이가 올바르지 않습니다.");
+        }
+
+        return new SecretKeySpec(keyBytes, AES);
     }
 
     private byte[] decodeKey() {
         String encryptionKey = tokenProperties.encryptionKey();
+        byte[] utf8Bytes = encryptionKey.getBytes(StandardCharsets.UTF_8);
+
+        if (utf8Bytes.length == KEY_LENGTH) {
+            return utf8Bytes;
+        }
 
         try {
-            return Base64.getDecoder().decode(encryptionKey);
-        } catch (IllegalArgumentException e) {
-            return encryptionKey.getBytes(StandardCharsets.UTF_8);
+            byte[] decoded = Base64.getDecoder().decode(encryptionKey);
+
+            if (decoded.length == KEY_LENGTH) {
+                return decoded;
+            }
+        } catch (IllegalArgumentException ignored) {
+            // Base64 형식이 아닌 경우 무시하고, 아래에서 길이 불일치 예외를 던지도록 진행
         }
+
+        throw new IllegalStateException("암호화 키 길이가 올바르지 않습니다.");
     }
 }
