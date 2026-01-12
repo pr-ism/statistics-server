@@ -30,8 +30,11 @@ LatitudeLongitude // 길게 표현했지만 허용
 - 최대한 해당 상황을 표현하기 좋은 네이밍을 작성하되, 힘들다면 줄임말 대신 길게 표현하는 방식으로 사용한다.
 
 
-- boolean 변수는 is 접두사를 사용한다.
-- boolean 필드에는 is 접두사를 사용하지 않는다.
+- boolean 지역 변수는 is 접두사를 사용한다.
+  - 예: `boolean isValid = validator.check();`
+    - boolean 클래스 필드에는 is 접두사를 사용하지 않는다.
+  - 이유: Lombok의 `@Getter`가 자동으로 `isXxx()` 형태의 getter를 생성하기 때문
+    - 예: `private boolean active;` → `isActive()` 메서드 자동 생성
 
 
 - DTO는 사용 영역에 따라 접미사를 다르게 사용한다.
@@ -125,13 +128,17 @@ import java.util.Set;
 
 ```java
 // bad 
-SMUGGLER;
+SMUGGLER
 
 // good 
 TeamRole.SMUGGLER
 ```
 
-- import 시 static import를 사용하지 않는다.
+- 원칙적으로 프로덕션 코드에서 static import를 지양한다.
+  - 코드의 출처를 명확히 하기 위함이다.
+
+
+- 단, 다음의 경우는 예외로 static import를 허용(또는 필수로) 한다.
 
 ```java
 import static org.assertj.core.api.Assertions.assertThat;
@@ -144,7 +151,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static com.example.project.domain.user.QAccount.account;
 ```
 
-- Q파일은 반드시 import static을 사용한다.
+- Querydsl의 Q파일은 반드시 import static을 사용한다.
 
 ```java
 // bad 
@@ -379,6 +386,7 @@ pullrequest
 
 ## 2.2 패키지 구성
 
+- 도메인 계층을 가진 변경된 Layered Architecture를 사용한다. 
 - 각 계층은 반드시 자신의 하위 계층을 의존하도록 한다.
 - 패키지 간 순환참조가 발생하지 않도록 한다.
 - 하위 계층이 상위 계층을 의존하지 않도록 한다.
@@ -444,12 +452,12 @@ com.example.project
 ├── domain
 │   └── user
 │       └── repository
-│           └── UserRepository.java          // [Interface] 도메인 포트
+│           └── UserRepository.java          // [Interface] 도메인에 정의한 리포지토리
 └── infrastructure
     └── user
         └── persistence
-            ├── JpaUserRepository.java       // [Class] 도메인 리포지토리 구현체
-            └── UserRepositoryAdapter.java    // [Interface] 실제 DB 접근용 (이름 변경!)
+            ├── JpaUserRepository.java       // [Interface] JpaRepository 확장 인터페이스
+            └── UserRepositoryAdapter.java    // [Class] 실제 DB에 접근하기 위한 기능을 모아놓은 UserRepository 구현체
 ```
 
 - 도메인 레벨에 인터페이스로 해당 도메인을 찾을 수 있는 인터페이스를 정의한다.
@@ -993,10 +1001,6 @@ public abstract class BaseTimeEntity extends BaseEntity {
 @Getter
 public abstract class BaseAuditEntity extends BaseTimeEntity {
     
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-    
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
@@ -1004,6 +1008,7 @@ public abstract class BaseAuditEntity extends BaseTimeEntity {
 ```
 
 - 생성 시간과 수정 시간을 관리하는 Entity이다.
+  - 생성 시간은 BaseTimeEntity로부터 상속받는다.
 
 ## 5.2 Entity 정의
 
