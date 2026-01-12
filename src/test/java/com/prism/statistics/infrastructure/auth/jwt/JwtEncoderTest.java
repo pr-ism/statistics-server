@@ -37,8 +37,8 @@ class JwtEncoderTest {
 
     @BeforeEach
     void beforeEach() throws JOSEException {
-        byte[] encryptionKeyBytes = "24ByteEncryptionKeyForJWE".getBytes(StandardCharsets.UTF_8);
-        SecretKey encryptionSecretKey = new SecretKeySpec(encryptionKeyBytes, 0, 24, "AES");
+        byte[] encryptionKeyBytes = tokenProperties.encryptionKey().getBytes(StandardCharsets.UTF_8);
+        SecretKey encryptionSecretKey = new SecretKeySpec(encryptionKeyBytes, "AES");
         JWEEncrypter jweEncrypter = new AESEncrypter(encryptionSecretKey);
 
         byte[] accessTokenKeyBytes = tokenProperties.accessKey().getBytes(StandardCharsets.UTF_8);

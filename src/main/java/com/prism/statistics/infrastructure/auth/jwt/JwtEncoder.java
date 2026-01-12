@@ -54,7 +54,7 @@ public class JwtEncoder implements TokenEncoder {
     }
 
     private JWEHeader createJweHeader() {
-        return new JWEHeader.Builder(JWEAlgorithm.A192KW, EncryptionMethod.A256GCM)
+        return new JWEHeader.Builder(JWEAlgorithm.A256KW, EncryptionMethod.A256GCM)
                 .contentType(TOKEN_CONTENT_TYPE)
                 .build();
     }
