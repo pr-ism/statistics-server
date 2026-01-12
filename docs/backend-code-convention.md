@@ -221,6 +221,7 @@ public boolean canDeletePost(User user, Post post) {
 
 - depth는 최대 2까지 허용한다.
 - depth를 1 이하로 유지하도록 노력한다.
+  - early return, 메서드 분리 등을 적극적으로 활용한다.
 
 ## 1.9 개행
 
@@ -362,7 +363,7 @@ command.clientSession()
 
 - 파라미터로 객체를 전달하는 경우 해당 객체를 별도의 변수에 할당해 전달한다.
 
-## 1.11 wrapper type
+## 1.12 wrapper type
 
 - 제네릭과 같이 primitive type을 문법적 상황으로 인해 wrapping 해야 하는 경우를 제외하면 반드시 primitive type을 사용한다.
 - JPA Entity의 ID 및 Nullable 컬럼과 같이 null을 허용해야 하는 경우를 제외하고는 Primitive Type을 사용한다.
