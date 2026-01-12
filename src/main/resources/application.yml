@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: statistics
+  profiles:
+    active: dev
+    default: dev
