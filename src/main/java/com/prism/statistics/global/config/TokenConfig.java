@@ -40,7 +40,7 @@ public class TokenConfig {
 
     @Bean
     public TokenEncoder tokenEncoder(JWEEncrypter jweEncrypter, JwsSignerFinder jwsSignerFinder) {
-        return new JwtEncoder(jweEncrypter, jwsSignerFinder, tokenProperties);
+        return new JwtEncoder(jweEncrypter, jwsSignerFinder, tokenProperties, clock);
     }
 
     @Bean

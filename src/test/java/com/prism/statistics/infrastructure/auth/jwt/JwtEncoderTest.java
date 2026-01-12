@@ -10,6 +10,8 @@ import com.prism.statistics.domain.auth.TokenType;
 import com.prism.statistics.global.config.properties.TokenProperties;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.ZoneId;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,9 +36,11 @@ class JwtEncoderTest {
     );
 
     JwtEncoder jwtEncoder;
+    Clock clock;
 
     @BeforeEach
     void beforeEach() throws JOSEException {
+        clock = Clock.system(ZoneId.of("Asia/Seoul"));
         byte[] encryptionKeyBytes = tokenProperties.encryptionKey().getBytes(StandardCharsets.UTF_8);
         SecretKey encryptionSecretKey = new SecretKeySpec(encryptionKeyBytes, "AES");
         JWEEncrypter jweEncrypter = new AESEncrypter(encryptionSecretKey);
@@ -51,14 +55,14 @@ class JwtEncoderTest {
 
         JwsSignerFinder jwsSignerFinder = new JwsSignerFinder(accessTokenSigner, refreshTokenSigner);
 
-        jwtEncoder = new JwtEncoder(jweEncrypter, jwsSignerFinder, tokenProperties);
+        jwtEncoder = new JwtEncoder(jweEncrypter, jwsSignerFinder, tokenProperties, clock);
     }
 
     @ParameterizedTest
     @EnumSource(value = TokenType.class)
     void 토큰을_인코딩한다(TokenType tokenType) {
         // when
-        String actual = jwtEncoder.encode(LocalDateTime.now(), tokenType, 1L);
+        String actual = jwtEncoder.encode(LocalDateTime.now(clock), tokenType, 1L);
 
         // then
         assertThat(actual).isNotBlank();

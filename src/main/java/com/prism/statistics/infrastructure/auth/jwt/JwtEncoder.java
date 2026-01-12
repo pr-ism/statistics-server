@@ -17,6 +17,7 @@ import com.prism.statistics.domain.auth.TokenEncoder;
 import com.prism.statistics.domain.auth.TokenType;
 import com.prism.statistics.global.config.properties.TokenProperties;
 import com.prism.statistics.infrastructure.auth.jwt.exception.FailedEncodeTokenException;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -32,6 +33,7 @@ public class JwtEncoder implements TokenEncoder {
     private final JWEEncrypter jweEncrypter;
     private final JwsSignerFinder jwsSignerFinder;
     private final TokenProperties tokenProperties;
+    private final Clock clock;
 
     @Override
     public String encode(LocalDateTime publishTime, TokenType tokenType, Long userId) {
@@ -87,7 +89,8 @@ public class JwtEncoder implements TokenEncoder {
     }
 
     private Date convertDate(LocalDateTime target) {
-        Instant targetInstant = target.atZone(ZoneId.systemDefault())
+        ZoneId zoneId = clock.getZone();
+        Instant targetInstant = target.atZone(zoneId)
                                       .toInstant();
 
         return Date.from(targetInstant);

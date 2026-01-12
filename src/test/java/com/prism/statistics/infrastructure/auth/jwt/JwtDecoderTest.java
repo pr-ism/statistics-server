@@ -63,10 +63,11 @@ class JwtDecoderTest {
     JwtEncoder jwtEncoder;
     JWEEncrypter jweEncrypter;
     JwsSignerFinder jwsSignerFinder;
+    Clock clock;
 
     @BeforeEach
     void beforeEach() throws JOSEException {
-        Clock clock = Clock.systemDefaultZone();
+        clock = Clock.system(ZoneId.of("Asia/Seoul"));
 
         byte[] encryptionKeyBytes = tokenProperties.encryptionKey().getBytes(StandardCharsets.UTF_8);
         SecretKey encryptionSecretKey = new SecretKeySpec(encryptionKeyBytes, "AES");
@@ -88,12 +89,12 @@ class JwtDecoderTest {
 
         jwsSignerFinder = new JwsSignerFinder(accessTokenJwsSigner, refreshTokenJwsSigner);
         jwtDecoder = new JwtDecoder(clock, jweDecrypter, jwsVerifierFinder, tokenProperties);
-        jwtEncoder = new JwtEncoder(jweEncrypter, jwsSignerFinder, tokenProperties);
+        jwtEncoder = new JwtEncoder(jweEncrypter, jwsSignerFinder, tokenProperties, clock);
     }
 
     @ParameterizedTest
     @EnumSource(value = TokenType.class)
-    void 유효하지_않은_길이의_토큰은_인코딩_할_수_없다(TokenType tokenType) {
+    void 유효하지_않은_길이의_토큰은_디코딩_할_수_없다(TokenType tokenType) {
         // when & then
         assertThatThrownBy(() -> jwtDecoder.decode(tokenType, "invalid"))
                 .isInstanceOf(InvalidTokenException.class)
@@ -138,7 +139,7 @@ class JwtDecoderTest {
     @EnumSource(value = TokenType.class)
     void 유효한_토큰을_디코딩_한다(TokenType tokenType) {
         // given
-        LocalDateTime publishTime = LocalDateTime.now();
+        LocalDateTime publishTime = LocalDateTime.now(clock);
         String token = jwtEncoder.encode(publishTime, tokenType, 1L);
 
         // when
@@ -172,9 +173,10 @@ class JwtDecoderTest {
         JwtEncoder otherServiceJwtEncoder = new JwtEncoder(
                 otherServiceJweEncrypter,
                 jwsSignerFinder,
-                otherIssuerTokenProperties
+                otherIssuerTokenProperties,
+                clock
         );
-        String token = otherServiceJwtEncoder.encode(LocalDateTime.now(), tokenType, 1L);
+        String token = otherServiceJwtEncoder.encode(LocalDateTime.now(clock), tokenType, 1L);
 
         // when & then
         assertThatThrownBy(() -> jwtDecoder.decode(tokenType, token))
@@ -186,9 +188,9 @@ class JwtDecoderTest {
     @EnumSource(value = TokenType.class)
     void 발급_시간이_없는_토큰은_디코딩_할_수_없다(TokenType tokenType) throws JOSEException {
         // given
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(clock);
         Date expirationTime = Date.from(now.plusMinutes(10)
-                                           .atZone(ZoneId.systemDefault())
+                                           .atZone(clock.getZone())
                                            .toInstant());
 
         JWTClaimsSet claimsWithoutIssueTime = new JWTClaimsSet.Builder()

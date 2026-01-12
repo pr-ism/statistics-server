@@ -15,7 +15,6 @@ import com.prism.statistics.infrastructure.auth.jwt.exception.InvalidTokenExcept
 import java.text.ParseException;
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
 
@@ -112,7 +111,7 @@ public class JwtDecoder implements TokenDecoder {
 
     private boolean isExpiredToken(Date expirationTime) {
         LocalDateTime now = LocalDateTime.now(clock);
-        LocalDateTime expirationDate = LocalDateTime.ofInstant(expirationTime.toInstant(), ZoneId.systemDefault());
+        LocalDateTime expirationDate = LocalDateTime.ofInstant(expirationTime.toInstant(), clock.getZone());
 
         return expirationDate.isBefore(now);
     }
@@ -133,7 +132,7 @@ public class JwtDecoder implements TokenDecoder {
         try {
             return new PrivateClaims(
                     claims.getLongClaim(CLAIM_ID),
-                    LocalDateTime.ofInstant(issueTime.toInstant(), ZoneId.systemDefault())
+                    LocalDateTime.ofInstant(issueTime.toInstant(), clock.getZone())
             );
         } catch (ParseException e) {
             throw new InvalidTokenException("유효한 형식의 토큰이 아닙니다.");
