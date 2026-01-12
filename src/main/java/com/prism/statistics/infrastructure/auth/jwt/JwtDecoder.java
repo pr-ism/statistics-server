@@ -55,7 +55,8 @@ public class JwtDecoder implements TokenDecoder {
     }
 
     private JWTClaimsSet extractClaimsSet(
-            TokenType tokenType, String token
+            TokenType tokenType,
+            String token
     ) throws ParseException, JOSEException {
         JWTClaimsSet claimsSet = findJWTClaimsSet(tokenType, token);
 
@@ -89,8 +90,14 @@ public class JwtDecoder implements TokenDecoder {
     }
 
     private SignedJWT findSignedJWT(JWEObject jweObject) {
-        return jweObject.getPayload()
-                        .toSignedJWT();
+        SignedJWT signedJWT = jweObject.getPayload()
+                                       .toSignedJWT();
+
+        if (signedJWT == null) {
+            throw new InvalidTokenException("유효한 JWT 형식이 아닙니다.");
+        }
+
+        return signedJWT;
     }
 
     private JWSVerifier findJWSVerifier(TokenType tokenType) {
@@ -118,6 +125,10 @@ public class JwtDecoder implements TokenDecoder {
 
     private PrivateClaims convert(JWTClaimsSet claims) {
         Date issueTime = claims.getIssueTime();
+
+        if (issueTime == null) {
+            throw new InvalidTokenException("토큰 발급 시간이 존재하지 않습니다.");
+        }
 
         try {
             return new PrivateClaims(
