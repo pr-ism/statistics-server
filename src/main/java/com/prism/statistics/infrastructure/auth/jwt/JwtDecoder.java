@@ -66,7 +66,12 @@ public class JwtDecoder implements TokenDecoder {
     }
 
     private void validateExpired(JWTClaimsSet claimsSet) {
-        if (isExpiredToken(claimsSet.getExpirationTime())) {
+        Date expirationTime = claimsSet.getExpirationTime();
+
+        if (expirationTime == null) {
+            throw new InvalidTokenException("토큰 만료 시간이 존재하지 않습니다.");
+        }
+        if (isExpiredToken(expirationTime)) {
             throw new ExpiredTokenException();
         }
     }
@@ -128,10 +133,15 @@ public class JwtDecoder implements TokenDecoder {
         if (issueTime == null) {
             throw new InvalidTokenException("토큰 발급 시간이 존재하지 않습니다.");
         }
-
         try {
+            Long userId = claims.getLongClaim(CLAIM_ID);
+
+            if (userId == null) {
+                throw new InvalidTokenException("사용자 ID가 존재하지 않습니다.");
+            }
+
             return new PrivateClaims(
-                    claims.getLongClaim(CLAIM_ID),
+                    userId,
                     LocalDateTime.ofInstant(issueTime.toInstant(), clock.getZone())
             );
         } catch (ParseException e) {

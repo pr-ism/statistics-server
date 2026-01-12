@@ -219,6 +219,71 @@ class JwtDecoderTest {
 
     @ParameterizedTest
     @EnumSource(value = TokenType.class)
+    void 만료_시간이_없는_토큰은_디코딩_할_수_없다(TokenType tokenType) throws JOSEException {
+        // given
+        LocalDateTime now = LocalDateTime.now(clock);
+        Date issueTime = Date.from(now.atZone(clock.getZone()).toInstant());
+
+        JWTClaimsSet claimsWithoutExpiration = new JWTClaimsSet.Builder()
+                .issuer(tokenProperties.issuer())
+                .issueTime(issueTime)
+                .claim("id", 1L)
+                .build();
+
+        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsWithoutExpiration);
+        signedJWT.sign(jwsSignerFinder.findByTokenType(tokenType));
+
+        JWEHeader jweHeader = new JWEHeader.Builder(JWEAlgorithm.A256KW, EncryptionMethod.A256GCM)
+                .contentType("JWT")
+                .build();
+        JWEObject jweObject = new JWEObject(jweHeader, new Payload(signedJWT));
+
+        jweObject.encrypt(jweEncrypter);
+
+        String token = jweObject.serialize();
+
+        // when & then
+        assertThatThrownBy(() -> jwtDecoder.decode(tokenType, token))
+                .isInstanceOf(InvalidTokenException.class)
+                .hasMessage("토큰 만료 시간이 존재하지 않습니다.");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = TokenType.class)
+    void 사용자_ID가_없는_토큰은_디코딩_할_수_없다(TokenType tokenType) throws JOSEException {
+        // given
+        LocalDateTime now = LocalDateTime.now(clock);
+        Date issueTime = Date.from(now.atZone(clock.getZone()).toInstant());
+        Date expirationTime = Date.from(now.plusMinutes(10)
+                                           .atZone(clock.getZone())
+                                           .toInstant());
+
+        JWTClaimsSet claimsWithoutUserId = new JWTClaimsSet.Builder()
+                .issuer(tokenProperties.issuer())
+                .issueTime(issueTime)
+                .expirationTime(expirationTime)
+                .build();
+
+        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsWithoutUserId);
+        signedJWT.sign(jwsSignerFinder.findByTokenType(tokenType));
+
+        JWEHeader jweHeader = new JWEHeader.Builder(JWEAlgorithm.A256KW, EncryptionMethod.A256GCM)
+                .contentType("JWT")
+                .build();
+        JWEObject jweObject = new JWEObject(jweHeader, new Payload(signedJWT));
+
+        jweObject.encrypt(jweEncrypter);
+
+        String token = jweObject.serialize();
+
+        // when & then
+        assertThatThrownBy(() -> jwtDecoder.decode(tokenType, token))
+                .isInstanceOf(InvalidTokenException.class)
+                .hasMessage("사용자 ID가 존재하지 않습니다.");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = TokenType.class)
     void JWE_복호화는_성공했으나_내부_페이로드가_signed_JWT가_아닌_경우_디코딩_할_수_없다(TokenType tokenType) throws JOSEException {
         // given
         JWEHeader header = new JWEHeader(JWEAlgorithm.A256KW, EncryptionMethod.A256GCM);
