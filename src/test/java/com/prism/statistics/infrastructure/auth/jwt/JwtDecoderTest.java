@@ -117,7 +117,7 @@ class JwtDecoderTest {
                 .hasMessage("토큰이 만료되었습니다.");
     }
 
-    private static Stream<Arguments> encodeTestWithTokenTypeAndInvalidToken() {
+    private static Stream<Arguments> decodeTestWithTokenTypeAndInvalidToken() {
         return Stream.of(
                 Arguments.of(TokenType.ACCESS, null),
                 Arguments.of(TokenType.ACCESS, ""),
@@ -127,7 +127,7 @@ class JwtDecoderTest {
     }
 
     @ParameterizedTest(name = "TokenType이 {0}이고 토큰이 {1}일 때 토큰 디코딩을 할 수 없다")
-    @MethodSource("encodeTestWithTokenTypeAndInvalidToken")
+    @MethodSource("decodeTestWithTokenTypeAndInvalidToken")
     void 비어_있는_토큰은_디코딩_할_수_없다(TokenType tokenType, String invalidToken) {
         // when & then
         assertThatThrownBy(() -> jwtDecoder.decode(tokenType, invalidToken))
