@@ -22,8 +22,9 @@ public class GenerateTokenService {
     private final TokenEncoder tokenEncoder;
 
     public TokenResponse generate(Long userId) {
-        String accessToken = tokenEncoder.encode(LocalDateTime.now(clock), TokenType.ACCESS, userId);
-        String refreshToken = tokenEncoder.encode(LocalDateTime.now(clock), TokenType.REFRESH, userId);
+        LocalDateTime now = LocalDateTime.now(clock);
+        String accessToken = tokenEncoder.encode(now, TokenType.ACCESS, userId);
+        String refreshToken = tokenEncoder.encode(now, TokenType.REFRESH, userId);
 
         return new TokenResponse(accessToken, refreshToken, TokenScheme.BEARER.name());
     }
