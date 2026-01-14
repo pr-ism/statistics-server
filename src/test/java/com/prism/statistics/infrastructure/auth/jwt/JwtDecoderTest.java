@@ -161,10 +161,10 @@ class JwtDecoderTest {
                 "thisIsA32ByteRefreshTokenKeyForH",
                 "thisIsA32ByteEncryptionKeyForAES",
                 "other-issuer",
-                43200,
-                259200,
-                43200000L,
-                259200000L
+                43_200,
+                259_200,
+                43_200_000L,
+                259_200_000L
         );
         byte[] encryptionKeyBytes = otherIssuerTokenProperties.encryptionKey()
                                                               .getBytes(StandardCharsets.UTF_8);
