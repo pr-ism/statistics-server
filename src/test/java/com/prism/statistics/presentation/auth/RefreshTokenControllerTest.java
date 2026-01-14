@@ -1,6 +1,5 @@
 package com.prism.statistics.presentation.auth;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
@@ -12,12 +11,12 @@ import static org.springframework.restdocs.cookies.CookieDocumentation.responseC
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.prism.statistics.application.auth.GenerateTokenService;
 import com.prism.statistics.application.auth.dto.response.TokenResponse;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
-import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,9 +82,8 @@ class RefreshTokenControllerTest extends CommonControllerSliceTestSupport {
     }
 
     @Test
-    void refreshToken_쿠키가_없으면_토큰을_재발급_할_수_없다() {
-        assertThatThrownBy(
-                () -> mockMvc.perform(post("/refresh-token")
+    void refreshToken_쿠키가_없으면_토큰을_재발급_할_수_없다() throws Exception {
+        mockMvc.perform(post("/refresh-token")
                         .with(
                                 request -> {
                                     request.setCookies((Cookie[]) null);
@@ -93,6 +91,16 @@ class RefreshTokenControllerTest extends CommonControllerSliceTestSupport {
                                 }
                         )
                 )
-        ).hasRootCauseInstanceOf(RefreshTokenNotFoundException.class);
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void refreshToken_쿠키값이_비어_있으면_토큰을_재발급_할_수_없다() throws Exception {
+        mockMvc.perform(post("/refresh-token")
+                        .cookie(new Cookie("refreshToken", ""))
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.errorCode").value("A00"))
+                .andExpect(jsonPath("$.message").value("토큰 재발급 실패"));
     }
 }

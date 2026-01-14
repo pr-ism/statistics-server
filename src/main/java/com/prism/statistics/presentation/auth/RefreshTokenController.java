@@ -4,8 +4,6 @@ import com.prism.statistics.application.auth.GenerateTokenService;
 import com.prism.statistics.application.auth.dto.response.TokenResponse;
 import com.prism.statistics.global.config.properties.TokenProperties;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.server.Cookie.SameSite;
 import org.springframework.context.annotation.Profile;
@@ -13,6 +11,7 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,8 +27,9 @@ public class RefreshTokenController {
     private final GenerateTokenService generateTokenService;
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<Void> refreshToken(HttpServletRequest request) {
-        String refreshToken = findRefreshToken(request.getCookies());
+    public ResponseEntity<Void> refreshToken(@CookieValue(REFRESH_TOKEN_COOKIE_KEY) String refreshToken) {
+        validateRefreshToken(refreshToken);
+
         TokenResponse tokenResponse = generateTokenService.refreshToken(refreshToken);
         HttpCookie accessTokenCookie = createCookie(
                 ACCESS_TOKEN_COOKIE_KEY,
@@ -48,22 +48,14 @@ public class RefreshTokenController {
                              .build();
     }
 
-    private String findRefreshToken(Cookie[] cookies) {
-        if (cookies == null) {
+    private void validateRefreshToken(String refreshToken) {
+        if (refreshToken.isBlank()) {
             throw new RefreshTokenNotFoundException();
         }
-
-        for (Cookie cookie : cookies) {
-            if (REFRESH_TOKEN_COOKIE_KEY.equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-
-        throw new RefreshTokenNotFoundException();
     }
 
-    private HttpCookie createCookie(String key, String token, int maxAgeSeconds) {
-        return ResponseCookie.from(key, token)
+    private HttpCookie createCookie(String name, String value, int maxAgeSeconds) {
+        return ResponseCookie.from(name, value)
                              .httpOnly(true)
                              .secure(true)
                              .path("/")
