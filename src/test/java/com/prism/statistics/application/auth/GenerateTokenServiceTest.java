@@ -15,6 +15,7 @@ import com.prism.statistics.global.config.TokenConfig;
 import com.prism.statistics.global.config.properties.TokenProperties;
 import com.prism.statistics.infrastructure.auth.jwt.JwsSignerFinder;
 import com.prism.statistics.infrastructure.auth.jwt.JwsVerifierFinder;
+import com.prism.statistics.infrastructure.auth.jwt.exception.ExpiredTokenException;
 import com.prism.statistics.infrastructure.auth.jwt.exception.InvalidTokenException;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -99,5 +100,31 @@ class GenerateTokenServiceTest {
         assertThatThrownBy(() -> generateTokenService.refreshToken(invalidRefreshToken))
                 .isInstanceOf(InvalidTokenException.class)
                 .hasMessage("위변조된 토큰입니다.");
+    }
+
+    @Test
+    void 만료된_refreshToken으로는_토큰을_재발급_받을_수_없다() {
+        // given
+        String expiredRefreshToken = tokenEncoder.encode(
+                LocalDateTime.of(2020, 1, 1, 0, 0),
+                TokenType.REFRESH,
+                1L
+        );
+
+        // when & then
+        assertThatThrownBy(() -> generateTokenService.refreshToken(expiredRefreshToken))
+                .isInstanceOf(ExpiredTokenException.class)
+                .hasMessage("토큰이 만료되었습니다.");
+    }
+
+    @Test
+    void 유효하지_않은_형식의_refreshToken으로는_토큰을_재발급_받을_수_없다() {
+        // given
+        String malformedRefreshToken = "invalid-token";
+
+        // when & then
+        assertThatThrownBy(() -> generateTokenService.refreshToken(malformedRefreshToken))
+                .isInstanceOf(InvalidTokenException.class)
+                .hasMessage("유효한 토큰이 아닙니다.");
     }
 }
