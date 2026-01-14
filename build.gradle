@@ -165,10 +165,6 @@ sourceSets {
 	}
 }
 
-configurations {
-	querydsl.extendsFrom compileClasspath
-}
-
 ext {
 	snippetsDir = file('build/generated-snippets')
 }
