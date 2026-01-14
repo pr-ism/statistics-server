@@ -74,7 +74,7 @@ class RefreshTokenControllerTest extends CommonControllerSliceTestSupport {
                                 cookieWithName("refreshToken").description("토큰 재발급을 위한 refresh token cookie")
                         ),
                         responseCookies(
-                                cookieWithName("accessToken").description("새롭게 발급된 refresh token"),
+                                cookieWithName("accessToken").description("새롭게 발급된 access token"),
                                 cookieWithName("refreshToken").description("새롭게 발급된 refresh token")
                         )
                 )
