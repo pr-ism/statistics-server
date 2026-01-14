@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prism.statistics.context.ControllerMockInjectionSupport;
 import com.prism.statistics.context.ResetMockTestExecutionListener;
 import com.prism.statistics.docs.RestDocsConfiguration;
+import com.prism.statistics.global.exception.GlobalExceptionHandler;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -109,6 +110,7 @@ public abstract class CommonControllerSliceTestSupport {
         }
 
         FixedStandaloneMockMvcBuilder configureControllerAdvice() {
+            builder.setControllerAdvice(new GlobalExceptionHandler());
             return this;
         }
 
