@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum DefaultErrorCode implements ErrorCode {
 
-    D00("서버 에러");
+    UNKNOWN_SERVER_EXCEPTION("서버 에러");
 
     private final String message;
 

@@ -1,6 +1,7 @@
 package com.prism.statistics.global.exception;
 
 import com.prism.statistics.global.exception.dto.response.AuthErrorCode;
+import com.prism.statistics.global.exception.dto.response.DefaultErrorCode;
 import com.prism.statistics.global.exception.dto.response.ExceptionResponse;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ExceptionResponse> handleException(Exception ex) {
         log.error("Exception : ", ex);
 
-        ExceptionResponse response = new ExceptionResponse("D00", "서버 에러");
+        ExceptionResponse response = ExceptionResponse.from(DefaultErrorCode.UNKNOWN_SERVER_EXCEPTION);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                              .body(response);
