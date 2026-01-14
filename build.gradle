@@ -3,10 +3,10 @@ plugins {
 	id 'org.springframework.boot' version '3.5.9'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'jacoco'
+	id 'org.asciidoctor.jvm.convert' version '3.3.2'
 }
 
 group = 'com.prism'
-version = '0.0.1-SNAPSHOT'
 description = 'PR-ism 통계 서버'
 
 java {
@@ -19,14 +19,21 @@ configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+	asciidoctorExt
 }
 
 repositories {
 	mavenCentral()
 }
 
+def queryDslVersion = '7.0'
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation "io.github.openfeign.querydsl:querydsl-jpa:${queryDslVersion}"
+	annotationProcessor "io.github.openfeign.querydsl:querydsl-apt:${queryDslVersion}:jpa"
 
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
@@ -39,9 +46,15 @@ dependencies {
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {
+	outputs.dir snippetsDir
 	useJUnitPlatform()
 	finalizedBy tasks.named('jacocoTestReport')
 }
@@ -77,6 +90,9 @@ def jacocoExcludePatterns = [
 		"**/view/**",
 		"**/views/**",
 		"**/infrastructure/**",
+		"**/global/**",
+		"**/common/**",
+		"**/exception/**",
 
 		"**/Q*",
 		"**/generated/**",
@@ -133,4 +149,51 @@ tasks.register('jacocoTestCoverage') {
 
 tasks.named('check') {
 	dependsOn tasks.named('jacocoTestCoverageVerification')
+}
+
+def querydslSrcDir  = layout.buildDirectory.dir("generated/querydsl").get().asFile
+
+tasks.withType(JavaCompile).configureEach {
+	options.getGeneratedSourceOutputDirectory().set(file(querydslSrcDir))
+}
+
+sourceSets {
+	main {
+		java {
+			srcDirs += querydslSrcDir
+		}
+	}
+}
+
+configurations {
+	querydsl.extendsFrom compileClasspath
+}
+
+ext {
+	snippetsDir = file('build/generated-snippets')
+}
+
+asciidoctor {
+	dependsOn test
+	configurations 'asciidoctorExt'
+	inputs.dir snippetsDir
+
+	sources{
+		include("**/index.adoc", "**/common/*.adoc")
+	}
+
+	baseDirFollowsSourceFile()
+}
+
+tasks.register('copyApiDocument', Copy) {
+	dependsOn asciidoctor
+	doFirst {
+		delete file("src/main/resources/static/docs")
+	}
+	from asciidoctor.outputDir
+	into file("src/main/resources/static/docs")
+}
+
+build {
+	dependsOn copyApiDocument
 }
