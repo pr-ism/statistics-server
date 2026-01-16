@@ -1083,7 +1083,7 @@ public Optional<Account> findActiveByEmail(String email) {
 - JPQL은 사용하지 않는다.
 - querydsl을 사용한다.
 
-## Entity DDL 스키마
+## 5.4 Entity DDL 스키마
 
 - 양방향 연관관계는 지양한다.
 
@@ -1118,7 +1118,6 @@ private Team team;
 
 - 양방향 연관관계 사용 시 `@JoinColumn`을 명시한다.
 - querydsl을 사용하지 않고 JPA 쿼리 자동완성을 사용하는 경우에만 INNER JOIN 최적화를 위해 `optional` 속성을 활용한다.
-
 
 # 6. 스프링
 
@@ -1195,7 +1194,7 @@ public class InvalidTokenException extends IllegalArgumentException {
 - Custom Exception 생성 시 원하는 방식으로 작성한다.
 - 단 Custom Exception에 프론트엔드 관련 개념, 지식이 포함되서는 안 된다.
 
-## 6.3 예외 핸들링 관련
+## 7.2 예외 핸들링 관련
 
 - `@RestControllerAdvice` 로 예외를 핸들링한다.
     - `ResponseEntityExceptionHandler` 를 상속한다.
