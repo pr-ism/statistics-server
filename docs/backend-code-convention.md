@@ -1024,7 +1024,7 @@ public abstract class CreatedAtEntity extends BaseEntity {
 ```java
 @MappedSuperclass
 @Getter
-public abstract class BaseTimeEntity extends BaseTimeEntity {
+public abstract class BaseTimeEntity extends CreatedAtEntity {
     
     @LastModifiedDate
     @Column(nullable = false)
@@ -1033,7 +1033,7 @@ public abstract class BaseTimeEntity extends BaseTimeEntity {
 ```
 
 - 생성 시간과 수정 시간을 관리하는 Entity이다.
-    - 생성 시간은 BaseTimeEntity로부터 상속받는다.
+    - 생성 시간은 CreatedAtEntity로부터 상속받는다.
 
 ## 5.2 Entity 정의
 
