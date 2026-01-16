@@ -2,24 +2,15 @@ name: PR Automation Pipeline
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, ready_for_review]
+    types: [opened, synchronize, review_requested]
 
 permissions:
   contents: read
-  pull-requests: write
+  pull-requests: read
 
 jobs:
-  auto-assign:
-    name: PR Assign, Reviewer 자동 설정
-    if: ${{ github.event.action == 'opened' || github.event.action == 'ready_for_review' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: kentaro-m/auto-assign-action@v2.0.0
-
   pr-code-analysis:
     name: PR 코드 분석
-    needs: [auto-assign]
-    if: ${{ always() && (needs.auto-assign.result == 'success' || needs.auto-assign.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +26,9 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: run jacocoTestCoverage
+        id: test
         run: ./gradlew jacocoTestCoverage
+        continue-on-error: true
 
       - name: set author slack id
         if: always()
@@ -62,8 +55,8 @@ jobs:
           echo "AUTHOR_NAME=${AUTHOR_NAME}" >> $GITHUB_OUTPUT
           echo "AUTHOR_ID=${AUTHOR_ID}" >> $GITHUB_OUTPUT
 
-      - name: build reviewers (pending mention / reviewed name)
-        if: always()
+      - name: build reviewers
+        if: ${{ steps.test.outcome == 'success' && github.event.action == 'review_requested' }}
         id: reviewers
         env:
           GH_TOKEN: ${{ github.token }}
@@ -155,19 +148,9 @@ jobs:
           echo "PENDING_REVIEWERS=${PENDING}" >> $GITHUB_OUTPUT
           echo "REVIEWED_REVIEWERS=${REVIEWED}" >> $GITHUB_OUTPUT
 
-      - name: slack notification
-        if: always()
+      - name: slack notification (failure)
+        if: ${{ steps.test.outcome == 'failure' }}
         run: |
-          STATUS="${{ job.status }}"
-
-          if [ "$STATUS" = "success" ]; then
-            ICON=":white_check_mark:"
-          elif [ "$STATUS" = "failure" ]; then
-            ICON=":x:"
-          else
-            ICON=":black_square_for_stop:"
-          fi
-
           SLACK_MESSAGE='{"text":"PR 브랜치 분석","blocks":[{"type":"section","text":{"type":"mrkdwn","text":">*PR 브랜치 분석*\n>\n>*PR Author*\n>'
           SLACK_MESSAGE+="${{ steps.author-slack.outputs.AUTHOR_NAME }}"
           SLACK_MESSAGE+="\n>"
@@ -177,7 +160,27 @@ jobs:
           SLACK_MESSAGE+=">\n>\n>*PR 제목*\n>"
           SLACK_MESSAGE+="${{ github.event.pull_request.title }}"
           SLACK_MESSAGE+="\n>\n>분석 결과\n>"
-          SLACK_MESSAGE+="$ICON"
+          SLACK_MESSAGE+=":x:"
+          SLACK_MESSAGE+="\n>\n>*확인 요망*\n><@"
+          SLACK_MESSAGE+="${{ steps.author-slack.outputs.AUTHOR_ID }}"
+          SLACK_MESSAGE+=">\n>\n>*상태*\n>빌드 테스트 실패"
+          SLACK_MESSAGE+='"}}]}'
+
+          curl -X POST "${{ secrets.SLACK_WEBHOOK }}" -d "${SLACK_MESSAGE}"
+
+      - name: slack notification (success)
+        if: ${{ steps.test.outcome == 'success' && github.event.action == 'review_requested' }}
+        run: |
+          SLACK_MESSAGE='{"text":"PR 브랜치 분석","blocks":[{"type":"section","text":{"type":"mrkdwn","text":">*PR 브랜치 분석*\n>\n>*PR Author*\n>'
+          SLACK_MESSAGE+="${{ steps.author-slack.outputs.AUTHOR_NAME }}"
+          SLACK_MESSAGE+="\n>"
+          SLACK_MESSAGE+="(${{ steps.author-slack.outputs.AUTHOR_GIT_ID }})"
+          SLACK_MESSAGE+="\n>\n>*PR 링크*\n><"
+          SLACK_MESSAGE+="${{ github.event.pull_request.html_url }}"
+          SLACK_MESSAGE+=">\n>\n>*PR 제목*\n>"
+          SLACK_MESSAGE+="${{ github.event.pull_request.title }}"
+          SLACK_MESSAGE+="\n>\n>분석 결과\n>"
+          SLACK_MESSAGE+=":white_check_mark:"
           SLACK_MESSAGE+="\n>\n>*리뷰 대기(멘션)*\n>"
           SLACK_MESSAGE+="${{ steps.reviewers.outputs.PENDING_REVIEWERS }}"
           SLACK_MESSAGE+="\n>\n>*리뷰 완료(표시명)*\n>"
@@ -185,3 +188,7 @@ jobs:
           SLACK_MESSAGE+='"}}]}'
 
           curl -X POST "${{ secrets.SLACK_WEBHOOK }}" -d "${SLACK_MESSAGE}"
+
+      - name: fail job if test failed
+        if: ${{ steps.test.outcome == 'failure' }}
+        run: exit 1
