@@ -20,7 +20,7 @@
 LatLng // 줄임말은 허용되지 않음
 
 // good
-Position
+        Position
 
 // normal
 LatitudeLongitude // 길게 표현했지만 허용
@@ -31,10 +31,10 @@ LatitudeLongitude // 길게 표현했지만 허용
 
 
 - boolean 지역 변수는 is 접두사를 사용한다.
-  - 예: `boolean isValid = validator.check();`
-    - boolean 클래스 필드에는 is 접두사를 사용하지 않는다.
-  - 이유: Lombok의 `@Getter`가 자동으로 `isXxx()` 형태의 getter를 생성하기 때문
-    - 예: `private boolean active;` → `isActive()` 메서드 자동 생성
+    - 예: `boolean isValid = validator.check();`
+        - boolean 클래스 필드에는 is 접두사를 사용하지 않는다.
+    - 이유: Lombok의 `@Getter`가 자동으로 `isXxx()` 형태의 getter를 생성하기 때문
+        - 예: `private boolean active;` → `isActive()` 메서드 자동 생성
 
 
 - DTO는 사용 영역에 따라 접미사를 다르게 사용한다.
@@ -49,15 +49,15 @@ LatitudeLongitude // 길게 표현했지만 허용
         - private 필드의 어떠한 가공도 하지 않고 그 값을 그대로 반환할 때 사용한다.
         - DTO 변환, JSON 직렬화/역직렬화 등 인프라/표현 계층에서만 사용하며, 핵심 비즈니스 로직에서는 사용을 지양한다.
     - 필드 네이밍 (`size()`)
-      - Java Record나 Value Object(VO)의 속성을 조회할 때 사용한다.
-      - Entity와 같은 가변 객체에서는 비즈니스 로직상 꼭 필요한 경우가 아니라면 지양한다.
+        - Java Record나 Value Object(VO)의 속성을 조회할 때 사용한다.
+        - Entity와 같은 가변 객체에서는 비즈니스 로직상 꼭 필요한 경우가 아니라면 지양한다.
     - Repository / Service 계층 조회
-      - find: 조건에 맞는 결과가 없을 수도 있는 경우 사용한다.
-        - 단건 조회: Optional<T> 반환
-        - 다건 조회: List<T> 반환 (결과가 없으면 빈 리스트 반환, Optional 감싸지 않는다.)
-      - get: 조건에 맞는 결과가 반드시 존재해야 하는 경우 사용한다.
-        - 결과가 없으면 내부에서 예외를 발생시킨다.
-        - Optional을 반환하지 않고 T를 바로 반환한다.
+        - find: 조건에 맞는 결과가 없을 수도 있는 경우 사용한다.
+            - 단건 조회: Optional<T> 반환
+            - 다건 조회: List<T> 반환 (결과가 없으면 빈 리스트 반환, Optional 감싸지 않는다.)
+        - get: 조건에 맞는 결과가 반드시 존재해야 하는 경우 사용한다.
+            - 결과가 없으면 내부에서 예외를 발생시킨다.
+            - Optional을 반환하지 않고 T를 바로 반환한다.
 
 
 - 다음과 같이 명확하지 않은 네이밍은 지양한다.
@@ -83,12 +83,12 @@ LatitudeLongitude // 길게 표현했지만 허용
 ## 1.3 Lombok
 
 - 다음과 같은 기능만을 허용한다.
-  - `@Getter`
-  - `@Builder`
-  - JPA Entity의 `@NoArgsConstructor(access = AccessLevel.PROTECTED)`
-  - JPA Entity가 아닌 도메인 객체의 `@EqualsAndHashCode`
-  - `@RequiredArgsConstructor`
-  - `@Slf4j`
+    - `@Getter`
+    - `@Builder`
+    - JPA Entity의 `@NoArgsConstructor(access = AccessLevel.PROTECTED)`
+    - JPA Entity가 아닌 도메인 객체의 `@EqualsAndHashCode`
+    - `@RequiredArgsConstructor`
+    - `@Slf4j`
 
 ## 1.4 final
 
@@ -135,7 +135,7 @@ TeamRole.SMUGGLER
 ```
 
 - 원칙적으로 프로덕션 코드에서 static import를 지양한다.
-  - 코드의 출처를 명확히 하기 위함이다.
+    - 코드의 출처를 명확히 하기 위함이다.
 
 
 - 단, 다음의 경우는 예외로 static import를 허용(또는 필수로) 한다.
@@ -174,9 +174,9 @@ List<Account> accounts = new ArrayList<>();
 if (a < 0) return true;
 
 // good 
-if (a < 0) {
-    return true;
-}
+        if (a < 0) {
+        return true;
+        }
 ```
 
 - 중괄호 `{}` 는 생략할 수 없다.
@@ -214,14 +214,14 @@ public boolean canDeletePost(User user, Post post) {
     if (user.isAdmin()) {
         return true;
     }
-    
+
     return post.isAuthorId(user.getId());
 }
 ```
 
 - depth는 최대 2까지 허용한다.
 - depth를 1 이하로 유지하도록 노력한다.
-  - early return, 메서드 분리 등을 적극적으로 활용한다.
+    - early return, 메서드 분리 등을 적극적으로 활용한다.
 
 ## 1.9 개행
 
@@ -229,13 +229,13 @@ public boolean canDeletePost(User user, Post post) {
 // bad 
 List<TodayQuizOptionDto> todayQuizOptionDtos = todayQuizOptions.stream()
                                                                .map(option -> new TodayQuizOptionDto(
-                                                                               option.getId(),
-                                                                               option.getWordId(),
-                                                                               option.getContent(),
-                                                                               option.getOptionOrder())
+                                                                       option.getId(),
+                                                                       option.getWordId(),
+                                                                       option.getContent(),
+                                                                       option.getOptionOrder())
                                                                )
                                                                .toList();
-                                                               
+
 // good
 List<TodayQuizOptionDto> todayQuizOptionDtos = todayQuizOptions.stream()
                                                                .map(
@@ -256,14 +256,14 @@ List<QuizOption> quizOptions = IntStream.range(0, splitWords.size())
                                                 convert(
                                                         splitWords.get(index),
                                                         quizQuestionIds.get(index)
-                                        ))
+                                                ))
                                         .flatMap(List::stream)
                                         .toList();
 
 // good
 List<QuizOption> quizOptions = IntStream.range(0, splitWords.size())
                                         .mapToObj(
-                                            index -> convert(splitWords.get(index), quizQuestionIds.get(index)))
+                                                index -> convert(splitWords.get(index), quizQuestionIds.get(index)))
                                         .flatMap(List::stream)
                                         .toList();
 ```
@@ -274,7 +274,7 @@ List<QuizOption> quizOptions = IntStream.range(0, splitWords.size())
 ```java
 // bad
 private ContrabandGame(TeamState teamState, int totalRounds, RoundEngine roundEngine,
-GameStatus status) {
+        GameStatus status) {
     this.teamState = teamState;
     this.totalRounds = totalRounds;
     this.roundEngine = roundEngine;
@@ -302,7 +302,7 @@ private ContrabandGame(
 command.clientSession().tell(new HandleExceptionMessage(ExceptionCode.GAME_ROOM_NOT_FOUND));
 
 // good 
-command.clientSession()
+        command.clientSession()
        .tell(new HandleExceptionMessage(ExceptionCode.GAME_ROOM_NOT_FOUND));
 ```
 
@@ -315,14 +315,14 @@ long a = 1L;
 double b = 1.0D;
 ```
 
-- 리터럴 작성 시 해당 타입에 맞는 접미사를 대문자로 붙인다.
+- 매직 넘버 작성 시 해당 타입에 맞는 접미사를 대문자로 붙인다.
 
 ```java
 long a = 1_000L;
 long b = 10_000_000L;
 ```
 
-- 리터럴 작성 시 그 값이 큰 경우 `_` (언더스코어)를 통해 가독성을 확보한다.
+- 매직 넘버 작성 시 그 값이 큰 경우 `_` (언더스코어)를 통해 가독성을 확보한다.
 
 ```java
 // bad
@@ -387,7 +387,7 @@ pullrequest
 
 ## 2.2 패키지 구성
 
-- 도메인 계층을 가진 변경된 Layered Architecture를 사용한다. 
+- 도메인 계층을 가진 변경된 Layered Architecture를 사용한다.
 - 각 계층은 반드시 자신의 하위 계층을 의존하도록 한다.
 - 패키지 간 순환참조가 발생하지 않도록 한다.
 - 하위 계층이 상위 계층을 의존하지 않도록 한다.
@@ -809,9 +809,10 @@ private User findUser(Long userId) {
 # 4. 테스트
 
 - 테스트 파일은 반드시 테스트 대상 클래스와 동일한 패키지에 위치해야 한다.
-- 단위 테스트가 아니라면 `@SpringBootTest` , `@WebMvcTest`를 사용한다.
-    - `@SpringBootTest` : 통합 테스트
-    - `@WebMvcTest` : 컨트롤러 포맷팅 테스트
+- 다음 대상에 대해 테스트를 수행한다.
+    - 도메인 -> 단위 테스트
+    - 서비스 -> 통합 테스트
+    - 컨트롤러 -> Spring Rest Docs 문서화를 위한 단위 테스트
 
 ## 4.1 테스트 포맷
 
@@ -923,6 +924,29 @@ void 나이와_이름_조건에_따라_유효성_검사_결과가_달라진다(i
 - Fixture는 테스트 클래스 외부로 관리한다.
 - 통합 테스트 시 `@Sql`을 통해 필요한 시점의 배경 데이터를 세팅한다.
 
+## 4.6 Controller Slice Test
+
+```java
+@SuppressWarnings("NonAsciiCharacters")
+class RefreshTokenControllerTest extends CommonControllerSliceTestSupport {
+
+    @Autowired
+    GenerateTokenService generateTokenService;
+
+    @Test
+    void 토큰을_재발급_한다() throws Exception {
+        given(tokenProperties.accessExpiredSeconds()).willReturn(3_600);
+        given(tokenProperties.refreshExpiredSeconds()).willReturn(259_200);
+        given(generateTokenService.refreshToken(refreshToken)).willReturn(tokenDto);
+    }
+}
+```
+
+- 생성한 컨트롤러 테스트 클래스에서 `CommonControllerSliceTestSupport`를 확장한다.
+- 컨트롤러가 의존하고 있는 대상은 `@Autowired`로 주입받는다.
+    - 이 때 주입되는 대상은 모두 mock 컴포넌트들이다.
+- 필요한 값을 반환하도록 mocking 한다.
+
 # 5. JPA
 
 ## 5.1 공통 Entity
@@ -987,7 +1011,7 @@ public abstract class BaseEntity {
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-public abstract class BaseTimeEntity extends BaseEntity {
+public abstract class CreatedAtEntity extends BaseEntity {
     
     @CreatedDate
     @Column(nullable = false, updatable = false)
@@ -1000,7 +1024,7 @@ public abstract class BaseTimeEntity extends BaseEntity {
 ```java
 @MappedSuperclass
 @Getter
-public abstract class BaseAuditEntity extends BaseTimeEntity {
+public abstract class BaseTimeEntity extends CreatedAtEntity {
     
     @LastModifiedDate
     @Column(nullable = false)
@@ -1009,7 +1033,7 @@ public abstract class BaseAuditEntity extends BaseTimeEntity {
 ```
 
 - 생성 시간과 수정 시간을 관리하는 Entity이다.
-  - 생성 시간은 BaseTimeEntity로부터 상속받는다.
+    - 생성 시간은 CreatedAtEntity로부터 상속받는다.
 
 ## 5.2 Entity 정의
 
@@ -1059,11 +1083,9 @@ public Optional<Account> findActiveByEmail(String email) {
 - JPQL은 사용하지 않는다.
 - querydsl을 사용한다.
 
-## Entity DDL 스키마 
+## 5.4 Entity DDL 스키마
 
 - 양방향 연관관계는 지양한다.
-
-
 
 ```java
 // bad
@@ -1097,7 +1119,6 @@ private Team team;
 - 양방향 연관관계 사용 시 `@JoinColumn`을 명시한다.
 - querydsl을 사용하지 않고 JPA 쿼리 자동완성을 사용하는 경우에만 INNER JOIN 최적화를 위해 `optional` 속성을 활용한다.
 
-
 # 6. 스프링
 
 ## 6.1 @Transactional
@@ -1126,23 +1147,105 @@ public ResponseEntity<UserInfoResponse> changeUserInfo(@RequestBody @Valid Chang
 
 - 컨트롤러에서 반환 시 ResponseEntity를 사용한다.
 
-## 6.3 예외 관련
-
-- `@RestControllerAdvice` 로 예외를 핸들링한다.
-    - `ResponseEntityExceptionHandler` 를 상속한다.
-
-## 6.4 @Profile
+## 6.3 @Profile
 
 - `@Profile` 을 통해 각 환경별로 필요한 컴포넌트를 관리한다.
 - 필요하다면 Spring Profile을 조합해서 처리한다.
 
-## 6.5 설정 파일
+## 6.4 설정 파일
 
 - 설정 파일은 `application.yml` 을 사용한다.
 - 각 `@Profile` 마다 별도의 `application-*.yml` 을 사용한다.
 
-## 6.6 로그
+## 6.5 로그
 
 - 로그 사용 시 기본적으로 동기 로그를 사용한다.
 - 로그 사용 시 MDC를 활용해 로그 추적을 용이하게 수행한다.
 - 로그 사용 시 로그로 인한 병목(성능)을 고려해야 하는 경우 비동기 로그를 사용한다.
+
+# 7. 예외
+
+- Custom Exception과 자바 기본 예외를 적절히 활용한다.
+    - 일반적인 경우 자바 기본 예외를 활용한다.
+    - 해당 예외 상황을 반드시 자바 기본 예외와 다른 방식으로 처리해야 하는 경우 Custom Exception을 사용한다.
+
+## 7.1 Custom Exception
+
+```java
+public class RefreshTokenNotFoundException extends IllegalArgumentException {
+
+    public RefreshTokenNotFoundException() {
+        super("Cookie에서 refreshToken을 찾을 수 없습니다.");
+    }
+}
+
+public class InvalidTokenException extends IllegalArgumentException {
+
+    public InvalidTokenException(String s) {
+        super(s);
+    }
+
+    public InvalidTokenException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+```
+
+- Custom Exception 생성 시 원하는 방식으로 작성한다.
+- 단 Custom Exception에 프론트엔드 관련 개념, 지식이 포함되서는 안 된다.
+
+## 7.2 예외 핸들링 관련
+
+- `@RestControllerAdvice` 로 예외를 핸들링한다.
+    - `ResponseEntityExceptionHandler` 를 상속한다.
+
+```java
+@ExceptionHandler(RefreshTokenNotFoundException.class)
+public ResponseEntity<ExceptionResponse> handleRefreshTokenNotFoundException() {
+    ExceptionResponse response = ExceptionResponse.from(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
+
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                         .body(response);
+}
+
+public record ExceptionResponse(String errorCode, String message) {
+
+    public static ExceptionResponse from(ErrorCode errorCode) {
+        return new ExceptionResponse(errorCode.getErrorCode(), errorCode.getMessage());
+    }
+}
+```
+
+- 예외 핸들링 시 반드시 `ExceptionResponse`를 반환하도록 한다.
+
+```java
+public interface ErrorCode {
+
+    String getErrorCode();
+
+    String getMessage();
+}
+```
+
+- `ExceptionResponse`에 사용될 enum은 각 도메인마다 ErrorCode 인터페이스를 구현해 사용한다.
+
+```java
+@Getter
+public enum AuthErrorCode implements ErrorCode {
+
+    REFRESH_TOKEN_NOT_FOUND("A00", "토큰 재발급 실패");
+
+    private final String errorCode;
+    private final String message;
+
+    AuthErrorCode(String errorCode, String message) {
+        this.errorCode = errorCode;
+        this.message = message;
+    }
+}
+```
+
+- 다음과 같은 네이밍 컨벤션을 따른다.
+    - enum 상수 명 : 코드 레벨에서 바로 이해할 수 있을 네이밍을 지정한다.
+    - code : 프론트엔드에서 예외 처리를 위해 분기 처리를 하기 위한 수단으로 도메인의 첫 글자(`A`)와 번호(`00`부터 시작, 1씩 증가)를 합쳐서 명시한다.
+    - message : 프론트엔드에게 예외 상황을 전달하기 위한 메시지로 너무 과도하게 서버 설명을 하지 않도록 유의해 작성한다.
