@@ -1,5 +1,6 @@
 package com.prism.statistics.domain.user.vo;
 
+import com.prism.statistics.domain.user.enums.RegistrationId;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

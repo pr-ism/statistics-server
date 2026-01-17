@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import com.prism.statistics.domain.user.vo.RegistrationId;
+import com.prism.statistics.domain.user.enums.RegistrationId;
 import com.prism.statistics.domain.user.vo.Social;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;

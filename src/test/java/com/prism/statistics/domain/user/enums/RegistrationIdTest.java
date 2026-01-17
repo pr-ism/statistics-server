@@ -1,4 +1,4 @@
-package com.prism.statistics.domain.user.vo;
+package com.prism.statistics.domain.user.enums;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
