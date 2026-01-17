@@ -8,6 +8,7 @@ import com.prism.statistics.domain.user.UserIdentity;
 import com.prism.statistics.domain.user.vo.Social;
 import com.prism.statistics.infrastructure.user.persistence.JpaUserRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.transaction.Transactional;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -48,6 +49,7 @@ public class UserSocialRepositoryAdapter implements UserSocialRepository {
     }
 
     @Override
+    @Transactional
     public void deleteAllIdentitiesByUserId(Long userId) {
         queryFactory.delete(userIdentity)
                     .where(userIdentity.userId.eq(userId))
