@@ -2,7 +2,6 @@ package com.prism.statistics.domain.user;
 
 import com.prism.statistics.domain.common.BaseEntity;
 import com.prism.statistics.domain.user.vo.Social;
-import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -16,7 +15,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserIdentity extends BaseEntity {
 
-    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Embedded
