@@ -1,20 +1,22 @@
 package com.prism.statistics.global.exception.dto.response;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 public enum DefaultErrorCode implements ErrorCode {
 
-    UNKNOWN_SERVER_EXCEPTION("서버 에러");
+    UNKNOWN_SERVER_EXCEPTION("D00", "서버 에러", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_INPUT("D01", "유효하지 않은 입력", HttpStatus.BAD_REQUEST),
+    INVALID_INPUT_STATE("D02", "유효하지 않은 입력", HttpStatus.BAD_REQUEST);
 
+    private final String errorCode;
     private final String message;
+    private final HttpStatus httpStatus;
 
-    DefaultErrorCode(String message) {
+    DefaultErrorCode(String errorCode, String message, HttpStatus httpStatus) {
+        this.errorCode = errorCode;
         this.message = message;
-    }
-    
-    @Override
-    public String getErrorCode() {
-        return this.name();
+        this.httpStatus = httpStatus;
     }
 }

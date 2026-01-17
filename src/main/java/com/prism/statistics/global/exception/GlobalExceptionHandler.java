@@ -1,11 +1,12 @@
 package com.prism.statistics.global.exception;
 
+import com.prism.statistics.application.auth.exception.WithdrawnUserLoginException;
 import com.prism.statistics.global.exception.dto.response.AuthErrorCode;
 import com.prism.statistics.global.exception.dto.response.DefaultErrorCode;
+import com.prism.statistics.global.exception.dto.response.ErrorCode;
 import com.prism.statistics.global.exception.dto.response.ExceptionResponse;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,17 +20,33 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ExceptionResponse> handleException(Exception ex) {
         log.error("Exception : ", ex);
 
-        ExceptionResponse response = ExceptionResponse.from(DefaultErrorCode.UNKNOWN_SERVER_EXCEPTION);
+        return createResponseEntity(DefaultErrorCode.UNKNOWN_SERVER_EXCEPTION);
+    }
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                             .body(response);
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ExceptionResponse> handleIllegalArgumentException() {
+        return createResponseEntity(DefaultErrorCode.INVALID_INPUT);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ExceptionResponse> handleIllegalStateException() {
+        return createResponseEntity(DefaultErrorCode.INVALID_INPUT_STATE);
     }
 
     @ExceptionHandler(RefreshTokenNotFoundException.class)
     public ResponseEntity<ExceptionResponse> handleRefreshTokenNotFoundException() {
-        ExceptionResponse response = ExceptionResponse.from(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
+        return createResponseEntity(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
+    }
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(WithdrawnUserLoginException.class)
+    public ResponseEntity<ExceptionResponse> handleWithdrawnUserLoginException() {
+        return createResponseEntity(AuthErrorCode.WITHDRAWN_USER);
+    }
+
+    private ResponseEntity<ExceptionResponse> createResponseEntity(ErrorCode errorCode) {
+        ExceptionResponse response = ExceptionResponse.from(errorCode);
+
+        return ResponseEntity.status(errorCode.getHttpStatus())
                              .body(response);
     }
 }
