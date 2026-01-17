@@ -19,7 +19,7 @@ class NicknameTest {
         Nickname actual = Nickname.create("용감한초록");
 
         // then
-        assertThat(actual.getValue()).isEqualTo("용감한초록");
+        assertThat(actual.getNicknameValue()).isEqualTo("용감한초록");
     }
 
     @ParameterizedTest
@@ -52,7 +52,7 @@ class NicknameTest {
         Nickname actual = nickname.changeNickname("변경한 닉네임");
 
         // then
-        assertThat(actual.getValue()).isEqualTo("변경한 닉네임");
+        assertThat(actual.getNicknameValue()).isEqualTo("변경한 닉네임");
     }
 
     @Test

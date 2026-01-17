@@ -1,17 +1,20 @@
 package com.prism.statistics.domain.user.vo;
 
 import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @EqualsAndHashCode
 @Embeddable
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Nickname {
 
     private static final int MAX_LENGTH = 50;
 
-    private final String value;
+    private String nicknameValue;
 
     public static Nickname create(String value) {
         validateValue(value);
@@ -29,7 +32,7 @@ public class Nickname {
     }
 
     private Nickname(String value) {
-        this.value = value;
+        this.nicknameValue = value;
     }
 
     public Nickname changeNickname(String value) {

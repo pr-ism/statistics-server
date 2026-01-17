@@ -25,7 +25,7 @@ class NicknameGeneratorTest {
         Nickname actual = nicknameGenerator.generate(bound -> 1);
 
         // then
-        assertThat(actual.getValue()).isEqualTo("용감한초록");
+        assertThat(actual.getNicknameValue()).isEqualTo("용감한초록");
     }
 
     @Test
