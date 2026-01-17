@@ -56,7 +56,7 @@ class NicknameTest {
     }
 
     @Test
-    void 변경할_닉네임이_비어_있으면_닉네임을_변경할_수_없다() {
+    void 변경할_닉네임이_길이_제한을_초과하면_닉네임을_변경할_수_없다() {
         // given
         Nickname nickname = Nickname.create("용감한초록");
         String invalidNickname = "a".repeat(51);
@@ -66,5 +66,17 @@ class NicknameTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("닉네임은")
                 .hasMessageContaining("글자를 초과할 수 없습니다.");
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void 변경할_닉네임이_비어_있으면_닉네임을_변경할_수_없다(String invalidNickname) {
+        // given
+        Nickname nickname = Nickname.create("용감한초록");
+
+        // when & then
+        assertThatThrownBy(() -> nickname.changeNickname(invalidNickname))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("닉네임은 비어있을 수 없습니다.");
     }
 }
