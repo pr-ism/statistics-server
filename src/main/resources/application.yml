@@ -5,3 +5,26 @@ spring:
     active: local
     group:
       dev: "token"
+
+app:
+  user:
+    nickname:
+      adjective:
+        - 차분한
+        - 신중한
+        - 든든한
+        - 성실한
+        - 명쾌한
+        - 현명한
+        - 유쾌한
+        - 활기찬
+        - 용감한
+        - 섬세한
+      color:
+        - 빨강
+        - 주황
+        - 노랑
+        - 초록
+        - 파랑
+        - 남색
+        - 보라
