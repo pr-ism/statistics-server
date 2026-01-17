@@ -65,4 +65,16 @@ class UserTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("이미 탈퇴한 사용자입니다.");
     }
+
+    @Test
+    void 탈퇴_여부를_확인한다() {
+        // given
+        User user = User.create(Nickname.create("테스터"));
+
+        // when
+        user.withdraw();
+
+        // then
+        assertThat(user.withdrawn()).isTrue();
+    }
 }

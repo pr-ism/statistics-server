@@ -44,4 +44,8 @@ public class User extends BaseTimeEntity {
 
         this.state = UserState.WITHDRAWAL;
     }
+
+    public boolean withdrawn() {
+        return state.isWithdrawal();
+    }
 }

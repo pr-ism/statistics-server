@@ -4,7 +4,9 @@ spring:
   profiles:
     active: local
     group:
-      dev: "token"
+      dev:
+        - "token"
+        - "social"
 
 app:
   user:
