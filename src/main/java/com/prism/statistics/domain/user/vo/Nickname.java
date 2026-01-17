@@ -1,13 +1,15 @@
 package com.prism.statistics.domain.user.vo;
 
+import jakarta.persistence.Embeddable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
 @EqualsAndHashCode
+@Embeddable
 public class Nickname {
 
-    private static final int MAX_LENGTH = 5;
+    private static final int MAX_LENGTH = 50;
 
     private final String value;
 
@@ -28,5 +30,9 @@ public class Nickname {
 
     private Nickname(String value) {
         this.value = value;
+    }
+
+    public Nickname changeNickname(String value) {
+        return create(value);
     }
 }

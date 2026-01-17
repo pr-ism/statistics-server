@@ -32,12 +32,37 @@ class NicknameTest {
     }
 
     @Test
-    void 최대_길이를_초과하면_예외가_발생한다() {
+    void 최대_길이를_초과하면_닉네임을_초기화할_수_없다() {
         // given
-        String elevenChars = "용감한초록빨강";
+        String invalidNickname = "a".repeat(51);
 
         // when & then
-        assertThatThrownBy(() -> Nickname.create(elevenChars))
+        assertThatThrownBy(() -> Nickname.create(invalidNickname))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("닉네임은")
+                .hasMessageContaining("글자를 초과할 수 없습니다.");
+    }
+
+    @Test
+    void 닉네임을_변경한다() {
+        // given
+        Nickname nickname = Nickname.create("용감한초록");
+
+        // when
+        Nickname actual = nickname.changeNickname("변경한 닉네임");
+
+        // then
+        assertThat(actual.getValue()).isEqualTo("변경한 닉네임");
+    }
+
+    @Test
+    void 변경할_닉네임이_비어_있으면_닉네임을_변경할_수_없다() {
+        // given
+        Nickname nickname = Nickname.create("용감한초록");
+        String invalidNickname = "a".repeat(51);
+
+        // when & then
+        assertThatThrownBy(() -> nickname.changeNickname(invalidNickname))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("닉네임은")
                 .hasMessageContaining("글자를 초과할 수 없습니다.");
