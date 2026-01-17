@@ -1,6 +1,7 @@
 package com.prism.statistics.application.auth.fake;
 
 import com.prism.statistics.domain.auth.repository.UserSocialRepository;
+import com.prism.statistics.domain.common.BaseEntity;
 import com.prism.statistics.domain.user.User;
 import com.prism.statistics.domain.user.UserIdentity;
 import com.prism.statistics.domain.user.vo.Social;
@@ -22,6 +23,9 @@ public class FakeUserSocialRepository implements UserSocialRepository {
     public User save(User user) {
         Long existingId = findExistingUserId(user);
         Long newId = (existingId != null) ? existingId : userIdGenerator.getAndIncrement();
+        if (user.getId() == null) {
+            setUserId(user, newId);
+        }
         users.putIfAbsent(newId, user);
         lastSavedUserId = newId;
         return user;
@@ -69,6 +73,16 @@ public class FakeUserSocialRepository implements UserSocialRepository {
             Field userIdField = UserIdentity.class.getDeclaredField("userId");
             userIdField.setAccessible(true);
             userIdField.set(userIdentity, userId);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new IllegalStateException("테스트용 userId 설정 실패", e);
+        }
+    }
+
+    private void setUserId(User user, Long userId) {
+        try {
+            Field idField = BaseEntity.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(user, userId);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new IllegalStateException("테스트용 userId 설정 실패", e);
         }
