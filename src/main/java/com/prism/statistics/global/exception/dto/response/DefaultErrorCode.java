@@ -8,7 +8,7 @@ public enum DefaultErrorCode implements ErrorCode {
 
     UNKNOWN_SERVER_EXCEPTION("D00", "서버 에러", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_INPUT("D01", "유효하지 않은 입력", HttpStatus.BAD_REQUEST),
-    INVALID_INPUT_STATE("D02", "유효하지 않은 입력", HttpStatus.BAD_REQUEST);
+    INVALID_INPUT_STATE("D02", "유효하지 않은 상태", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String errorCode;
     private final String message;

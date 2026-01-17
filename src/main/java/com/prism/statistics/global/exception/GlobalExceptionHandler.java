@@ -1,10 +1,12 @@
 package com.prism.statistics.global.exception;
 
 import com.prism.statistics.application.auth.exception.WithdrawnUserLoginException;
+import com.prism.statistics.domain.user.exception.AlreadyWithdrawnUserException;
 import com.prism.statistics.global.exception.dto.response.AuthErrorCode;
 import com.prism.statistics.global.exception.dto.response.DefaultErrorCode;
 import com.prism.statistics.global.exception.dto.response.ErrorCode;
 import com.prism.statistics.global.exception.dto.response.ExceptionResponse;
+import com.prism.statistics.global.exception.dto.response.UserErrorCode;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +26,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ExceptionResponse> handleIllegalArgumentException() {
+    public ResponseEntity<ExceptionResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.info("IllegalArgumentException : {}", ex.getMessage());
+
         return createResponseEntity(DefaultErrorCode.INVALID_INPUT);
     }
 
@@ -41,6 +45,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(WithdrawnUserLoginException.class)
     public ResponseEntity<ExceptionResponse> handleWithdrawnUserLoginException() {
         return createResponseEntity(AuthErrorCode.WITHDRAWN_USER);
+    }
+
+    @ExceptionHandler(AlreadyWithdrawnUserException.class)
+    public ResponseEntity<ExceptionResponse> handleAlreadyWithdrawnUserException() {
+        return createResponseEntity(UserErrorCode.ALREADY_WITHDRAWN);
     }
 
     private ResponseEntity<ExceptionResponse> createResponseEntity(ErrorCode errorCode) {

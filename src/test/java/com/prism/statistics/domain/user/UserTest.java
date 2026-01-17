@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.domain.user.enums.UserState;
+import com.prism.statistics.domain.user.exception.AlreadyWithdrawnUserException;
 import com.prism.statistics.domain.user.vo.Nickname;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -62,8 +63,8 @@ class UserTest {
 
         // when & then
         assertThatThrownBy(() -> user.withdraw())
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("이미 탈퇴한 사용자입니다.");
+                .isInstanceOf(AlreadyWithdrawnUserException.class)
+                .hasMessage("이미 탈퇴한 회원은 다시 탈퇴할 수 없습니다.");
     }
 
     @Test

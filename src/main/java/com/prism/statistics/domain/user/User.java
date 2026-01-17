@@ -2,6 +2,7 @@ package com.prism.statistics.domain.user;
 
 import com.prism.statistics.domain.common.BaseTimeEntity;
 import com.prism.statistics.domain.user.enums.UserState;
+import com.prism.statistics.domain.user.exception.AlreadyWithdrawnUserException;
 import com.prism.statistics.domain.user.vo.Nickname;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -39,7 +40,7 @@ public class User extends BaseTimeEntity {
 
     public void withdraw() {
         if (state.isWithdrawal()) {
-            throw new IllegalStateException("이미 탈퇴한 사용자입니다.");
+            throw new AlreadyWithdrawnUserException();
         }
 
         this.state = UserState.WITHDRAWAL;
