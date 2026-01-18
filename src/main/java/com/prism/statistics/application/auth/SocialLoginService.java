@@ -42,17 +42,16 @@ public class SocialLoginService {
     private LoggedInUserDto signUp(Social social) {
         Nickname nickname = nicknameGenerator.generate(bound -> ThreadLocalRandom.current().nextInt(bound));
         User user = User.create(nickname);
-        UserSocialLoginResultDto result = userSocialRepository.saveOrFind(user, social);
+        UserSocialLoginResultDto userSocialLoginResultDto = userSocialRepository.saveOrFind(user, social);
 
-        return new LoggedInUserDto(
-                result.user().getId(),
-                result.user().getNickname().getNicknameValue(),
-                result.isSignUp()
-        );
+        validateUserState(userSocialLoginResultDto.user());
+
+        return LoggedInUserDto.create(userSocialLoginResultDto);
     }
 
     private LoggedInUserDto toLoggedInUserDto(User user, Long userId) {
         validateUserState(user);
+
         return new LoggedInUserDto(userId, user.getNickname().getNicknameValue(), false);
     }
 
