@@ -3,12 +3,22 @@ package com.prism.statistics.application.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.reset;
 
+import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.auth.dto.LoggedInUserDto;
 import com.prism.statistics.application.auth.exception.UserMissingException;
 import com.prism.statistics.application.auth.exception.WithdrawnUserLoginException;
+import com.prism.statistics.domain.user.User;
+import com.prism.statistics.domain.user.UserIdentity;
 import com.prism.statistics.domain.user.enums.RegistrationId;
-import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.domain.user.vo.Nickname;
+import com.prism.statistics.domain.user.vo.Social;
+import com.prism.statistics.infrastructure.auth.persistence.JpaUserIdentityRepository;
+import com.prism.statistics.infrastructure.auth.persistence.UserSocialRegistrar;
+import com.prism.statistics.infrastructure.user.persistence.JpaUserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -29,6 +39,15 @@ class SocialLoginServiceTest {
 
     @Autowired
     private SocialLoginService socialLoginService;
+
+    @Autowired
+    private JpaUserRepository jpaUserRepository;
+
+    @Autowired
+    private JpaUserIdentityRepository jpaUserIdentityRepository;
+
+    @Autowired
+    private UserSocialRegistrar userSocialRegistrar;
 
     @Test
     void 새로운_회원이_소셜_로그인으로_가입한다() {
@@ -68,6 +87,47 @@ class SocialLoginServiceTest {
         assertThatThrownBy(() -> socialLoginService.login("KAKAO", "orphan-social"))
                 .isInstanceOf(UserMissingException.class)
                 .hasMessage("회원의 소셜 정보는 존재하나 회원 정보는 존재하지 않습니다.");
+    }
+
+    @Test
+    void 소셜_로그인_과정에서_race_condition_발생_도중_탈퇴_회원으로_상태가_변경되면_로그인을_할_수_없다() throws Exception {
+        // given
+        CountDownLatch registerStarted = new CountDownLatch(1);
+        CountDownLatch proceedRegister = new CountDownLatch(1);
+
+        doAnswer(invocation -> {
+            registerStarted.countDown();
+            try {
+                proceedRegister.await(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("회원 등록 대기 중 인터럽트 발생", e);
+            }
+            return invocation.callRealMethod();
+        }).when(userSocialRegistrar).register(any(User.class), any(Social.class));
+
+        try (ExecutorService executorService = Executors.newSingleThreadExecutor()) {
+            // when
+            Future<LoggedInUserDto> future = executorService.submit(() -> socialLoginService.login("KAKAO", "withdrawn-race"));
+
+            assertThat(registerStarted.await(3, TimeUnit.SECONDS)).isTrue();
+
+            User withdrawnUser = User.create(Nickname.create("탈퇴-회원"));
+            withdrawnUser.withdraw();
+            jpaUserRepository.save(withdrawnUser);
+            Social social = new Social(RegistrationId.KAKAO, "withdrawn-race");
+            jpaUserIdentityRepository.save(UserIdentity.create(withdrawnUser.getId(), social));
+
+            proceedRegister.countDown();
+
+            // then
+            assertThatThrownBy(() -> future.get(5, TimeUnit.SECONDS))
+                    .hasCauseInstanceOf(WithdrawnUserLoginException.class)
+                    .hasRootCauseMessage("탈퇴한 회원입니다.");
+        } finally {
+            proceedRegister.countDown();
+            reset(userSocialRegistrar);
+        }
     }
 
     @Test
