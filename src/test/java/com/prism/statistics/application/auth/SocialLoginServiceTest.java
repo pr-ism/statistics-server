@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.reset;
 
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.auth.dto.LoggedInUserDto;
 import com.prism.statistics.application.auth.exception.UserMissingException;
 import com.prism.statistics.application.auth.exception.WithdrawnUserLoginException;
+import com.prism.statistics.domain.auth.repository.UserSocialLoginResultDto;
 import com.prism.statistics.domain.user.User;
 import com.prism.statistics.domain.user.UserIdentity;
 import com.prism.statistics.domain.user.enums.RegistrationId;
@@ -26,11 +26,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Transactional;
 
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
@@ -95,16 +99,20 @@ class SocialLoginServiceTest {
         CountDownLatch registerStarted = new CountDownLatch(1);
         CountDownLatch proceedRegister = new CountDownLatch(1);
 
-        doAnswer(invocation -> {
-            registerStarted.countDown();
-            try {
-                proceedRegister.await(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException("회원 등록 대기 중 인터럽트 발생", e);
-            }
-            return invocation.callRealMethod();
-        }).when(userSocialRegistrar).register(any(User.class), any(Social.class));
+        doAnswer(
+                invocation -> {
+                    registerStarted.countDown();
+
+                    try {
+                        proceedRegister.await(5, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("회원 등록 대기 중 인터럽트 발생", e);
+                    }
+
+                    throw new DuplicateKeyException("동일 소셜 정보가 이미 등록되었습니다.");
+                }
+        ).when(userSocialRegistrar).register(any(User.class), any(Social.class));
 
         try (ExecutorService executorService = Executors.newSingleThreadExecutor()) {
             // when
@@ -126,24 +134,45 @@ class SocialLoginServiceTest {
                     .hasRootCauseMessage("탈퇴한 회원입니다.");
         } finally {
             proceedRegister.countDown();
-            reset(userSocialRegistrar);
         }
     }
 
     @Test
+    @Transactional
     void 동일_소셜_정보로_동시에_로그인해도_단일_회원만_생성된다() throws Exception {
         // given
         String registrationId = RegistrationId.KAKAO.name();
         String socialId = "social-concurrent";
         int requestCount = 10;
+        AtomicBoolean firstRegisterAttempt = new AtomicBoolean(false);
+        AtomicReference<User> savedUserRef = new AtomicReference<>();
+        CountDownLatch registerFinished = new CountDownLatch(1);
+
+        doAnswer(invocation -> {
+            if (firstRegisterAttempt.compareAndSet(false, true)) {
+                try {
+                    UserSocialLoginResultDto result = (UserSocialLoginResultDto) invocation.callRealMethod();
+                    savedUserRef.set(result.user());
+                    return result;
+                } finally {
+                    registerFinished.countDown();
+                }
+            }
+            if (!registerFinished.await(5, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("첫 등록 완료 대기 타임아웃");
+            }
+            User savedUser = savedUserRef.get();
+            if (savedUser == null) {
+                throw new IllegalStateException("첫 등록 결과가 없습니다.");
+            }
+            return UserSocialLoginResultDto.found(savedUser);
+        }).when(userSocialRegistrar).register(any(User.class), any(Social.class));
 
         CountDownLatch readyLatch = new CountDownLatch(requestCount);
         CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch doneLatch = new CountDownLatch(requestCount);
         List<Future<LoggedInUserDto>> futures = new ArrayList<>();
 
         try (ExecutorService executorService = Executors.newFixedThreadPool(requestCount)) {
-
             for (int i = 0; i < requestCount; i++) {
                 futures.add(executorService.submit(() -> {
                     readyLatch.countDown();
@@ -153,18 +182,13 @@ class SocialLoginServiceTest {
                         Thread.currentThread().interrupt();
                         throw new IllegalStateException("로그인 시작 대기 중 인터럽트 발생", e);
                     }
-                    try {
-                        // when
-                        return socialLoginService.login(registrationId, socialId);
-                    } finally {
-                        doneLatch.countDown();
-                    }
+                    // when
+                    return socialLoginService.login(registrationId, socialId);
                 }));
             }
 
             readyLatch.await();
             startLatch.countDown();
-            assertThat(doneLatch.await(5, TimeUnit.SECONDS)).isTrue();
         }
 
         // then
