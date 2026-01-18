@@ -1,8 +1,10 @@
 package com.prism.statistics.application.auth;
 
 import com.prism.statistics.application.auth.dto.LoggedInUserDto;
+import com.prism.statistics.application.auth.exception.UserMissingException;
 import com.prism.statistics.application.auth.exception.WithdrawnUserLoginException;
 import com.prism.statistics.domain.auth.repository.UserSocialRepository;
+import com.prism.statistics.domain.auth.repository.UserSocialLoginResultDto;
 import com.prism.statistics.domain.user.NicknameGenerator;
 import com.prism.statistics.domain.user.User;
 import com.prism.statistics.domain.user.UserIdentity;
@@ -13,7 +15,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Profile("social")
@@ -23,32 +24,36 @@ public class SocialLoginService {
     private final NicknameGenerator nicknameGenerator;
     private final UserSocialRepository userSocialRepository;
 
-    @Transactional
     public LoggedInUserDto login(String registrationIdName, String socialId) {
         RegistrationId registrationId = RegistrationId.findBy(registrationIdName);
         Social social = new Social(registrationId, socialId);
 
         return userSocialRepository.find(social)
-                                   .map(UserIdentity::getUserId)
-                                   .flatMap(userSocialRepository::findById)
-                                   .map(this::toLoggedInUserDto)
+                                   .map(identity -> login(identity))
                                    .orElseGet(() -> signUp(social));
     }
 
-    private LoggedInUserDto toLoggedInUserDto(User user) {
-        validateUserState(user);
-
-        return new LoggedInUserDto(user.getId(), user.getNickname().getValue(), false);
+    private LoggedInUserDto login(UserIdentity identity) {
+        return userSocialRepository.findById(identity.getUserId())
+                                   .map(user -> toLoggedInUserDto(user, identity.getUserId()))
+                                   .orElseThrow(() -> new UserMissingException());
     }
 
     private LoggedInUserDto signUp(Social social) {
         Nickname nickname = nicknameGenerator.generate(bound -> ThreadLocalRandom.current().nextInt(bound));
         User user = User.create(nickname);
-        User savedUser = userSocialRepository.save(user);
-        UserIdentity userIdentity = UserIdentity.create(savedUser.getId(), social);
+        UserSocialLoginResultDto result = userSocialRepository.saveOrFind(user, social);
 
-        userSocialRepository.save(userIdentity);
-        return new LoggedInUserDto(savedUser.getId(), savedUser.getNickname().getValue(), true);
+        return new LoggedInUserDto(
+                result.user().getId(),
+                result.user().getNickname().getNicknameValue(),
+                result.isSignUp()
+        );
+    }
+
+    private LoggedInUserDto toLoggedInUserDto(User user, Long userId) {
+        validateUserState(user);
+        return new LoggedInUserDto(userId, user.getNickname().getNicknameValue(), false);
     }
 
     private void validateUserState(User user) {

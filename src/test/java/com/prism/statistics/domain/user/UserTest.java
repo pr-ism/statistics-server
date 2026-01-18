@@ -26,7 +26,7 @@ class UserTest {
         // then
         assertAll(
                 () -> assertThat(actual.getId()).isNull(),
-                () -> assertThat(actual.getNickname().getValue()).isEqualTo("테스터"),
+                () -> assertThat(actual.getNickname().getNicknameValue()).isEqualTo("테스터"),
                 () -> assertThat(actual.getState().isActive()).isTrue()
         );
     }
@@ -40,7 +40,7 @@ class UserTest {
         user.changeNickname("새 닉네임");
 
         // then
-        assertThat(user.getNickname().getValue()).isEqualTo("새 닉네임");
+        assertThat(user.getNickname().getNicknameValue()).isEqualTo("새 닉네임");
     }
 
     @Test

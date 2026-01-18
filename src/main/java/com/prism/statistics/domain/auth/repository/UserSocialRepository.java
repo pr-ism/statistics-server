@@ -7,13 +7,9 @@ import java.util.Optional;
 
 public interface UserSocialRepository {
 
-    User save(User user);
-
-    UserIdentity save(UserIdentity userIdentity);
+    UserSocialLoginResultDto saveOrFind(User user, Social social);
 
     Optional<UserIdentity> find(Social social);
 
     Optional<User> findById(Long userId);
-
-    void deleteAllIdentitiesByUserId(Long userId);
 }
