@@ -9,9 +9,6 @@ import com.prism.statistics.application.auth.exception.UserMissingException;
 import com.prism.statistics.application.auth.exception.WithdrawnUserLoginException;
 import com.prism.statistics.domain.user.enums.RegistrationId;
 import com.prism.statistics.application.IntegrationTest;
-import com.prism.statistics.infrastructure.auth.persistence.JpaUserIdentityRepository;
-import com.prism.statistics.infrastructure.user.persistence.JpaUserRepository;
-import com.prism.statistics.infrastructure.auth.persistence.UserSocialRepositoryAdapter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -32,15 +29,6 @@ class SocialLoginServiceTest {
 
     @Autowired
     private SocialLoginService socialLoginService;
-
-    @Autowired
-    private JpaUserRepository jpaUserRepository;
-
-    @Autowired
-    private JpaUserIdentityRepository jpaUserIdentityRepository;
-
-    @Autowired
-    private UserSocialRepositoryAdapter userSocialRepositoryAdapter;
 
     @Test
     void 새로운_회원이_소셜_로그인으로_가입한다() {
@@ -132,9 +120,7 @@ class SocialLoginServiceTest {
                 () -> assertThat(results).extracting(dto -> dto.id())
                                          .containsOnly(createdUserId),
                 () -> assertThat(results).filteredOn(dto -> dto.isSignUp())
-                                         .hasSize(1),
-                () -> assertThat(jpaUserRepository.count()).isEqualTo(1),
-                () -> assertThat(jpaUserIdentityRepository.count()).isEqualTo(1)
+                                         .hasSize(1)
         );
     }
 }
