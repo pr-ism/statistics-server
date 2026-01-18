@@ -13,7 +13,7 @@ import com.prism.statistics.infrastructure.user.persistence.JpaUserRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +30,7 @@ public class UserSocialRepositoryAdapter implements UserSocialRepository {
     public UserSocialLoginResultDto saveOrFind(User user, Social social) {
         try {
             return userSocialRegistrar.register(user, social);
-        } catch (DataIntegrityViolationException e) {
+        } catch (DuplicateKeyException e) {
             return findExistingUser(social).map(loginUser -> UserSocialLoginResultDto.found(loginUser))
                                            .orElseThrow(() -> new OrphanedUserIdentityException());
         }
