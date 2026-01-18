@@ -32,6 +32,14 @@ class UserTest {
     }
 
     @Test
+    void 닉네임이_비어_있으면_회원을_초기화_할_수_없다() {
+        // when & then
+        assertThatThrownBy(() -> User.create(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("닉네임은 비어 있을 수 없습니다.");
+    }
+
+    @Test
     void 닉네임을_변경한다() {
         // given
         User user = User.create(Nickname.create("테스터"));

@@ -26,7 +26,15 @@ public class User extends BaseTimeEntity {
     private UserState state;
 
     public static User create(Nickname nickname) {
+        validateNickname(nickname);
+
         return new User(nickname);
+    }
+
+    private static void validateNickname(Nickname nickname) {
+        if (nickname == null) {
+            throw new IllegalArgumentException("닉네임은 비어 있을 수 없습니다.");
+        }
     }
 
     private User(Nickname nickname) {
