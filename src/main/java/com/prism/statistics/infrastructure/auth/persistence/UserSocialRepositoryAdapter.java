@@ -15,6 +15,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class UserSocialRepositoryAdapter implements UserSocialRepository {
     private final UserSocialRegistrar userSocialRegistrar;
 
     @Override
+    @Transactional(readOnly = true)
     public UserSocialLoginResultDto saveOrFind(User user, Social social) {
         try {
             return userSocialRegistrar.register(user, social);
