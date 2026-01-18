@@ -35,15 +35,18 @@ public class UserSocialRepositoryAdapter implements UserSocialRepository {
     }
 
     private Optional<User> findExistingUser(Social social) {
-        User result = queryFactory
-                .select(user)
-                .from(user)
-                .join(userIdentity).on(user.id.eq(userIdentity.userId))
-                .where(
-                        userIdentity.social.registrationId.eq(social.getRegistrationId()),
-                        userIdentity.social.socialId.eq(social.getSocialId())
-                )
-                .fetchOne();
+        if (social == null) {
+            return Optional.empty();
+        }
+
+        User result = queryFactory.select(user)
+                                  .from(user)
+                                  .join(userIdentity).on(user.id.eq(userIdentity.userId))
+                                  .where(
+                                          userIdentity.social.registrationId.eq(social.getRegistrationId()),
+                                          userIdentity.social.socialId.eq(social.getSocialId())
+                                  )
+                                  .fetchOne();
 
         return Optional.ofNullable(result);
     }
@@ -54,14 +57,14 @@ public class UserSocialRepositoryAdapter implements UserSocialRepository {
             return Optional.empty();
         }
 
-        return Optional.ofNullable(
-                queryFactory.selectFrom(userIdentity)
-                        .where(
-                                userIdentity.social.registrationId.eq(social.getRegistrationId()),
-                                userIdentity.social.socialId.eq(social.getSocialId())
-                        )
-                        .fetchOne()
-        );
+        UserIdentity result = queryFactory.selectFrom(userIdentity)
+                                         .where(
+                                                 userIdentity.social.registrationId.eq(social.getRegistrationId()),
+                                                 userIdentity.social.socialId.eq(social.getSocialId())
+                                         )
+                                         .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
     @Override
