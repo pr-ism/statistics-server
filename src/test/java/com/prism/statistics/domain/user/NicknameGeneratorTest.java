@@ -8,6 +8,8 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -28,18 +30,18 @@ class NicknameGeneratorTest {
         assertThat(actual.getNicknameValue()).isEqualTo("용감한초록");
     }
 
-    @Test
-    void 형용사가_비어있으면_닉네임을_생성기를_초기화할_수_없다() {
-        // when & then
-        assertThatThrownBy(() -> NicknameGenerator.of(List.of(), List.of("보라")))
+    @ParameterizedTest
+    @NullAndEmptySource
+    void 형용사가_비어있으면_닉네임을_생성기를_초기화할_수_없다(List<String> adjectives) {
+        assertThatThrownBy(() -> NicknameGenerator.of(adjectives, List.of("보라")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("닉네임 형용사 목록이 비어있습니다.");
     }
 
-    @Test
-    void 색상이_비어있으면_닉네임_생성기를_초기화할_수_없다() {
-        // when & then
-        assertThatThrownBy(() -> NicknameGenerator.of(List.of("섬세한"), null))
+    @ParameterizedTest
+    @NullAndEmptySource
+    void 색상이_비어있으면_닉네임_생성기를_초기화할_수_없다(List<String> colors) {
+        assertThatThrownBy(() -> NicknameGenerator.of(List.of("섬세한"), colors))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("닉네임 색상 목록이 비어있습니다.");
     }
