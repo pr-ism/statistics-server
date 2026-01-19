@@ -63,7 +63,7 @@ class UserSocialRepositoryAdapterTest {
 
     @Sql("/sql/auth/insert_orphan_identity.sql")
     @Test
-    void 소셜_정보만_있고_회원이_없으면_OrphanedUserIdentityException을_던진다() {
+    void 소셜_정보만_있고_회원_정보가_없다면_DB_상태가_정상적이지_않음을_알린다() {
         // given
         Nickname nickname = Nickname.create("고아-사용자");
         User user = User.create(nickname);
