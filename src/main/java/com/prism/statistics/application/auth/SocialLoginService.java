@@ -29,11 +29,11 @@ public class SocialLoginService {
         Social social = new Social(registrationId, socialId);
 
         return userSocialRepository.find(social)
-                                   .map(identity -> login(identity))
+                                   .map(identity -> internalLogin(identity))
                                    .orElseGet(() -> signUp(social));
     }
 
-    private LoggedInUserDto login(UserIdentity identity) {
+    private LoggedInUserDto internalLogin(UserIdentity identity) {
         return userSocialRepository.findById(identity.getUserId())
                                    .map(user -> toLoggedInUserDto(user, identity.getUserId()))
                                    .orElseThrow(() -> new UserMissingException());
