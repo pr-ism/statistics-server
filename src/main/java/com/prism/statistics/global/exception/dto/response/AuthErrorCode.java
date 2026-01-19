@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 public enum AuthErrorCode implements ErrorCode {
 
     REFRESH_TOKEN_NOT_FOUND("A00", "토큰 재발급 실패", HttpStatus.UNAUTHORIZED),
-    WITHDRAWN_USER("A01", "인증 실패", HttpStatus.UNAUTHORIZED),
+    WITHDRAWN_USER("A01", "로그인 실패", HttpStatus.UNAUTHORIZED),
     ORPHAN_USER_IDENTITY("A02", "로그인 실패", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_MISSING("A03", "로그인 실패", HttpStatus.INTERNAL_SERVER_ERROR);
 
