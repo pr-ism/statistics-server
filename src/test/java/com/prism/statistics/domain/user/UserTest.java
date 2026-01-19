@@ -67,12 +67,13 @@ class UserTest {
     void 탈퇴한_사용자는_다시_탈퇴할_수_없다() {
         // given
         User user = User.create(Nickname.create("테스터"));
+
         user.withdraw();
 
         // when & then
         assertThatThrownBy(() -> user.withdraw())
                 .isInstanceOf(AlreadyWithdrawnUserException.class)
-                .hasMessage("이미 탈퇴한 회원은 다시 탈퇴할 수 없습니다.");
+                .hasMessage("이미 탈퇴한 회원입니다.");
     }
 
     @Test
