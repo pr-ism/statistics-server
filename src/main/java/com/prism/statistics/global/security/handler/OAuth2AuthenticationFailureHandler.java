@@ -26,7 +26,7 @@ public class OAuth2AuthenticationFailureHandler implements AuthenticationFailure
             HttpServletResponse response,
             AuthenticationException exception
     ) throws IOException {
-        log.info("OAuth2 인증 실패", exception);
+        log.info("OAuth2 인증 실패 : {}", exception.getMessage());
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
