@@ -48,6 +48,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        OAuth2AuthorizationRequestRedirectFilter redirectFilter =
+                new OAuth2AuthorizationRequestRedirectFilter(oAuth2AuthorizationRequestResolver());
+        redirectFilter.setAuthenticationFailureHandler(oAuth2AuthorizationRequestFailureHandler());
+
         http.csrf(configurer -> configurer.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .httpBasic(configurer -> configurer.disable())
@@ -63,12 +67,14 @@ public class SecurityConfig {
                     .accessDeniedHandler(oAuth2AccessDeniedHandler())
             )
             .oauth2Login(oauth -> oauth
-                    .authorizationEndpoint(endpoint -> endpoint.authorizationRequestResolver(oAuth2AuthorizationRequestResolver()))
+                    .authorizationEndpoint(endpoint -> endpoint
+                            .authorizationRequestResolver(oAuth2AuthorizationRequestResolver())
+                    )
                     .successHandler(oAuth2SuccessHandler())
                     .failureHandler(oAuth2AuthenticationFailureHandler())
             )
-            .addFilterBefore(oAuth2AuthenticationFilter(), OAuth2LoginAuthenticationFilter.class)
-            .addFilterBefore(oAuth2AuthorizationRequestRedirectFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
+            .addFilterBefore(redirectFilter, OAuth2AuthorizationRequestRedirectFilter.class)
+            .addFilterBefore(oAuth2AuthenticationFilter(), OAuth2LoginAuthenticationFilter.class);
 
         return http.build();
     }
@@ -112,15 +118,6 @@ public class SecurityConfig {
     @Bean
     public AuthenticationFailureHandler oAuth2AuthorizationRequestFailureHandler() {
         return new OAuth2AuthorizationRequestFailureHandler(objectMapper);
-    }
-
-    @Bean
-    public OAuth2AuthorizationRequestRedirectFilter oAuth2AuthorizationRequestRedirectFilter() {
-        OAuth2AuthorizationRequestRedirectFilter filter =
-                new OAuth2AuthorizationRequestRedirectFilter(oAuth2AuthorizationRequestResolver());
-
-        filter.setAuthenticationFailureHandler(oAuth2AuthorizationRequestFailureHandler());
-        return filter;
     }
 
     @Bean
