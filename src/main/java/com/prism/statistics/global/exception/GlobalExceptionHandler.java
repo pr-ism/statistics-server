@@ -12,6 +12,7 @@ import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUs
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -74,6 +75,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.info("UserMissingException : {}", ex.getMessage());
 
         return createResponseEntity(AuthErrorCode.USER_MISSING);
+    }
+
+    @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleAuthenticationCredentialsNotFoundException(
+            AuthenticationCredentialsNotFoundException ex
+    ) {
+        log.info("AuthenticationCredentialsNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(AuthErrorCode.WRONG_REGISTRATION_ID);
     }
 
     private ResponseEntity<ExceptionResponse> createResponseEntity(ErrorCode errorCode) {
