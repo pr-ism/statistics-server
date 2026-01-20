@@ -21,8 +21,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.StandardClaimNames;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
@@ -45,9 +44,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             HttpServletResponse response,
             Authentication authentication
     ) throws IOException, ServletException {
-        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        String socialId = (String) oAuth2User.getAttributes()
-                                             .get(StandardClaimNames.SUB);
+        OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
+        String socialId = oidcUser.getSubject();
         String registrationId = ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
 
         try {
