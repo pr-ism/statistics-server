@@ -33,7 +33,7 @@ public class OAuth2AuthorizationRequestFailureHandler implements AuthenticationF
         response.setStatus(HttpStatus.BAD_REQUEST.value());
 
         PrintWriter writer = response.getWriter();
-        AuthExceptionResponse body = new AuthExceptionResponse("인증 요청 처리 중 오류가 발생했습니다.");
+        AuthExceptionResponse body = new AuthExceptionResponse("지원하지 않는 소셜 로그인 방식입니다.");
 
         writer.println(objectMapper.writeValueAsString(body));
         writer.flush();
