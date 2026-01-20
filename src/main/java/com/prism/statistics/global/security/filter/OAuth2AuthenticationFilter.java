@@ -59,7 +59,7 @@ public class OAuth2AuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String parseBearerToken(String authorization) {
-        if (!authorization.startsWith(TOKEN_SCHEME)) {
+        if (!authorization.regionMatches(true, 0, TOKEN_SCHEME, 0, TOKEN_SCHEME.length())) {
             throw new AuthenticationServiceException("Authorization 헤더가 Bearer 타입이 아닙니다.");
         }
 
