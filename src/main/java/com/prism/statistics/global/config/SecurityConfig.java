@@ -129,7 +129,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(corsProperties.allowedOrigins());
+        if (!corsProperties.hasWildcardOrigins()) {
+            configuration.setAllowedOrigins(corsProperties.allowedOrigins());
+        }
 
         if (corsProperties.hasOriginPatterns()) {
             configuration.setAllowedOriginPatterns(corsProperties.allowedOriginPatterns());

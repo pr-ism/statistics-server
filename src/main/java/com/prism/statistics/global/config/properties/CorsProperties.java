@@ -49,4 +49,8 @@ public record CorsProperties(
     public boolean hasExposedHeaders() {
         return !exposedHeaders.isEmpty();
     }
+
+    public boolean hasWildcardOrigins() {
+        return allowedOrigins.contains("*");
+    }
 }
