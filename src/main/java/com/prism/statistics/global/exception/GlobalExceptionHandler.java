@@ -83,7 +83,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     ) {
         log.info("AuthenticationCredentialsNotFoundException : {}", ex.getMessage());
 
-        return createResponseEntity(AuthErrorCode.WRONG_REGISTRATION_ID);
+        return createResponseEntity(AuthErrorCode.FORBIDDEN_USER);
     }
 
     private ResponseEntity<ExceptionResponse> createResponseEntity(ErrorCode errorCode) {

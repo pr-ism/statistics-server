@@ -10,7 +10,7 @@ public enum AuthErrorCode implements ErrorCode {
     WITHDRAWN_USER("A01", "로그인 실패", HttpStatus.UNAUTHORIZED),
     ORPHAN_USER_IDENTITY("A02", "로그인 실패", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_MISSING("A03", "로그인 실패", HttpStatus.INTERNAL_SERVER_ERROR),
-    WRONG_REGISTRATION_ID("A04", "지원하지 않는 소셜 로그인 방식", HttpStatus.BAD_REQUEST);
+    FORBIDDEN_USER("A04", "인가되지 않은 회원", HttpStatus.FORBIDDEN);
 
     private final String errorCode;
     private final String message;
