@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -44,27 +45,46 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             HttpServletResponse response,
             Authentication authentication
     ) throws IOException, ServletException {
-        OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
-        String socialId = oidcUser.getSubject();
-        String registrationId = ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
-
         try {
+            String socialId = extractSocialId(authentication);
+            String registrationId = extractRegistrationId(authentication);
+
             LoggedInUserDto loggedInUserDto = socialLoginService.login(registrationId, socialId);
-            TokenResponse tokenResponse = generateTokenService.generate(loggedInUserDto.id());
 
-            addCookie(response, ACCESS_TOKEN_KEY, tokenResponse.accessToken(), tokenProperties.accessExpiredSeconds());
-            addCookie(response, REFRESH_TOKEN_KEY, tokenResponse.refreshToken(), tokenProperties.refreshExpiredSeconds());
-
-            writeResponse(response, loggedInUserDto);
+            TokenResponse tokenResponse = generateTokens(loggedInUserDto.id());
+            writeResponse(response, loggedInUserDto, tokenResponse);
         } catch (AuthenticationException exception) {
             authenticationFailureHandler.onAuthenticationFailure(request, response, exception);
         }
     }
 
-    private void writeResponse(HttpServletResponse response, LoggedInUserDto loggedInUserDto) {
+    private String extractRegistrationId(Authentication authentication) {
+        if (!(authentication instanceof OAuth2AuthenticationToken oauth2Token)) {
+            throw new AuthenticationServiceException("인증에 실패했습니다.");
+        }
+
+        return oauth2Token.getAuthorizedClientRegistrationId();
+    }
+
+    private String extractSocialId(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof OidcUser oidcUser)) {
+            throw new AuthenticationServiceException("OIDC 사용자 정보가 없습니다.");
+        }
+        return oidcUser.getSubject();
+    }
+
+    private TokenResponse generateTokens(Long userId) {
+        return generateTokenService.generate(userId);
+    }
+
+    private void writeResponse(HttpServletResponse response, LoggedInUserDto loggedInUserDto, TokenResponse tokenResponse) {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setStatus(HttpStatus.CREATED.value());
+
+        addCookie(response, ACCESS_TOKEN_KEY, tokenResponse.accessToken(), tokenProperties.accessExpiredSeconds());
+        addCookie(response, REFRESH_TOKEN_KEY, tokenResponse.refreshToken(), tokenProperties.refreshExpiredSeconds());
 
         try {
             PrintWriter writer = response.getWriter();
