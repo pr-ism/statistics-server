@@ -14,6 +14,13 @@ public record CorsProperties(
 ) {
 
     public CorsProperties {
+        if (allowedOrigins != null && allowedOrigins.contains("*")
+                && (allowedOriginPatterns == null || allowedOriginPatterns.isEmpty())) {
+            throw new IllegalArgumentException(
+                    "Wildcard origins require 'cors.allowed-origin-patterns' to be configured."
+            );
+        }
+
         allowedOrigins = (allowedOrigins == null || allowedOrigins.isEmpty())
                 ? List.of("http://localhost:3000")
                 : List.copyOf(allowedOrigins);
