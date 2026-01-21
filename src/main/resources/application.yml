@@ -7,6 +7,7 @@ spring:
       dev:
         - "token"
         - "social"
+        - "security"
 
 app:
   user:

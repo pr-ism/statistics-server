@@ -7,3 +7,8 @@ token:
   refresh-expired-seconds: 259200
   access-expired-millis-seconds: 3600000
   refresh-expired-millis-seconds: 259200000
+
+cookie:
+  domain:
+  path: "/"
+  same-site: None

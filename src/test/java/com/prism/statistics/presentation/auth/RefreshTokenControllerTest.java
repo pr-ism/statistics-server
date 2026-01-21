@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.prism.statistics.application.auth.GenerateTokenService;
 import com.prism.statistics.application.auth.dto.response.TokenResponse;
+import com.prism.statistics.global.config.properties.CookieProperties;
 import com.prism.statistics.global.config.properties.TokenProperties;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import jakarta.servlet.http.Cookie;
@@ -33,6 +34,9 @@ class RefreshTokenControllerTest extends CommonControllerSliceTestSupport {
     @Autowired
     TokenProperties tokenProperties;
 
+    @Autowired
+    CookieProperties cookieProperties;
+
     @Test
     void 토큰_재발급_시_성공_테스트() throws Exception {
         String refreshToken = "old-refresh-token";
@@ -41,6 +45,9 @@ class RefreshTokenControllerTest extends CommonControllerSliceTestSupport {
         given(tokenProperties.accessExpiredSeconds()).willReturn(3_600);
         given(tokenProperties.refreshExpiredSeconds()).willReturn(259_200);
         given(generateTokenService.refreshToken(refreshToken)).willReturn(tokenDto);
+        given(cookieProperties.domain()).willReturn("");
+        given(cookieProperties.path()).willReturn("/");
+        given(cookieProperties.sameSite()).willReturn("None");
 
         ResultActions resultActions = mockMvc.perform(
                                                      post("/refresh-token")
