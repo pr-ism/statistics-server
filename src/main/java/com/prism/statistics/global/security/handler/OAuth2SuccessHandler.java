@@ -120,12 +120,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private void handleLoginServerError(HttpServletResponse response, String message) throws IOException {
         log.error("OAuth2 인증 처리 중 서버 오류 : {}", message);
 
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+
         try {
             PrintWriter writer = response.getWriter();
-
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 
             AuthExceptionResponse responseBody = new AuthExceptionResponse("인증에 실패했습니다.");
 
