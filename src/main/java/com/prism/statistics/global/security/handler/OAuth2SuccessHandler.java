@@ -5,10 +5,13 @@ import com.prism.statistics.application.auth.GenerateTokenService;
 import com.prism.statistics.application.auth.SocialLoginService;
 import com.prism.statistics.application.auth.dto.LoggedInUserDto;
 import com.prism.statistics.application.auth.dto.response.TokenResponse;
+import com.prism.statistics.application.auth.exception.UserMissingException;
 import com.prism.statistics.global.config.properties.CookieProperties;
 import com.prism.statistics.global.config.properties.TokenProperties;
 import com.prism.statistics.global.security.constants.TokenCookieName;
+import com.prism.statistics.global.security.handler.dto.response.AuthExceptionResponse;
 import com.prism.statistics.global.security.handler.exception.InvalidResponseWriteException;
+import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUserIdentityException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,6 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +33,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @RequiredArgsConstructor
+@Slf4j
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final ObjectMapper objectMapper;
@@ -52,8 +57,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
             TokenResponse tokenResponse = generateTokens(loggedInUserDto.id());
             writeResponse(response, loggedInUserDto, tokenResponse);
-        } catch (AuthenticationException exception) {
-            authenticationFailureHandler.onAuthenticationFailure(request, response, exception);
+        } catch (AuthenticationException ex) {
+            authenticationFailureHandler.onAuthenticationFailure(request, response, ex);
+        } catch (UserMissingException | OrphanedUserIdentityException ex) {
+            handleLoginServerError(response, ex.getMessage());
         }
     }
 
@@ -104,6 +111,25 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             );
 
             writer.write(objectMapper.writeValueAsString(body));
+            writer.flush();
+        } catch (IOException e) {
+            throw new InvalidResponseWriteException(e);
+        }
+    }
+
+    private void handleLoginServerError(HttpServletResponse response, String message) throws IOException {
+        log.error("OAuth2 인증 처리 중 서버 오류 : {}", message);
+
+        try {
+            PrintWriter writer = response.getWriter();
+
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+            AuthExceptionResponse responseBody = new AuthExceptionResponse("인증에 실패했습니다.");
+
+            writer.write(objectMapper.writeValueAsString(responseBody));
             writer.flush();
         } catch (IOException e) {
             throw new InvalidResponseWriteException(e);
