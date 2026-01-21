@@ -61,7 +61,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                    .requestMatchers("/**/*.html").permitAll()
+                    .requestMatchers("/docs/index.html").permitAll()
                     .anyRequest().authenticated()
             )
             .exceptionHandling(handler -> handler
