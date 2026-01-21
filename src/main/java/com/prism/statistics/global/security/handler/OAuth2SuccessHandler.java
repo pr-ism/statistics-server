@@ -5,7 +5,9 @@ import com.prism.statistics.application.auth.GenerateTokenService;
 import com.prism.statistics.application.auth.SocialLoginService;
 import com.prism.statistics.application.auth.dto.LoggedInUserDto;
 import com.prism.statistics.application.auth.dto.response.TokenResponse;
+import com.prism.statistics.global.config.properties.CookieProperties;
 import com.prism.statistics.global.config.properties.TokenProperties;
+import com.prism.statistics.global.security.constants.TokenCookieName;
 import com.prism.statistics.global.security.handler.exception.InvalidResponseWriteException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,12 +31,9 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    public static final String DOMAIN = "/";
-    public static final String REFRESH_TOKEN_KEY = "refreshToken";
-    public static final String ACCESS_TOKEN_KEY = "accessToken";
-
     private final ObjectMapper objectMapper;
     private final TokenProperties tokenProperties;
+    private final CookieProperties cookieProperties;
     private final SocialLoginService socialLoginService;
     private final GenerateTokenService generateTokenService;
     private final AuthenticationFailureHandler authenticationFailureHandler;
@@ -83,8 +82,18 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setStatus(HttpStatus.CREATED.value());
 
-        addCookie(response, ACCESS_TOKEN_KEY, tokenResponse.accessToken(), tokenProperties.accessExpiredSeconds());
-        addCookie(response, REFRESH_TOKEN_KEY, tokenResponse.refreshToken(), tokenProperties.refreshExpiredSeconds());
+        addCookie(
+                response,
+                TokenCookieName.ACCESS_TOKEN,
+                tokenResponse.accessToken(),
+                tokenProperties.accessExpiredSeconds()
+        );
+        addCookie(
+                response,
+                TokenCookieName.REFRESH_TOKEN,
+                tokenResponse.refreshToken(),
+                tokenProperties.refreshExpiredSeconds()
+        );
 
         try {
             PrintWriter writer = response.getWriter();
@@ -103,10 +112,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private void addCookie(HttpServletResponse response, String name, String value, long maxAge) {
         ResponseCookie cookie = ResponseCookie.from(name, value)
-                                              .path(DOMAIN)
+                                              .path(cookieProperties.path())
                                               .secure(true)
                                               .httpOnly(true)
-                                              .sameSite("None")
+                                              .sameSite(cookieProperties.sameSite())
                                               .maxAge(maxAge)
                                               .build();
 

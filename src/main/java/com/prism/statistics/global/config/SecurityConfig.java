@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prism.statistics.application.auth.GenerateTokenService;
 import com.prism.statistics.application.auth.SocialLoginService;
 import com.prism.statistics.domain.auth.TokenDecoder;
+import com.prism.statistics.global.config.properties.CookieProperties;
 import com.prism.statistics.global.config.properties.CorsProperties;
 import com.prism.statistics.global.config.properties.TokenProperties;
 import com.prism.statistics.global.security.core.OAuth2UserDetailsService;
@@ -39,8 +40,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
-    private final TokenProperties tokenProperties;
     private final CorsProperties corsProperties;
+    private final TokenProperties tokenProperties;
+    private final CookieProperties cookieProperties;
     private final TokenDecoder tokenDecoder;
     private final SocialLoginService socialLoginService;
     private final GenerateTokenService generateTokenService;
@@ -94,6 +96,7 @@ public class SecurityConfig {
         return new OAuth2SuccessHandler(
                 objectMapper,
                 tokenProperties,
+                cookieProperties,
                 socialLoginService,
                 generateTokenService,
                 oAuth2AuthenticationFailureHandler()

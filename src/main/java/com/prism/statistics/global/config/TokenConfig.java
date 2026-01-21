@@ -11,6 +11,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.prism.statistics.domain.auth.TokenDecoder;
 import com.prism.statistics.domain.auth.TokenEncoder;
+import com.prism.statistics.global.config.properties.CookieProperties;
 import com.prism.statistics.global.config.properties.TokenProperties;
 import com.prism.statistics.infrastructure.auth.jwt.JwsSignerFinder;
 import com.prism.statistics.infrastructure.auth.jwt.JwsVerifierFinder;
@@ -30,7 +31,7 @@ import org.springframework.context.annotation.Profile;
 @Profile("token")
 @Configuration
 @RequiredArgsConstructor
-@EnableConfigurationProperties(TokenProperties.class)
+@EnableConfigurationProperties({TokenProperties.class, CookieProperties.class})
 public class TokenConfig {
 
     private static final int KEY_LENGTH = 32;
