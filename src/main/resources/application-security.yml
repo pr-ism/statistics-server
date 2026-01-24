@@ -37,8 +37,6 @@ spring:
             redirect-uri: http://localhost:8080/login/oauth2/code/google
             scope:
               - openid
-              - email
-              - profile
             client-name: Google
             provider: google
 
