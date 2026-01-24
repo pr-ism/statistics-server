@@ -12,12 +12,21 @@ import org.junit.jupiter.api.Test;
 class RegistrationIdTest {
 
     @Test
-    void 이름으로_등록된_RegistrationId를_찾을_수_있다() {
+    void 카카오_이름으로_등록된_RegistrationId를_찾을_수_있다() {
         // when
         RegistrationId actual = RegistrationId.findBy("kakao");
 
         // then
         assertThat(actual).isEqualTo(RegistrationId.KAKAO);
+    }
+
+    @Test
+    void 구글_이름으로_등록된_RegistrationId를_찾을_수_있다() {
+        // when
+        RegistrationId actual = RegistrationId.findBy("google");
+
+        // then
+        assertThat(actual).isEqualTo(RegistrationId.GOOGLE);
     }
 
     @Test
@@ -28,9 +37,18 @@ class RegistrationIdTest {
     }
 
     @Test
-    void 지원하는_RegistrationId_이름인지_여부를_확인한다() {
+    void 카카오_지원하는_RegistrationId_이름인지_여부를_확인한다() {
         // when
         boolean actual = RegistrationId.contains("kakao");
+
+        // then
+        assertThat(actual).isTrue();
+    }
+
+    @Test
+    void 구글_지원하는_RegistrationId_이름인지_여부를_확인한다() {
+        // when
+        boolean actual = RegistrationId.contains("google");
 
         // then
         assertThat(actual).isTrue();

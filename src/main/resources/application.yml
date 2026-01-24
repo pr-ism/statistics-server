@@ -2,7 +2,7 @@ spring:
   application:
     name: statistics
   profiles:
-    active: local
+    active: dev
     group:
       dev:
         - "token"
