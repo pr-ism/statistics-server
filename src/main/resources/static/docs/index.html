@@ -485,8 +485,8 @@ Content-Type: application/x-www-form-urlencoded</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
-Set-Cookie: refreshToken=new-refresh-token; Path=/; Max-Age=259200; Expires=Wed, 28 Jan 2026 14:01:43 GMT; Secure; HttpOnly; SameSite=None
-Set-Cookie: accessToken=new-access-token; Path=/; Max-Age=3600; Expires=Sun, 25 Jan 2026 15:01:43 GMT; Secure; HttpOnly; SameSite=None</code></pre>
+Set-Cookie: refreshToken=new-refresh-token; Path=/; Max-Age=259200; Expires=Wed, 28 Jan 2026 14:24:20 GMT; Secure; HttpOnly; SameSite=None
+Set-Cookie: accessToken=new-access-token; Path=/; Max-Age=3600; Expires=Sun, 25 Jan 2026 15:24:20 GMT; Secure; HttpOnly; SameSite=None</code></pre>
 </div>
 </div>
 </div>
@@ -556,7 +556,37 @@ Authorization: Bearer access-token
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Access Token 쿠키 값</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Access Token 값</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="Create-Project_request_fields"><a class="link" href="#Create-Project_request_fields">Request fields</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">필드명</th>
+<th class="tableblock halign-left valign-top">타입</th>
+<th class="tableblock halign-left valign-top">필수여부</th>
+<th class="tableblock halign-left valign-top">제약조건</th>
+<th class="tableblock halign-left valign-top">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>name</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">생성할 프로젝트 이름</p></td>
 </tr>
 </tbody>
 </table>
@@ -573,6 +603,30 @@ Content-Type: application/json;charset=UTF-8
 }</code></pre>
 </div>
 </div>
+</div>
+<div class="sect3">
+<h4 id="Create-Project_response_fields"><a class="link" href="#Create-Project_response_fields">Response fields</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">필드명</th>
+<th class="tableblock halign-left valign-top">타입</th>
+<th class="tableblock halign-left valign-top">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>apiKey</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">생성된 프로젝트의 API 키</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>

@@ -52,7 +52,7 @@ class ProjectControllerTest extends CommonControllerSliceTestSupport {
         resultActions.andDo(
                 restDocs.document(
                         requestHeaders(
-                                headerWithName("Authorization").description("Access Token 쿠키 값")
+                                headerWithName("Authorization").description("Access Token 값")
                         ),
                         requestFields(
                                 fieldWithPath("name").description("생성할 프로젝트 이름")
