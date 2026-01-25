@@ -485,8 +485,8 @@ Content-Type: application/x-www-form-urlencoded</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
-Set-Cookie: refreshToken=new-refresh-token; Path=/; Max-Age=259200; Expires=Sat, 17 Jan 2026 14:27:52 GMT; Secure; HttpOnly; SameSite=None
-Set-Cookie: accessToken=new-access-token; Path=/; Max-Age=3600; Expires=Wed, 14 Jan 2026 15:27:52 GMT; Secure; HttpOnly; SameSite=None</code></pre>
+Set-Cookie: refreshToken=new-refresh-token; Path=/; Max-Age=259200; Expires=Wed, 28 Jan 2026 14:01:43 GMT; Secure; HttpOnly; SameSite=None
+Set-Cookie: accessToken=new-access-token; Path=/; Max-Age=3600; Expires=Sun, 25 Jan 2026 15:01:43 GMT; Secure; HttpOnly; SameSite=None</code></pre>
 </div>
 </div>
 </div>
@@ -518,10 +518,69 @@ Set-Cookie: accessToken=new-access-token; Path=/; Max-Age=3600; Expires=Wed, 14 
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="Project-API"><a class="link" href="#Project-API">Project API</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="Create-Project"><a class="link" href="#Create-Project">프로젝트 생성 API</a></h3>
+<div class="sect3">
+<h4 id="Create-Project_http_request"><a class="link" href="#Create-Project_http_request">HTTP request</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">POST /projects HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Authorization: Bearer access-token
+
+{
+  "name" : "프로젝트-이름"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="Create-Project_request_headers"><a class="link" href="#Create-Project_request_headers">Request headers</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">이름</th>
+<th class="tableblock halign-left valign-top">필수여부</th>
+<th class="tableblock halign-left valign-top">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Access Token 쿠키 값</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="Create-Project_http_response"><a class="link" href="#Create-Project_http_response">HTTP response</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+
+{
+  "apiKey" : "api-key-123"
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-01-14 18:16:00 +0900
+Last updated 2026-01-25 23:01:28 +0900
 </div>
 </div>
 </body>
