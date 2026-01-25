@@ -1,5 +1,6 @@
 package com.prism.statistics.presentation.project;
 
+import static com.prism.statistics.docs.RestDocsConfiguration.field;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
@@ -42,7 +43,7 @@ class ProjectControllerTest extends CommonControllerSliceTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
         )
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath("$.apiKey").value("api-key-123"));
 
         프로젝트_생성_문서화(resultActions);
@@ -56,6 +57,7 @@ class ProjectControllerTest extends CommonControllerSliceTestSupport {
                         ),
                         requestFields(
                                 fieldWithPath("name").description("생성할 프로젝트 이름")
+                                                     .attributes(field("constraints", "빈 값은 허용하지 않음"))
                         ),
                         responseFields(
                                 fieldWithPath("apiKey").description("생성된 프로젝트의 API 키")

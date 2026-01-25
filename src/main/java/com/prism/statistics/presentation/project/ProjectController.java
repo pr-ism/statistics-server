@@ -6,6 +6,7 @@ import com.prism.statistics.application.project.dto.response.CreateProjectRespon
 import com.prism.statistics.global.auth.AuthUserId;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +27,7 @@ public class ProjectController {
     ) {
         CreateProjectResponse response = projectService.create(authUserId.userId(), request);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                             .body(response);
     }
 }
