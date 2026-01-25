@@ -109,8 +109,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 errorMessage
         );
 
-        return ResponseEntity.status(errorCode.getHttpStatus())
-                             .body(response);
+        return handleExceptionInternal(
+                ex,
+                response,
+                headers,
+                errorCode.getHttpStatus(),
+                request
+        );
     }
 
     private ResponseEntity<Object> createResponseEntity(ErrorCode errorCode) {
