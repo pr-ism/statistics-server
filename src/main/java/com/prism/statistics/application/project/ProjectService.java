@@ -7,6 +7,7 @@ import com.prism.statistics.domain.project.ProjectApiKeyGenerator;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +16,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final ProjectApiKeyGenerator projectApiKeyGenerator;
 
+    @Transactional
     public CreateProjectResponse create(Long userId, CreateProjectRequest request) {
         String apiKey = projectApiKeyGenerator.generate();
         Project project = Project.create(request.name(), apiKey, userId);
