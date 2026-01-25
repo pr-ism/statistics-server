@@ -7,6 +7,7 @@ import com.prism.statistics.context.ControllerMockInjectionSupport;
 import com.prism.statistics.context.ResetMockTestExecutionListener;
 import com.prism.statistics.docs.RestDocsConfiguration;
 import com.prism.statistics.global.exception.GlobalExceptionHandler;
+import com.prism.statistics.global.security.resolver.argument.AuthUserIdArgumentResolver;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -102,6 +103,7 @@ public abstract class CommonControllerSliceTestSupport {
         }
 
         FixedStandaloneMockMvcBuilder configureArgumentResolvers() {
+            builder.setCustomArgumentResolvers(new AuthUserIdArgumentResolver());
             return this;
         }
 
@@ -127,5 +129,4 @@ public abstract class CommonControllerSliceTestSupport {
         }
     }
 }
-
 
