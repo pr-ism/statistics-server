@@ -102,7 +102,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                 .getAllErrors()
                                 .stream()
                                 .map(error -> error.getDefaultMessage())
-                                .collect(Collectors.joining(System.lineSeparator()));
+                                .collect(Collectors.joining(","));
         DefaultErrorCode errorCode = DefaultErrorCode.API_ARGUMENTS_NOT_VALID;
         ExceptionResponse response = new ExceptionResponse(
                 errorCode.getErrorCode(),
