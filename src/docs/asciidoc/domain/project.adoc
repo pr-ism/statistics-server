@@ -5,3 +5,8 @@
 === 프로젝트 생성 API
 
 operation::project-controller-test/프로젝트_생성_성공_테스트[snippets='http-request,request-headers,request-fields,http-response,response-fields']
+
+[[Get-Projects]]
+=== 프로젝트 목록 조회 API
+
+operation::project-controller-test/프로젝트_목록_조회_성공_테스트[snippets='request-headers,response-fields']
