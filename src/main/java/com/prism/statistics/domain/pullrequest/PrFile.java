@@ -2,7 +2,8 @@ package com.prism.statistics.domain.pullrequest;
 
 import com.prism.statistics.domain.common.CreatedAtEntity;
 import com.prism.statistics.domain.pullrequest.enums.FileChangeType;
-import jakarta.persistence.Column;
+import com.prism.statistics.domain.pullrequest.vo.FileChanges;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -24,23 +25,20 @@ public class PrFile extends CreatedAtEntity {
     @Enumerated(EnumType.STRING)
     private FileChangeType changeType;
 
-    private int additions;
-
-    private int deletions;
+    @Embedded
+    private FileChanges fileChanges;
 
     public static PrFile create(
             Long pullRequestId,
             String fileName,
             FileChangeType changeType,
-            int additions,
-            int deletions
+            FileChanges fileChanges
     ) {
         validatePullRequestId(pullRequestId);
         validateFileName(fileName);
         validateChangeType(changeType);
-        validateAdditions(additions);
-        validateDeletions(deletions);
-        return new PrFile(pullRequestId, fileName, changeType, additions, deletions);
+        validateFileChanges(fileChanges);
+        return new PrFile(pullRequestId, fileName, changeType, fileChanges);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
@@ -61,15 +59,9 @@ public class PrFile extends CreatedAtEntity {
         }
     }
 
-    private static void validateAdditions(int additions) {
-        if (additions < 0) {
-            throw new IllegalArgumentException("추가 라인 수는 0보다 작을 수 없습니다.");
-        }
-    }
-
-    private static void validateDeletions(int deletions) {
-        if (deletions < 0) {
-            throw new IllegalArgumentException("삭제 라인 수는 0보다 작을 수 없습니다.");
+    private static void validateFileChanges(FileChanges fileChanges) {
+        if (fileChanges == null) {
+            throw new IllegalArgumentException("파일 변경 정보는 필수입니다.");
         }
     }
 
@@ -77,17 +69,15 @@ public class PrFile extends CreatedAtEntity {
             Long pullRequestId,
             String fileName,
             FileChangeType changeType,
-            int additions,
-            int deletions
+            FileChanges fileChanges
     ) {
         this.pullRequestId = pullRequestId;
         this.fileName = fileName;
         this.changeType = changeType;
-        this.additions = additions;
-        this.deletions = deletions;
+        this.fileChanges = fileChanges;
     }
 
     public int getTotalChanges() {
-        return additions + deletions;
+        return fileChanges.getTotalChanges();
     }
 }
