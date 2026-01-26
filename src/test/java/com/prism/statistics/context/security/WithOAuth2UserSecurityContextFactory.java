@@ -6,11 +6,8 @@ import java.util.Set;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.test.context.support.WithSecurityContextFactory;
+public class WithOAuth2UserSecurityContextFactory {
 
-public class WithOAuth2UserSecurityContextFactory implements WithSecurityContextFactory<WithOAuth2User> {
-
-    @Override
     public SecurityContext createSecurityContext(WithOAuth2User annotation) {
         OAuth2UserDetails userDetails = new OAuth2UserDetails(
                 annotation.userId(),
