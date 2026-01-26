@@ -2,11 +2,11 @@ package com.prism.statistics.presentation.project;
 
 import static com.prism.statistics.docs.RestDocsConfiguration.field;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -16,7 +16,6 @@ import com.prism.statistics.application.project.ProjectService;
 import com.prism.statistics.application.project.dto.request.CreateProjectRequest;
 import com.prism.statistics.application.project.dto.response.CreateProjectResponse;
 import com.prism.statistics.application.project.dto.response.ProjectListResponse;
-import com.prism.statistics.application.project.dto.response.ProjectResponse;
 import com.prism.statistics.context.security.WithOAuth2User;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import java.util.List;
@@ -42,13 +41,13 @@ class ProjectControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         ResultActions resultActions = mockMvc.perform(
-                post("/projects")
-                        .header("Authorization", "Bearer access-token")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-        )
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.apiKey").value("api-key-123"));
+                        post("/projects")
+                                .header("Authorization", "Bearer access-token")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.apiKey").value("api-key-123"));
 
         프로젝트_생성_문서화(resultActions);
     }
@@ -61,7 +60,7 @@ class ProjectControllerTest extends CommonControllerSliceTestSupport {
                         ),
                         requestFields(
                                 fieldWithPath("name").description("생성할 프로젝트 이름")
-                                                     .attributes(field("constraints", "빈 값은 허용하지 않음"))
+                                        .attributes(field("constraints", "빈 값은 허용하지 않음"))
                         ),
                         responseFields(
                                 fieldWithPath("apiKey").description("생성된 프로젝트의 API 키")
@@ -109,21 +108,19 @@ class ProjectControllerTest extends CommonControllerSliceTestSupport {
         // given
         ProjectListResponse response = new ProjectListResponse(
                 List.of(
-                        new ProjectResponse(1L, "프로젝트 1"),
-                        new ProjectResponse(2L, "프로젝트 2")
+                        new ProjectListResponse.ProjectResponse(1L, "프로젝트 1"),
+                        new ProjectListResponse.ProjectResponse(2L, "프로젝트 2")
                 )
         );
 
         given(projectService.findByUserId(7L)).willReturn(response);
 
-        // when
+        // when & then
         ResultActions resultActions = mockMvc.perform(
-                get("/projects")
-                        .header("Authorization", "Bearer access-token")
-        ).andExpect(status().isOk());
-
-        // then
-        resultActions
+                        get("/projects")
+                                .header("Authorization", "Bearer access-token")
+                )
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.projects[0].id").value(1L))
                 .andExpect(jsonPath("$.projects[0].name").value("프로젝트 1"))
                 .andExpect(jsonPath("$.projects[1].id").value(2L))
