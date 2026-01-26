@@ -8,10 +8,10 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum PrState {
-    DRAFT((state, merged, draft) -> draft),
+    DRAFT((state, merged, draft) -> "open".equalsIgnoreCase(state) && draft),
     MERGED((state, merged, draft) -> "closed".equalsIgnoreCase(state) && merged),
-    CLOSED((state, merged, draft) -> "closed".equalsIgnoreCase(state)),
-    OPEN((state, merged, draft) -> "open".equalsIgnoreCase(state));
+    CLOSED((state, merged, draft) -> "closed".equalsIgnoreCase(state) && !merged),
+    OPEN((state, merged, draft) -> "open".equalsIgnoreCase(state) && !draft);
 
     private final PrStateMatcher matcher;
 
