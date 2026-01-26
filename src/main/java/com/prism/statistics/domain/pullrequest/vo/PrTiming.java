@@ -75,20 +75,8 @@ public class PrTiming {
         this.closedAt = closedAt;
     }
 
-    public boolean isMerged() {
-        return mergedAt != null;
-    }
-
-    public boolean isClosed() {
-        return closedAt != null;
-    }
-
-    public boolean isClosedWithoutMerge() {
-        return closedAt != null && mergedAt == null;
-    }
-
     public long calculateMergeTimeMinutes() {
-        if (!isMerged()) {
+        if (mergedAt == null) {
             throw new IllegalStateException("병합되지 않은 PR입니다.");
         }
         return Duration.between(prCreatedAt, mergedAt).toMinutes();

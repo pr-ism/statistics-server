@@ -185,65 +185,6 @@ class PrTimingTest {
     }
 
     @Test
-    void isMerged는_병합되었으면_true를_반환한다() {
-        // given
-        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
-        LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
-        LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
-
-        PrTiming timing = PrTiming.createMerged(createdAt, mergedAt, closedAt);
-
-        // when & then
-        assertThat(timing.isMerged()).isTrue();
-    }
-
-    @Test
-    void isMerged는_병합되지_않았으면_false를_반환한다() {
-        // given
-        PrTiming timing = PrTiming.createOpen(LocalDateTime.of(2024, 1, 15, 10, 0));
-
-        // when & then
-        assertThat(timing.isMerged()).isFalse();
-    }
-
-    @Test
-    void isClosed는_종료되었으면_true를_반환한다() {
-        // given
-        PrTiming timing = PrTiming.createClosed(
-                LocalDateTime.of(2024, 1, 15, 10, 0),
-                LocalDateTime.of(2024, 1, 15, 14, 0)
-        );
-
-        // when & then
-        assertThat(timing.isClosed()).isTrue();
-    }
-
-    @Test
-    void isClosedWithoutMerge는_병합_없이_종료되었으면_true를_반환한다() {
-        // given
-        PrTiming timing = PrTiming.createClosed(
-                LocalDateTime.of(2024, 1, 15, 10, 0),
-                LocalDateTime.of(2024, 1, 15, 14, 0)
-        );
-
-        // when & then
-        assertThat(timing.isClosedWithoutMerge()).isTrue();
-    }
-
-    @Test
-    void isClosedWithoutMerge는_병합된_PR이면_false를_반환한다() {
-        // given
-        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
-        LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
-        LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
-
-        PrTiming timing = PrTiming.createMerged(createdAt, mergedAt, closedAt);
-
-        // when & then
-        assertThat(timing.isClosedWithoutMerge()).isFalse();
-    }
-
-    @Test
     void calculateMergeTimeMinutes는_병합_시간을_분_단위로_계산한다() {
         // given
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
