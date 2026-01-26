@@ -1,14 +1,20 @@
 package com.prism.statistics.application.project.dto.response;
 
-import lombok.Getter;
-
+import com.prism.statistics.domain.project.Project;
 import java.util.List;
 
-@Getter
-public class ProjectListResponse {
-    private final List<ProjectResponse> projects;
-
-    public ProjectListResponse(List<ProjectResponse> projects) {
-        this.projects = projects;
+public record ProjectListResponse(
+        List<ProjectResponse> projects
+) {
+    public record ProjectResponse(
+            Long id,
+            String name
+    ) {
+        public static ProjectResponse from(Project project) {
+            return new ProjectResponse(
+                    project.getId(),
+                    project.getName()
+            );
+        }
     }
 }
