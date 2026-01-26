@@ -4,15 +4,14 @@ import java.time.Instant;
 import java.util.List;
 
 public record PrOpenedRequest(
-        Integer prNumber,
+        int prNumber,
         String title,
-        String state,
         String authorGithubId,
         String link,
-        Integer additions,
-        Integer deletions,
-        Integer changedFileCount,
-        Integer commitCount,
+        int additions,
+        int deletions,
+        int changedFileCount,
+        int commitCount,
         Instant createdAt,
         List<FileChange> files,
         List<CommitInfo> commits,
@@ -22,8 +21,8 @@ public record PrOpenedRequest(
     public record FileChange(
             String fileName,
             String fileStatus,
-            Integer fileAdditions,
-            Integer fileDeletions
+            int fileAdditions,
+            int fileDeletions
     ) {}
 
     public record CommitInfo(
