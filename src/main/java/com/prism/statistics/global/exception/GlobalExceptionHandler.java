@@ -10,11 +10,16 @@ import com.prism.statistics.global.exception.dto.response.ExceptionResponse;
 import com.prism.statistics.global.exception.dto.response.UserErrorCode;
 import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUserIdentityException;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Slf4j
@@ -22,63 +27,63 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ExceptionResponse> handleException(Exception ex) {
+    public ResponseEntity<Object> handleException(Exception ex) {
         log.error("Exception : ", ex);
 
         return createResponseEntity(DefaultErrorCode.UNKNOWN_SERVER_EXCEPTION);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ExceptionResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
         log.info("IllegalArgumentException : {}", ex.getMessage());
 
         return createResponseEntity(DefaultErrorCode.INVALID_INPUT);
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ExceptionResponse> handleIllegalStateException(IllegalStateException ex) {
+    public ResponseEntity<Object> handleIllegalStateException(IllegalStateException ex) {
         log.info("IllegalStateException : {}", ex.getMessage());
 
         return createResponseEntity(DefaultErrorCode.INVALID_INPUT_STATE);
     }
 
     @ExceptionHandler(RefreshTokenNotFoundException.class)
-    public ResponseEntity<ExceptionResponse> handleRefreshTokenNotFoundException(RefreshTokenNotFoundException ex) {
+    public ResponseEntity<Object> handleRefreshTokenNotFoundException(RefreshTokenNotFoundException ex) {
         log.info("RefreshTokenNotFoundException : {}", ex.getMessage());
 
         return createResponseEntity(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
     }
 
     @ExceptionHandler(WithdrawnUserLoginException.class)
-    public ResponseEntity<ExceptionResponse> handleWithdrawnUserLoginException(WithdrawnUserLoginException ex) {
+    public ResponseEntity<Object> handleWithdrawnUserLoginException(WithdrawnUserLoginException ex) {
         log.info("WithdrawnUserLoginException : {}", ex.getMessage());
 
         return createResponseEntity(AuthErrorCode.WITHDRAWN_USER);
     }
 
     @ExceptionHandler(AlreadyWithdrawnUserException.class)
-    public ResponseEntity<ExceptionResponse> handleAlreadyWithdrawnUserException(AlreadyWithdrawnUserException ex) {
+    public ResponseEntity<Object> handleAlreadyWithdrawnUserException(AlreadyWithdrawnUserException ex) {
         log.info("AlreadyWithdrawnUserException : {}", ex.getMessage());
 
         return createResponseEntity(UserErrorCode.ALREADY_WITHDRAWN);
     }
 
     @ExceptionHandler(OrphanedUserIdentityException.class)
-    public ResponseEntity<ExceptionResponse> handleOrphanedUserIdentityException(OrphanedUserIdentityException ex) {
+    public ResponseEntity<Object> handleOrphanedUserIdentityException(OrphanedUserIdentityException ex) {
         log.info("OrphanedUserIdentityException : {}", ex.getMessage());
 
         return createResponseEntity(AuthErrorCode.ORPHAN_USER_IDENTITY);
     }
 
     @ExceptionHandler(UserMissingException.class)
-    public ResponseEntity<ExceptionResponse> handleUserMissingException(UserMissingException ex) {
+    public ResponseEntity<Object> handleUserMissingException(UserMissingException ex) {
         log.info("UserMissingException : {}", ex.getMessage());
 
         return createResponseEntity(AuthErrorCode.USER_MISSING);
     }
 
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
-    public ResponseEntity<ExceptionResponse> handleAuthenticationCredentialsNotFoundException(
+    public ResponseEntity<Object> handleAuthenticationCredentialsNotFoundException(
             AuthenticationCredentialsNotFoundException ex
     ) {
         log.info("AuthenticationCredentialsNotFoundException : {}", ex.getMessage());
@@ -86,7 +91,34 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return createResponseEntity(AuthErrorCode.FORBIDDEN_USER);
     }
 
-    private ResponseEntity<ExceptionResponse> createResponseEntity(ErrorCode errorCode) {
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request
+    ) {
+        String errorMessage = ex.getBindingResult()
+                                .getAllErrors()
+                                .stream()
+                                .map(error -> error.getDefaultMessage())
+                                .collect(Collectors.joining(","));
+        DefaultErrorCode errorCode = DefaultErrorCode.API_ARGUMENTS_NOT_VALID;
+        ExceptionResponse response = new ExceptionResponse(
+                errorCode.getErrorCode(),
+                errorMessage
+        );
+
+        return handleExceptionInternal(
+                ex,
+                response,
+                headers,
+                errorCode.getHttpStatus(),
+                request
+        );
+    }
+
+    private ResponseEntity<Object> createResponseEntity(ErrorCode errorCode) {
         ExceptionResponse response = ExceptionResponse.from(errorCode);
 
         return ResponseEntity.status(errorCode.getHttpStatus())
