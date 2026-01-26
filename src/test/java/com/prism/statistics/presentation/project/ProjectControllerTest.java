@@ -109,8 +109,8 @@ class ProjectControllerTest extends CommonControllerSliceTestSupport {
         // given
         ProjectListResponse response = new ProjectListResponse(
                 List.of(
-                        new ProjectResponse(1L, "프로젝트 1", "api-key-1"),
-                        new ProjectResponse(2L, "프로젝트 2", "api-key-2")
+                        new ProjectResponse(1L, "프로젝트 1"),
+                        new ProjectResponse(2L, "프로젝트 2")
                 )
         );
 
@@ -126,10 +126,8 @@ class ProjectControllerTest extends CommonControllerSliceTestSupport {
         resultActions
                 .andExpect(jsonPath("$.projects[0].id").value(1L))
                 .andExpect(jsonPath("$.projects[0].name").value("프로젝트 1"))
-                .andExpect(jsonPath("$.projects[0].apiKey").value("api-key-1"))
                 .andExpect(jsonPath("$.projects[1].id").value(2L))
-                .andExpect(jsonPath("$.projects[1].name").value("프로젝트 2"))
-                .andExpect(jsonPath("$.projects[1].apiKey").value("api-key-2"));
+                .andExpect(jsonPath("$.projects[1].name").value("프로젝트 2"));
 
         프로젝트_목록_조회_문서화(resultActions);
     }
@@ -143,8 +141,7 @@ class ProjectControllerTest extends CommonControllerSliceTestSupport {
                         responseFields(
                                 fieldWithPath("projects").description("프로젝트 목록"),
                                 fieldWithPath("projects[].id").description("프로젝트 ID"),
-                                fieldWithPath("projects[].name").description("프로젝트 이름"),
-                                fieldWithPath("projects[].apiKey").description("프로젝트 API 키")
+                                fieldWithPath("projects[].name").description("프로젝트 이름")
                         )
                 )
         );
