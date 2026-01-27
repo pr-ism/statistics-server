@@ -1,0 +1,46 @@
+package com.prism.statistics.infrastructure.project.persistence;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.prism.statistics.application.IntegrationTest;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.jdbc.Sql;
+
+@IntegrationTest
+@SuppressWarnings("NonAsciiCharacters")
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+class ProjectRepositoryAdapterTest {
+
+    @Autowired
+    private ProjectRepositoryAdapter projectRepositoryAdapter;
+
+    @Sql("/sql/webhook/insert_project.sql")
+    @Test
+    void apiKey로_projectId를_조회한다() {
+        // given
+        String apiKey = "test-api-key";
+
+        // when
+        Optional<Long> actual = projectRepositoryAdapter.findIdByApiKey(apiKey);
+
+        // then
+        assertThat(actual).isPresent();
+        assertThat(actual.get()).isEqualTo(1L);
+    }
+
+    @Test
+    void 존재하지_않는_apiKey로_조회하면_빈_Optional을_반환한다() {
+        // given
+        String invalidApiKey = "invalid-api-key";
+
+        // when
+        Optional<Long> actual = projectRepositoryAdapter.findIdByApiKey(invalidApiKey);
+
+        // then
+        assertThat(actual).isEmpty();
+    }
+}
