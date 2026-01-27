@@ -4,29 +4,38 @@ import java.time.Instant;
 import java.util.List;
 
 public record PrOpenedRequest(
-        int prNumber,
-        String title,
-        String authorGithubId,
-        String link,
-        int additions,
-        int deletions,
-        int changedFileCount,
-        int commitCount,
-        Instant createdAt,
-        List<FileChange> files,
-        List<CommitInfo> commits,
-        String repositoryFullName
+        String eventType,
+        String action,
+        String repositoryFullName,
+        boolean isDraft,
+        PullRequestData pullRequest,
+        List<FileData> files
 ) {
 
-    public record FileChange(
-            String fileName,
-            String fileStatus,
-            int fileAdditions,
-            int fileDeletions
+    public record PullRequestData(
+            int number,
+            String title,
+            String url,
+            int additions,
+            int deletions,
+            int changedFiles,
+            Instant createdAt,
+            Author author,
+            CommitsConnection commits
     ) {}
 
-    public record CommitInfo(
-            String commitSha,
-            Instant committedAt
+    public record Author(String login) {}
+
+    public record CommitsConnection(int totalCount, List<CommitNode> nodes) {}
+
+    public record CommitNode(CommitData commit) {}
+
+    public record CommitData(String oid, Instant committedDate) {}
+
+    public record FileData(
+            String filename,
+            String status,
+            int additions,
+            int deletions
     ) {}
 }
