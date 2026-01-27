@@ -59,12 +59,11 @@ public class PrOpenedHandler {
 
         PrTiming timing = PrTiming.createOpen(prCreatedAt);
 
-        PullRequest pullRequest = PullRequest.create(
+        PullRequest pullRequest = PullRequest.opened(
                 projectId,
                 prData.author().login(),
                 prData.number(),
                 prData.title(),
-                PrState.OPEN,
                 prData.url(),
                 changeStats,
                 prData.commits().totalCount(),

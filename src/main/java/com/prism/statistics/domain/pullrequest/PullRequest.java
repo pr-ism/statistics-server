@@ -63,6 +63,19 @@ public class PullRequest extends CreatedAtEntity {
         return new PullRequest(projectId, authorGithubId, prNumber, title, state, link, changeStats, commitCount, timing);
     }
 
+    public static PullRequest opened(
+            Long projectId,
+            String authorGithubId,
+            int prNumber,
+            String title,
+            String link,
+            PrChangeStats changeStats,
+            int commitCount,
+            PrTiming timing
+    ) {
+        return create(projectId, authorGithubId, prNumber, title, PrState.OPEN, link, changeStats, commitCount, timing);
+    }
+
     private static void validateProjectId(Long projectId) {
         if (projectId == null) {
             throw new IllegalArgumentException("프로젝트 ID는 필수입니다.");

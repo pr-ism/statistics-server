@@ -50,6 +50,23 @@ class PullRequestTest {
     }
 
     @Test
+    void opened로_생성하면_OPEN_상태가_된다() {
+        // given
+        PrChangeStats changeStats = PrChangeStats.create(5, 100, 50);
+        PrTiming timing = PrTiming.createOpen(CREATED_AT);
+
+        // when
+        PullRequest pullRequest = PullRequest.opened(
+                1L, "author123", 42, "feat: 새로운 기능 추가",
+                "https://github.com/org/repo/pull/42",
+                changeStats, 3, timing
+        );
+
+        // then
+        assertThat(pullRequest.getState()).isEqualTo(PrState.OPEN);
+    }
+
+    @Test
     void 프로젝트_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> createPullRequest(null, "author123", 42, "title", PrState.OPEN, "link", 3))
