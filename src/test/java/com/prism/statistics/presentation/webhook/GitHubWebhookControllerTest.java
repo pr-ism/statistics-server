@@ -1,7 +1,7 @@
 package com.prism.statistics.presentation.webhook;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -56,7 +56,7 @@ class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
                 }
                 """;
 
-        willDoNothing().given(prOpenedHandler).handle(anyString(), any(PrOpenedRequest.class));
+        willDoNothing().given(prOpenedHandler).handle(eq(TEST_API_KEY), any(PrOpenedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -67,51 +67,17 @@ class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
         )
         .andExpect(status().isOk());
 
-        verify(prOpenedHandler).handle(anyString(), any(PrOpenedRequest.class));
+        verify(prOpenedHandler).handle(eq(TEST_API_KEY), any(PrOpenedRequest.class));
     }
 
     @Test
-    void Draft_PR_웹훅_요청도_처리한다() throws Exception {
-        // given
-        String payload = """
-                {
-                    "eventType": "pull_request",
-                    "action": "opened",
-                    "repositoryFullName": "owner/repo",
-                    "isDraft": true,
-                    "pullRequest": {
-                        "number": 43,
-                        "title": "draft: 작업 중인 PR",
-                        "url": "https://github.com/owner/repo/pull/43",
-                        "additions": 50,
-                        "deletions": 10,
-                        "changedFiles": 3,
-                        "createdAt": "2024-01-15T11:00:00Z",
-                        "author": { "login": "test-author" },
-                        "commits": {
-                            "totalCount": 1,
-                            "nodes": [
-                                { "commit": { "oid": "ghi789", "committedDate": "2024-01-15T10:30:00Z" } }
-                            ]
-                        }
-                    },
-                    "files": [
-                        { "filename": "src/main/java/Draft.java", "status": "added", "additions": 50, "deletions": 10 }
-                    ]
-                }
-                """;
-
-        willDoNothing().given(prOpenedHandler).handle(anyString(), any(PrOpenedRequest.class));
-
+    void API_Key_헤더_누락_시_400_반환한다() throws Exception {
         // when & then
         mockMvc.perform(
                 post("/webhook/pr/opened")
-                        .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload)
+                        .content("{}")
         )
-        .andExpect(status().isOk());
-
-        verify(prOpenedHandler).handle(anyString(), any(PrOpenedRequest.class));
+        .andExpect(status().isBadRequest());
     }
 }
