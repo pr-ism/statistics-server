@@ -1,5 +1,11 @@
 SET REFERENTIAL_INTEGRITY FALSE;
 
+TRUNCATE TABLE pr_file_histories;
+TRUNCATE TABLE pr_change_histories;
+TRUNCATE TABLE pr_state_change_histories;
+TRUNCATE TABLE commits;
+TRUNCATE TABLE pr_files;
+TRUNCATE TABLE pull_requests;
 TRUNCATE TABLE user_identities;
 TRUNCATE TABLE users;
 TRUNCATE TABLE projects;

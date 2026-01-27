@@ -1,0 +1,173 @@
+erDiagram
+    %% ===== 프로젝트 영역 =====
+    Project {
+        Long id PK
+        String name
+        String apiKey
+        Long userId FK
+    }
+
+    %% ===== PR 핵심 영역 =====
+    PullRequest {
+        Long id PK
+        Long projectId FK
+        int prNumber
+        String title
+        PrState state "DRAFT/OPEN/MERGED/CLOSED"
+        String authorGithubId
+        String link
+        int changedFileCount "PrChangeStats VO"
+        int additionCount "PrChangeStats VO"
+        int deletionCount "PrChangeStats VO"
+        int commitCount
+        LocalDateTime prCreatedAt "PrTiming VO"
+        LocalDateTime mergedAt "PrTiming VO"
+        LocalDateTime closedAt "PrTiming VO"
+    }
+
+    PrStateChangeHistory {
+        Long id PK
+        Long pullRequestId FK
+        PrState previousState
+        PrState newState
+        LocalDateTime changedAt
+    }
+
+    PrChangeHistory {
+        Long id PK
+        Long pullRequestId FK
+        int changedFileCount "PrChangeStats VO"
+        int additionCount "PrChangeStats VO"
+        int deletionCount "PrChangeStats VO"
+        int commitCount
+        LocalDateTime changedAt
+    }
+
+    %% ===== 라벨 영역 =====
+    PrLabel {
+        Long id PK
+        Long pullRequestId FK
+        String labelName
+        LocalDateTime addedAt
+    }
+
+    PrLabelChangeHistory {
+        Long id PK
+        Long prLabelId FK
+        String previousLabel
+        String newLabel
+        LocalDateTime changedAt
+    }
+
+    %% ===== 파일 변경 영역 =====
+    PrFile {
+        Long id PK
+        Long pullRequestId FK
+        String fileName
+        FileChangeType changeType "MODIFIED/ADDED/REMOVED/RENAMED"
+        int additions "FileChanges VO"
+        int deletions "FileChanges VO"
+    }
+
+    PrFileHistory {
+        Long id PK
+        Long pullRequestId FK
+        String fileName
+        String previousFileName "nullable - RENAMED only"
+        FileChangeType changeType
+        int additions "FileChanges VO"
+        int deletions "FileChanges VO"
+        LocalDateTime changedAt
+    }
+
+    %% ===== 커밋 영역 =====
+    Commit {
+        Long id PK
+        Long pullRequestId FK
+        String commitSha
+        LocalDateTime committedAt
+    }
+
+    %% ===== 리뷰어 요청 영역 =====
+    ReviewerAssignment {
+        Long id PK
+        Long pullRequestId FK
+        String requestedReviewerGithubId
+        LocalDateTime addedAt
+    }
+
+    ReviewerChangeHistory {
+        Long id PK
+        Long reviewerAssignmentId FK
+        String action "added/removed"
+        LocalDateTime changedAt
+    }
+
+    %% ===== 리뷰 영역 =====
+    Review {
+        Long id PK
+        Long pullRequestId FK
+        String reviewerGithubId
+        String reviewState "approved/changesRequested/commented"
+        String commitSha "리뷰한 커밋 버전"
+        Integer commentCount
+        LocalDateTime submittedAt
+        LocalDateTime firstCommentedAt
+        LocalDateTime lastCommentedAt
+    }
+
+    ReviewComment {
+        Long id PK
+        Long reviewId FK
+        String body
+        Boolean isResolved
+        LocalDateTime commentedAt
+    }
+
+    %% ===== 이슈 영역 =====
+    Issue {
+        Long id PK
+        Long projectId FK
+        Integer issueNumber
+        LocalDateTime issueCreatedAt
+        LocalDateTime issueClosedAt
+    }
+
+    PrClosingIssue {
+        Long id PK
+        Long pullRequestId FK
+        Long issueId FK
+    }
+
+    %% ===== 슬랙 연동 영역 =====
+    SlackNotification {
+        Long id PK
+        Long pullRequestId FK
+        String reviewerGithubId
+        LocalDateTime reviewScheduledAt
+        Boolean isReviewFulfilled
+        LocalDateTime prNotifiedAt
+        Integer scheduleCancelCount
+        LocalDateTime reviewTimeSelectedAt
+        Integer scheduleChangeCount
+    }
+
+    %% ===== 관계 정의 =====
+    Project ||--o{ PullRequest : "has"
+    Project ||--o{ Issue : "has"
+
+    PullRequest ||--o{ PrStateChangeHistory : "has"
+    PullRequest ||--o{ PrChangeHistory : "has"
+    PullRequest ||--o{ PrLabel : "has"
+    PullRequest ||--o{ PrFile : "has"
+    PullRequest ||--o{ PrFileHistory : "has"
+    PullRequest ||--o{ Commit : "has"
+    PullRequest ||--o{ ReviewerAssignment : "has"
+    PullRequest ||--o{ Review : "has"
+    PullRequest ||--o{ PrClosingIssue : "closes"
+    PullRequest ||--o{ SlackNotification : "has"
+
+    PrLabel ||--o{ PrLabelChangeHistory : "has"
+    ReviewerAssignment ||--o{ ReviewerChangeHistory : "has"
+    Review ||--o{ ReviewComment : "has"
+    Issue ||--o{ PrClosingIssue : "closedBy"
