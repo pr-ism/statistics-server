@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.prism.statistics.application.webhook.PrOpenedHandler;
+import com.prism.statistics.application.webhook.PrOpenedService;
 import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
     private static final String TEST_API_KEY = "test-api-key";
 
     @Autowired
-    private PrOpenedHandler prOpenedHandler;
+    private PrOpenedService prOpenedService;
 
     @Test
     void PR_opened_웹훅_요청을_처리한다() throws Exception {
@@ -56,7 +56,7 @@ class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
                 }
                 """;
 
-        willDoNothing().given(prOpenedHandler).handle(eq(TEST_API_KEY), any(PrOpenedRequest.class));
+        willDoNothing().given(prOpenedService).handle(eq(TEST_API_KEY), any(PrOpenedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -67,7 +67,7 @@ class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
         )
         .andExpect(status().isOk());
 
-        verify(prOpenedHandler).handle(eq(TEST_API_KEY), any(PrOpenedRequest.class));
+        verify(prOpenedService).handle(eq(TEST_API_KEY), any(PrOpenedRequest.class));
     }
 
     @Test

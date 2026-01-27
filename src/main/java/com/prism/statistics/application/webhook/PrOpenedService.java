@@ -25,7 +25,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PrOpenedHandler {
+public class PrOpenedService {
 
     private final Clock clock;
     private final ProjectRepository projectRepository;

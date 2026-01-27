@@ -32,12 +32,12 @@ import java.util.List;
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class PrOpenedHandlerTest {
+class PrOpenedServiceTest {
 
     private static final String TEST_API_KEY = "test-api-key";
 
     @Autowired
-    private PrOpenedHandler prOpenedHandler;
+    private PrOpenedService prOpenedService;
 
     @Autowired
     private JpaPullRequestRepository jpaPullRequestRepository;
@@ -64,7 +64,7 @@ class PrOpenedHandlerTest {
         PrOpenedRequest request = createPrOpenedRequest(false);
 
         // when
-        prOpenedHandler.handle(TEST_API_KEY, request);
+        prOpenedService.handle(TEST_API_KEY, request);
 
         // then
         assertAll(
@@ -84,7 +84,7 @@ class PrOpenedHandlerTest {
         PrOpenedRequest request = createPrOpenedRequest(false);
 
         // when
-        prOpenedHandler.handle(TEST_API_KEY, request);
+        prOpenedService.handle(TEST_API_KEY, request);
 
         // then
         var pullRequest = jpaPullRequestRepository.findAll().iterator().next();
@@ -98,7 +98,7 @@ class PrOpenedHandlerTest {
         PrOpenedRequest request = createPrOpenedRequest(true);
 
         // when
-        prOpenedHandler.handle(TEST_API_KEY, request);
+        prOpenedService.handle(TEST_API_KEY, request);
 
         // then
         assertAll(
@@ -118,7 +118,7 @@ class PrOpenedHandlerTest {
         String invalidApiKey = "invalid-api-key";
 
         // when & then
-        assertThatThrownBy(() -> prOpenedHandler.handle(invalidApiKey, request))
+        assertThatThrownBy(() -> prOpenedService.handle(invalidApiKey, request))
                 .isInstanceOf(ProjectNotFoundException.class)
                 .hasMessage("유효하지 않은 API Key입니다.");
     }
