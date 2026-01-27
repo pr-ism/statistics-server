@@ -28,13 +28,14 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     @Transactional(readOnly = true)
     public Optional<Long> findIdByApiKey(String apiKey) {
         return Optional.ofNullable(
-            queryFactory
-                .select(project.id)
-                .from(project)
-                .where(project.apiKey.eq(apiKey))
-                .fetchOne()
+                queryFactory
+                        .select(project.id)
+                        .from(project)
+                        .where(project.apiKey.eq(apiKey))
+                        .fetchOne()
         );
-      
+    }
+
     @Override
     public List<Project> findByUserId(Long userId) {
         return jpaProjectRepository.findByUserId(userId);
