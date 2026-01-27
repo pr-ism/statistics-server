@@ -56,7 +56,7 @@ public class PrChangeStats {
         this.deletionCount = deletionCount;
     }
 
-    public long getTotalChanges() {
-        return (long) additionCount + deletionCount;
+    public int getTotalChanges() {
+        return additionCount + deletionCount;
     }
 }

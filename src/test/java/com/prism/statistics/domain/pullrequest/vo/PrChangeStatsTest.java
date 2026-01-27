@@ -79,7 +79,7 @@ class PrChangeStatsTest {
         PrChangeStats stats = PrChangeStats.create(5, 200, 100);
 
         // when
-        long totalChanges = stats.getTotalChanges();
+        int totalChanges = stats.getTotalChanges();
 
         // then
         assertThat(totalChanges).isEqualTo(300);
