@@ -41,7 +41,7 @@ public class PrFileHistory extends CreatedAtEntity {
             FileChanges fileChanges,
             LocalDateTime changedAt
     ) {
-        validateCommon(pullRequestId, fileName, fileChanges, changedAt);
+        validateBaseFields(pullRequestId, fileName, fileChanges, changedAt);
         validateChangeType(changeType);
         return new PrFileHistory(pullRequestId, fileName, null, changeType, fileChanges, changedAt);
     }
@@ -53,12 +53,12 @@ public class PrFileHistory extends CreatedAtEntity {
             FileChanges fileChanges,
             LocalDateTime changedAt
     ) {
-        validateCommon(pullRequestId, fileName, fileChanges, changedAt);
+        validateBaseFields(pullRequestId, fileName, fileChanges, changedAt);
         validatePreviousFileName(previousFileName);
         return new PrFileHistory(pullRequestId, fileName, previousFileName, FileChangeType.RENAMED, fileChanges, changedAt);
     }
 
-    private static void validateCommon(Long pullRequestId, String fileName, FileChanges fileChanges, LocalDateTime changedAt) {
+    private static void validateBaseFields(Long pullRequestId, String fileName, FileChanges fileChanges, LocalDateTime changedAt) {
         validatePullRequestId(pullRequestId);
         validateFileName(fileName);
         validateFileChanges(fileChanges);
