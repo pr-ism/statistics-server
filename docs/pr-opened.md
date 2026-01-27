@@ -252,7 +252,7 @@ public record PrOpenedRequest(
 
 ## 처리 흐름
 
-```
+```text
 1. Webhook 수신 (Controller)
    ↓
 2. PrOpenedRequest로 역직렬화
