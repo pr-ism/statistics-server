@@ -94,11 +94,16 @@ class PrFileHistoryTest {
     }
 
     @Test
-    void create에서_RENAMED_타입이면_예외가_발생한다() {
-        // when & then
-        assertThatThrownBy(() -> PrFileHistory.create(1L, "file.java", FileChangeType.RENAMED, FILE_CHANGES, CHANGED_AT))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("RENAMED 타입은 createRenamed()를 사용해야 합니다.");
+    void create에서_RENAMED_타입도_생성할_수_있다() {
+        // when
+        PrFileHistory history = PrFileHistory.create(1L, "file.java", FileChangeType.RENAMED, FILE_CHANGES, CHANGED_AT);
+
+        // then
+        assertAll(
+                () -> assertThat(history.getChangeType()).isEqualTo(FileChangeType.RENAMED),
+                () -> assertThat(history.getPreviousFileName()).isNull(),
+                () -> assertThat(history.isRenamed()).isFalse()
+        );
     }
 
     @ParameterizedTest

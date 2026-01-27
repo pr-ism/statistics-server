@@ -42,7 +42,7 @@ public class PrFileHistory extends CreatedAtEntity {
             LocalDateTime changedAt
     ) {
         validateCommon(pullRequestId, fileName, fileChanges, changedAt);
-        validateChangeTypeNotRenamed(changeType);
+        validateChangeType(changeType);
         return new PrFileHistory(pullRequestId, fileName, null, changeType, fileChanges, changedAt);
     }
 
@@ -77,12 +77,9 @@ public class PrFileHistory extends CreatedAtEntity {
         }
     }
 
-    private static void validateChangeTypeNotRenamed(FileChangeType changeType) {
+    private static void validateChangeType(FileChangeType changeType) {
         if (changeType == null) {
             throw new IllegalArgumentException("변경 타입은 필수입니다.");
-        }
-        if (changeType == FileChangeType.RENAMED) {
-            throw new IllegalArgumentException("RENAMED 타입은 createRenamed()를 사용해야 합니다.");
         }
     }
 
