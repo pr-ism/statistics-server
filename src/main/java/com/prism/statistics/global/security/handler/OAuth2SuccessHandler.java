@@ -87,6 +87,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private void writeResponse(HttpServletResponse response, LoggedInUserDto loggedInUserDto, TokenResponse tokenResponse) {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
+        response.setHeader(HttpHeaders.PRAGMA, "no-cache");
         response.setStatus(HttpStatus.CREATED.value());
         addRefreshTokenCookie(response, tokenResponse.refreshToken(), tokenProperties.refreshExpiredSeconds());
 
@@ -106,7 +108,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         }
     }
 
-    private void handleLoginServerError(HttpServletResponse response, String message) throws IOException {
+    private void handleLoginServerError(HttpServletResponse response, String message) {
         log.error("OAuth2 인증 처리 중 서버 오류 : {}", message);
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

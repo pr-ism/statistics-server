@@ -32,13 +32,14 @@ public class RefreshTokenController {
 
         TokenResponse tokenResponse = generateTokenService.refreshToken(refreshToken);
         HttpCookie refreshTokenCookie = createCookie(
-                TokenCookieName.REFRESH_TOKEN,
                 tokenResponse.refreshToken(),
                 tokenProperties.refreshExpiredSeconds()
         );
 
         return ResponseEntity.ok()
                              .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                             .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                             .header(HttpHeaders.PRAGMA, "no-cache")
                              .body(new AuthorizationResponse("Bearer " + tokenResponse.accessToken()));
     }
 
@@ -48,8 +49,8 @@ public class RefreshTokenController {
         }
     }
 
-    private HttpCookie createCookie(String name, String value, int maxAgeSeconds) {
-        return ResponseCookie.from(name, value)
+    private HttpCookie createCookie(String value, int maxAgeSeconds) {
+        return ResponseCookie.from(TokenCookieName.REFRESH_TOKEN, value)
                              .httpOnly(true)
                              .secure(true)
                              .path(cookieProperties.path())

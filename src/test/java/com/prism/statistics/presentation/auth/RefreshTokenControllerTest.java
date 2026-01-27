@@ -68,6 +68,8 @@ class RefreshTokenControllerTest extends CommonControllerSliceTestSupport {
                                                                 containsString("Max-Age="),
                                                                 containsString("SameSite=None")
                                                         ))))
+                                                        .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
+                                                        .andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
                                                         .andExpect(jsonPath("$.authorization").value("Bearer new-access-token"));
 
         토큰_재발급_문서화(resultActions);
