@@ -2,6 +2,7 @@ package com.prism.statistics.domain.pullrequest.vo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.time.LocalDateTime;
 
@@ -22,9 +23,11 @@ class PrTimingTest {
         PrTiming timing = PrTiming.createOpen(createdAt);
 
         // then
-        assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt);
-        assertThat(timing.getMergedAt()).isNull();
-        assertThat(timing.getClosedAt()).isNull();
+        assertAll(
+                () -> assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(timing.getMergedAt()).isNull(),
+                () -> assertThat(timing.getClosedAt()).isNull()
+        );
     }
 
     @Test
@@ -44,9 +47,11 @@ class PrTimingTest {
         PrTiming timing = PrTiming.createDraft(createdAt);
 
         // then
-        assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt);
-        assertThat(timing.getMergedAt()).isNull();
-        assertThat(timing.getClosedAt()).isNull();
+        assertAll(
+                () -> assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(timing.getMergedAt()).isNull(),
+                () -> assertThat(timing.getClosedAt()).isNull()
+        );
     }
 
     @Test
@@ -68,9 +73,11 @@ class PrTimingTest {
         PrTiming timing = PrTiming.createMerged(createdAt, mergedAt, closedAt);
 
         // then
-        assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt);
-        assertThat(timing.getMergedAt()).isEqualTo(mergedAt);
-        assertThat(timing.getClosedAt()).isEqualTo(closedAt);
+        assertAll(
+                () -> assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(timing.getMergedAt()).isEqualTo(mergedAt),
+                () -> assertThat(timing.getClosedAt()).isEqualTo(closedAt)
+        );
     }
 
     @Test
@@ -145,9 +152,11 @@ class PrTimingTest {
         PrTiming timing = PrTiming.createClosed(createdAt, closedAt);
 
         // then
-        assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt);
-        assertThat(timing.getMergedAt()).isNull();
-        assertThat(timing.getClosedAt()).isEqualTo(closedAt);
+        assertAll(
+                () -> assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(timing.getMergedAt()).isNull(),
+                () -> assertThat(timing.getClosedAt()).isEqualTo(closedAt)
+        );
     }
 
     @Test

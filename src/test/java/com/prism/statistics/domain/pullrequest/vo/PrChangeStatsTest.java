@@ -2,6 +2,7 @@ package com.prism.statistics.domain.pullrequest.vo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -17,9 +18,11 @@ class PrChangeStatsTest {
         PrChangeStats stats = PrChangeStats.create(10, 100, 50);
 
         // then
-        assertThat(stats.getChangedFileCount()).isEqualTo(10);
-        assertThat(stats.getAdditionCount()).isEqualTo(100);
-        assertThat(stats.getDeletionCount()).isEqualTo(50);
+        assertAll(
+                () -> assertThat(stats.getChangedFileCount()).isEqualTo(10),
+                () -> assertThat(stats.getAdditionCount()).isEqualTo(100),
+                () -> assertThat(stats.getDeletionCount()).isEqualTo(50)
+        );
     }
 
     @Test
@@ -68,9 +71,11 @@ class PrChangeStatsTest {
         PrChangeStats stats = PrChangeStats.create(0, 0, 0);
 
         // then
-        assertThat(stats.getChangedFileCount()).isZero();
-        assertThat(stats.getAdditionCount()).isZero();
-        assertThat(stats.getDeletionCount()).isZero();
+        assertAll(
+                () -> assertThat(stats.getChangedFileCount()).isZero(),
+                () -> assertThat(stats.getAdditionCount()).isZero(),
+                () -> assertThat(stats.getDeletionCount()).isZero()
+        );
     }
 
     @Test

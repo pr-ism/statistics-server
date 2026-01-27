@@ -2,6 +2,7 @@ package com.prism.statistics.domain.pullrequest.enums;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -55,9 +56,11 @@ class PrStateTest {
         PrState closedMixed = PrState.create("Closed", true, false);
 
         // then
-        assertThat(openLower).isEqualTo(PrState.OPEN);
-        assertThat(openUpper).isEqualTo(PrState.OPEN);
-        assertThat(closedMixed).isEqualTo(PrState.MERGED);
+        assertAll(
+                () -> assertThat(openLower).isEqualTo(PrState.OPEN),
+                () -> assertThat(openUpper).isEqualTo(PrState.OPEN),
+                () -> assertThat(closedMixed).isEqualTo(PrState.MERGED)
+        );
     }
 
     @Test
@@ -74,8 +77,10 @@ class PrStateTest {
         PrState actual = PrState.create("open", false, true);
 
         // then
-        assertThat(actual).isEqualTo(PrState.DRAFT);
-        assertThat(actual).isNotEqualTo(PrState.OPEN);
+        assertAll(
+                () -> assertThat(actual).isEqualTo(PrState.DRAFT),
+                () -> assertThat(actual).isNotEqualTo(PrState.OPEN)
+        );
     }
 
     @Test
@@ -132,8 +137,10 @@ class PrStateTest {
         PrState open = PrState.OPEN;
 
         // when & then
-        assertThat(open.isDraft()).isFalse();
-        assertThat(open.isMerged()).isFalse();
-        assertThat(open.isClosed()).isFalse();
+        assertAll(
+                () -> assertThat(open.isDraft()).isFalse(),
+                () -> assertThat(open.isMerged()).isFalse(),
+                () -> assertThat(open.isClosed()).isFalse()
+        );
     }
 }
