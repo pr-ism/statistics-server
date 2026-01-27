@@ -4,9 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -83,64 +88,31 @@ class PrStateTest {
         );
     }
 
-    @Test
-    void DRAFT_상태인지_확인한다() {
-        // given
-        PrState draft = PrState.DRAFT;
-
-        // when
-        boolean actual = draft.isDraft();
-
-        // then
-        assertThat(actual).isTrue();
-    }
-
-    @Test
-    void OPEN_상태인지_확인한다() {
-        // given
-        PrState open = PrState.OPEN;
-
-        // when
-        boolean actual = open.isOpen();
-
-        // then
-        assertThat(actual).isTrue();
-    }
-
-    @Test
-    void MERGED_상태인지_확인한다() {
-        // given
-        PrState merged = PrState.MERGED;
-
-        // when
-        boolean actual = merged.isMerged();
-
-        // then
-        assertThat(actual).isTrue();
-    }
-
-    @Test
-    void CLOSED_상태인지_확인한다() {
-        // given
-        PrState closed = PrState.CLOSED;
-
-        // when
-        boolean actual = closed.isClosed();
-
-        // then
-        assertThat(actual).isTrue();
-    }
-
-    @Test
-    void 다른_상태에서는_false를_반환한다() {
-        // given
-        PrState open = PrState.OPEN;
-
+    @ParameterizedTest
+    @MethodSource("상태별_확인_메서드_테스트_데이터")
+    void 각_상태는_자신만_true이고_나머지는_false를_반환한다(
+            PrState state,
+            boolean expectedDraft,
+            boolean expectedOpen,
+            boolean expectedMerged,
+            boolean expectedClosed
+    ) {
         // when & then
         assertAll(
-                () -> assertThat(open.isDraft()).isFalse(),
-                () -> assertThat(open.isMerged()).isFalse(),
-                () -> assertThat(open.isClosed()).isFalse()
+                () -> assertThat(state.isDraft()).isEqualTo(expectedDraft),
+                () -> assertThat(state.isOpen()).isEqualTo(expectedOpen),
+                () -> assertThat(state.isMerged()).isEqualTo(expectedMerged),
+                () -> assertThat(state.isClosed()).isEqualTo(expectedClosed)
+        );
+    }
+
+    static Stream<Arguments> 상태별_확인_메서드_테스트_데이터() {
+        return Stream.of(
+                //          state,         isDraft, isOpen, isMerged, isClosed
+                Arguments.of(PrState.DRAFT,  true,   false,  false,    false),
+                Arguments.of(PrState.OPEN,   false,  true,   false,    false),
+                Arguments.of(PrState.MERGED, false,  false,  true,     false),
+                Arguments.of(PrState.CLOSED, false,  false,  false,    true)
         );
     }
 }
