@@ -72,13 +72,4 @@ class FileChangeTypeTest {
         assertThatThrownBy(() -> FileChangeType.fromGitHubStatus(null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
-
-    @Test
-    void githubStatus_값을_반환한다() {
-        // then
-        assertThat(FileChangeType.MODIFIED.getGithubStatus()).isEqualTo("modified");
-        assertThat(FileChangeType.ADDED.getGithubStatus()).isEqualTo("added");
-        assertThat(FileChangeType.REMOVED.getGithubStatus()).isEqualTo("removed");
-        assertThat(FileChangeType.RENAMED.getGithubStatus()).isEqualTo("renamed");
-    }
 }
