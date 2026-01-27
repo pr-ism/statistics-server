@@ -34,13 +34,13 @@ public class PrOpenedHandler {
 
     @Transactional
     public void handle(String apiKey, PrOpenedRequest request) {
+        Long projectId = projectRepository.findIdByApiKey(apiKey)
+                .orElseThrow(() -> new ProjectNotFoundException());
+
         if (request.isDraft()) {
             eventPublisher.publishEvent(new PrDraftCreatedEvent(request));
             return;
         }
-
-        Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new ProjectNotFoundException());
         PullRequestData prData = request.pullRequest();
 
         PullRequest savedPullRequest = savePullRequest(projectId, prData);
