@@ -3,6 +3,7 @@ package com.prism.statistics.domain.pullrequest;
 import com.prism.statistics.domain.common.CreatedAtEntity;
 import com.prism.statistics.domain.pullrequest.enums.FileChangeType;
 import com.prism.statistics.domain.pullrequest.vo.FileChanges;
+import com.prism.statistics.domain.pullrequest.vo.PreviousFileName;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -24,7 +25,8 @@ public class PrFileHistory extends CreatedAtEntity {
 
     private String fileName;
 
-    private String previousFileName;
+    @Embedded
+    private PreviousFileName previousFileName;
 
     @Enumerated(EnumType.STRING)
     private FileChangeType changeType;
@@ -43,7 +45,7 @@ public class PrFileHistory extends CreatedAtEntity {
     ) {
         validateBaseFields(pullRequestId, fileName, fileChanges, changedAt);
         validateChangeType(changeType);
-        return new PrFileHistory(pullRequestId, fileName, null, changeType, fileChanges, changedAt);
+        return new PrFileHistory(pullRequestId, fileName, PreviousFileName.empty(), changeType, fileChanges, changedAt);
     }
 
     public static PrFileHistory createRenamed(
@@ -54,8 +56,7 @@ public class PrFileHistory extends CreatedAtEntity {
             LocalDateTime changedAt
     ) {
         validateBaseFields(pullRequestId, fileName, fileChanges, changedAt);
-        validatePreviousFileName(previousFileName);
-        return new PrFileHistory(pullRequestId, fileName, previousFileName, FileChangeType.RENAMED, fileChanges, changedAt);
+        return new PrFileHistory(pullRequestId, fileName, PreviousFileName.of(previousFileName), FileChangeType.RENAMED, fileChanges, changedAt);
     }
 
     private static void validateBaseFields(Long pullRequestId, String fileName, FileChanges fileChanges, LocalDateTime changedAt) {
@@ -83,12 +84,6 @@ public class PrFileHistory extends CreatedAtEntity {
         }
     }
 
-    private static void validatePreviousFileName(String previousFileName) {
-        if (previousFileName == null || previousFileName.isBlank()) {
-            throw new IllegalArgumentException("이전 파일명은 필수입니다.");
-        }
-    }
-
     private static void validateFileChanges(FileChanges fileChanges) {
         if (fileChanges == null) {
             throw new IllegalArgumentException("파일 변경 정보는 필수입니다.");
@@ -104,7 +99,7 @@ public class PrFileHistory extends CreatedAtEntity {
     private PrFileHistory(
             Long pullRequestId,
             String fileName,
-            String previousFileName,
+            PreviousFileName previousFileName,
             FileChangeType changeType,
             FileChanges fileChanges,
             LocalDateTime changedAt
@@ -118,7 +113,7 @@ public class PrFileHistory extends CreatedAtEntity {
     }
 
     public boolean isRenamed() {
-        return previousFileName != null;
+        return previousFileName.isPresent();
     }
 
     public int getTotalChanges() {

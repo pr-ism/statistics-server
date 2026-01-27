@@ -37,7 +37,7 @@ class PrFileHistoryTest {
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isEqualTo(1L),
                 () -> assertThat(history.getFileName()).isEqualTo("src/main/java/com/example/Service.java"),
-                () -> assertThat(history.getPreviousFileName()).isNull(),
+                () -> assertThat(history.getPreviousFileName().isEmpty()).isTrue(),
                 () -> assertThat(history.getChangeType()).isEqualTo(FileChangeType.MODIFIED),
                 () -> assertThat(history.getFileChanges()).isEqualTo(FILE_CHANGES),
                 () -> assertThat(history.getChangedAt()).isEqualTo(CHANGED_AT),
@@ -60,7 +60,7 @@ class PrFileHistoryTest {
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isEqualTo(1L),
                 () -> assertThat(history.getFileName()).isEqualTo("NewName.java"),
-                () -> assertThat(history.getPreviousFileName()).isEqualTo("OldName.java"),
+                () -> assertThat(history.getPreviousFileName().getValue()).isEqualTo("OldName.java"),
                 () -> assertThat(history.getChangeType()).isEqualTo(FileChangeType.RENAMED),
                 () -> assertThat(history.getFileChanges()).isEqualTo(FILE_CHANGES),
                 () -> assertThat(history.getChangedAt()).isEqualTo(CHANGED_AT),
@@ -101,7 +101,7 @@ class PrFileHistoryTest {
         // then
         assertAll(
                 () -> assertThat(history.getChangeType()).isEqualTo(FileChangeType.RENAMED),
-                () -> assertThat(history.getPreviousFileName()).isNull(),
+                () -> assertThat(history.getPreviousFileName().isEmpty()).isTrue(),
                 () -> assertThat(history.isRenamed()).isFalse()
         );
     }
