@@ -194,7 +194,7 @@ class PrTimingTest {
         PrTiming timing = PrTiming.createMerged(createdAt, mergedAt, closedAt);
 
         // when
-        long mergeTimeMinutes = timing.calculateMergeTimeMinutes();
+        int mergeTimeMinutes = timing.calculateMergeTimeMinutes();
 
         // then
         assertThat(mergeTimeMinutes).isEqualTo(150);

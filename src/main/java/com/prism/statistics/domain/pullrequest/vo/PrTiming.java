@@ -75,10 +75,10 @@ public class PrTiming {
         this.closedAt = closedAt;
     }
 
-    public long calculateMergeTimeMinutes() {
+    public int calculateMergeTimeMinutes() {
         if (mergedAt == null) {
             throw new IllegalStateException("병합되지 않은 PR입니다.");
         }
-        return Duration.between(prCreatedAt, mergedAt).toMinutes();
+        return (int) Duration.between(prCreatedAt, mergedAt).toMinutes();
     }
 }

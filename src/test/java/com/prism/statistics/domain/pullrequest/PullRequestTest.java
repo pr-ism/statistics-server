@@ -238,7 +238,7 @@ class PullRequestTest {
         PullRequest pullRequest = createMergedPullRequest();
 
         // when
-        long mergeTimeMinutes = pullRequest.calculateMergeTimeMinutes();
+        int mergeTimeMinutes = pullRequest.calculateMergeTimeMinutes();
 
         // then
         assertThat(mergeTimeMinutes).isEqualTo(150);

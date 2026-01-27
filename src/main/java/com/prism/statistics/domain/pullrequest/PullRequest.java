@@ -168,7 +168,7 @@ public class PullRequest extends CreatedAtEntity {
         return this.state.isOpen();
     }
 
-    public long calculateMergeTimeMinutes() {
+    public int calculateMergeTimeMinutes() {
         if (!isMerged()) {
             throw new IllegalStateException("병합되지 않은 PR입니다.");
         }
