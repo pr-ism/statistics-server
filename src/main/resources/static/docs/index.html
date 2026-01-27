@@ -485,8 +485,12 @@ Content-Type: application/x-www-form-urlencoded</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
-Set-Cookie: refreshToken=new-refresh-token; Path=/; Max-Age=259200; Expires=Thu, 29 Jan 2026 12:28:26 GMT; Secure; HttpOnly; SameSite=None
-Set-Cookie: accessToken=new-access-token; Path=/; Max-Age=3600; Expires=Mon, 26 Jan 2026 13:28:26 GMT; Secure; HttpOnly; SameSite=None</code></pre>
+Set-Cookie: refreshToken=new-refresh-token; Path=/; Max-Age=259200; Expires=Fri, 30 Jan 2026 15:54:49 GMT; Secure; HttpOnly; SameSite=None
+Content-Type: application/json;charset=UTF-8
+
+{
+  "authorization" : "Bearer new-access-token"
+}</code></pre>
 </div>
 </div>
 </div>
@@ -505,12 +509,32 @@ Set-Cookie: accessToken=new-access-token; Path=/; Max-Age=3600; Expires=Mon, 26 
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>accessToken</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">새롭게 발급된 access token</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>refreshToken</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">새롭게 발급된 refresh token</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="Refresh-Token_response_fields"><a class="link" href="#Refresh-Token_response_fields">Response fields</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">필드명</th>
+<th class="tableblock halign-left valign-top">타입</th>
+<th class="tableblock halign-left valign-top">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>authorization</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">새롭게 발급된 access token</p></td>
 </tr>
 </tbody>
 </table>
@@ -723,7 +747,7 @@ Content-Type: application/json;charset=UTF-8
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-01-26 21:11:18 +0900
+Last updated 2026-01-28 00:45:00 +0900
 </div>
 </div>
 </body>

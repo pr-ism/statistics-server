@@ -4,4 +4,4 @@
 [[Refresh-Token]]
 === 토큰 재발급 API
 
-operation::refresh-token-controller-test/토큰_재발급_시_성공_테스트[snippets='http-request,request-cookies,http-response,response-cookies']
+operation::refresh-token-controller-test/토큰_재발급_시_성공_테스트[snippets='http-request,request-cookies,http-response,response-cookies,response-fields']
