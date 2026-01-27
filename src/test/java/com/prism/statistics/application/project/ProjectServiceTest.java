@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.project.dto.request.CreateProjectRequest;
 import com.prism.statistics.application.project.dto.response.CreateProjectResponse;
+import com.prism.statistics.application.project.dto.response.ProjectListResponse;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.jdbc.Sql;
 
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
@@ -28,5 +30,23 @@ class ProjectServiceTest {
 
         // then
         assertThat(actual.apiKey()).isNotBlank();
+    }
+
+    @Sql("/sql/project/insert_projects.sql")
+    @Test
+    void 사용자_ID로_프로젝트_목록을_조회한다() {
+        // given
+        Long userId = 7L;
+
+        // when
+        ProjectListResponse actual = projectService.findByUserId(userId);
+
+        // then
+        assertThat(actual.projects()).hasSize(2)
+                                     .extracting(projectResponse -> projectResponse.name())
+                                     .containsExactlyInAnyOrder(
+                                             "프로젝트 1",
+                                             "프로젝트 2"
+                                     );
     }
 }

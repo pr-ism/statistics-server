@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class ProjectRepositoryAdapter implements ProjectRepository {
@@ -32,5 +34,9 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
                 .where(project.apiKey.eq(apiKey))
                 .fetchOne()
         );
+      
+    @Override
+    public List<Project> findByUserId(Long userId) {
+        return jpaProjectRepository.findByUserId(userId);
     }
 }
