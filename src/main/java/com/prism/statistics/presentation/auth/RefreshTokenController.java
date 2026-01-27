@@ -5,6 +5,7 @@ import com.prism.statistics.application.auth.dto.response.TokenResponse;
 import com.prism.statistics.global.config.properties.CookieProperties;
 import com.prism.statistics.global.config.properties.TokenProperties;
 import com.prism.statistics.global.security.constants.TokenCookieName;
+import com.prism.statistics.presentation.auth.dto.response.AuthorizationResponse;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -26,15 +27,10 @@ public class RefreshTokenController {
     private final GenerateTokenService generateTokenService;
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<Void> refreshToken(@CookieValue(TokenCookieName.REFRESH_TOKEN) String refreshToken) {
+    public ResponseEntity<AuthorizationResponse> refreshToken(@CookieValue(TokenCookieName.REFRESH_TOKEN) String refreshToken) {
         validateRefreshToken(refreshToken);
 
         TokenResponse tokenResponse = generateTokenService.refreshToken(refreshToken);
-        HttpCookie accessTokenCookie = createCookie(
-                TokenCookieName.ACCESS_TOKEN,
-                tokenResponse.accessToken(),
-                tokenProperties.accessExpiredSeconds()
-        );
         HttpCookie refreshTokenCookie = createCookie(
                 TokenCookieName.REFRESH_TOKEN,
                 tokenResponse.refreshToken(),
@@ -43,8 +39,7 @@ public class RefreshTokenController {
 
         return ResponseEntity.ok()
                              .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-                             .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
-                             .build();
+                             .body(new AuthorizationResponse("Bearer " + tokenResponse.accessToken()));
     }
 
     private void validateRefreshToken(String refreshToken) {
