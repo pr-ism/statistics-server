@@ -10,5 +10,7 @@ public interface PrLabelRepository {
 
     Optional<PrLabel> findLabel(Long pullRequestId, String labelName);
 
+    boolean exists(Long pullRequestId, String labelName);
+
     void delete(PrLabel prLabel);
 }

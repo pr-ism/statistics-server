@@ -39,6 +39,19 @@ public class PrLabelRepositoryAdapter implements PrLabelRepository {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public boolean exists(Long pullRequestId, String labelName) {
+        return queryFactory
+                .selectOne()
+                .from(prLabel)
+                .where(
+                        prLabel.pullRequestId.eq(pullRequestId),
+                        prLabel.labelName.eq(labelName)
+                )
+                .fetchFirst() != null;
+    }
+
+    @Override
     @Transactional
     public void delete(PrLabel label) {
         jpaPrLabelRepository.delete(label);
