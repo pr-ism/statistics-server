@@ -38,14 +38,12 @@ public class LabelRemovedService {
 
         String labelName = request.label().name();
         Long pullRequestId = pullRequest.getId();
-
-        if (!prLabelRepository.exists(pullRequestId, labelName)) {
-            return;
-        }
-
         LocalDateTime unlabeledAt = toLocalDateTime(request.unlabeledAt());
 
-        prLabelRepository.deleteLabel(pullRequestId, labelName);
+        int deleted = prLabelRepository.deleteLabel(pullRequestId, labelName);
+        if (deleted == 0) {
+            return;
+        }
 
         PrLabelHistory prLabelHistory = PrLabelHistory.create(
                 pullRequest.getId(),
