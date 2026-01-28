@@ -8,9 +8,7 @@ public interface PrLabelRepository {
 
     PrLabel save(PrLabel prLabel);
 
-    Optional<PrLabel> findLabel(Long pullRequestId, String labelName);
-
     boolean exists(Long pullRequestId, String labelName);
 
-    void delete(PrLabel prLabel);
+    void deleteLabel(Long pullRequestId, String labelName);
 }

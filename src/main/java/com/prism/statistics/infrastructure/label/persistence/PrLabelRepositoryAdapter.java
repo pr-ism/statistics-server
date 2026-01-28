@@ -26,20 +26,6 @@ public class PrLabelRepositoryAdapter implements PrLabelRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<PrLabel> findLabel(Long pullRequestId, String labelName) {
-        return Optional.ofNullable(
-                queryFactory
-                        .selectFrom(prLabel)
-                        .where(
-                                prLabel.pullRequestId.eq(pullRequestId),
-                                prLabel.labelName.eq(labelName)
-                        )
-                        .fetchOne()
-        );
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public boolean exists(Long pullRequestId, String labelName) {
         return queryFactory
                 .selectOne()
@@ -53,7 +39,13 @@ public class PrLabelRepositoryAdapter implements PrLabelRepository {
 
     @Override
     @Transactional
-    public void delete(PrLabel label) {
-        jpaPrLabelRepository.delete(label);
+    public void deleteLabel(Long pullRequestId, String labelName) {
+        queryFactory
+                .delete(prLabel)
+                .where(
+                        prLabel.pullRequestId.eq(pullRequestId),
+                        prLabel.labelName.eq(labelName)
+                )
+                .execute();
     }
 }
