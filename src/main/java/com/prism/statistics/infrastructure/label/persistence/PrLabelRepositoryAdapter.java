@@ -26,7 +26,7 @@ public class PrLabelRepositoryAdapter implements PrLabelRepository {
     @Transactional(readOnly = true)
     public boolean exists(Long pullRequestId, String labelName) {
         return queryFactory
-                .select(prLabel.id)
+                .selectOne()
                 .from(prLabel)
                 .where(
                         prLabel.pullRequestId.eq(pullRequestId),
