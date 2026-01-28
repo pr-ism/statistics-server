@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -41,7 +42,8 @@ class PrLabelTest {
 
     @ParameterizedTest
     @NullAndEmptySource
-    void 라벨_이름이_null이거나_빈_문자열이면_예외가_발생한다(String labelName) {
+    @ValueSource(strings = " ")
+    void 라벨_이름이_null이거나_공백이면_예외가_발생한다(String labelName) {
         // when & then
         assertThatThrownBy(() -> PrLabel.create(1L, labelName, LABELED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
