@@ -87,27 +87,18 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private void writeResponse(HttpServletResponse response, LoggedInUserDto loggedInUserDto, TokenResponse tokenResponse) {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
+        response.setHeader(HttpHeaders.PRAGMA, "no-cache");
         response.setStatus(HttpStatus.CREATED.value());
-
-        addCookie(
-                response,
-                TokenCookieName.ACCESS_TOKEN,
-                tokenResponse.accessToken(),
-                tokenProperties.accessExpiredSeconds()
-        );
-        addCookie(
-                response,
-                TokenCookieName.REFRESH_TOKEN,
-                tokenResponse.refreshToken(),
-                tokenProperties.refreshExpiredSeconds()
-        );
+        addRefreshTokenCookie(response, tokenResponse.refreshToken(), tokenProperties.refreshExpiredSeconds());
 
         try {
             PrintWriter writer = response.getWriter();
             LoginSuccessResponse body = new LoginSuccessResponse(
                     loggedInUserDto.id(),
                     loggedInUserDto.nickname(),
-                    loggedInUserDto.isSignUp()
+                    loggedInUserDto.isSignUp(),
+                    "Bearer " + tokenResponse.accessToken()
             );
 
             writer.write(objectMapper.writeValueAsString(body));
@@ -117,7 +108,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         }
     }
 
-    private void handleLoginServerError(HttpServletResponse response, String message) throws IOException {
+    private void handleLoginServerError(HttpServletResponse response, String message) {
         log.error("OAuth2 인증 처리 중 서버 오류 : {}", message);
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -136,8 +127,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         }
     }
 
-    private void addCookie(HttpServletResponse response, String name, String value, long maxAge) {
-        ResponseCookie cookie = ResponseCookie.from(name, value)
+    private void addRefreshTokenCookie(HttpServletResponse response, String value, long maxAge) {
+        ResponseCookie cookie = ResponseCookie.from(TokenCookieName.REFRESH_TOKEN, value)
                                               .path(cookieProperties.path())
                                               .secure(true)
                                               .httpOnly(true)
@@ -148,6 +139,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    private record LoginSuccessResponse(Long userId, String nickname, boolean signUp) {
+    private record LoginSuccessResponse(Long userId, String nickname, boolean signUp, String authorization) {
     }
 }

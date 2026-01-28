@@ -8,6 +8,8 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
 import static org.springframework.restdocs.cookies.CookieDocumentation.requestCookies;
 import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -55,43 +57,38 @@ class RefreshTokenControllerTest extends CommonControllerSliceTestSupport {
                                                      )
                                              )
                                              .andExpect(status().isOk())
-                                             .andExpect(cookie().exists("refreshToken"))
-                                             .andExpect(cookie().value("refreshToken", tokenDto.refreshToken()))
-                                             .andExpect(cookie().httpOnly("refreshToken", true))
-                                             .andExpect(cookie().secure("refreshToken", true))
-                                             .andExpect(cookie().path("refreshToken", "/"))
-                                             .andExpect(cookie().exists("accessToken"))
-                                             .andExpect(cookie().value("accessToken", tokenDto.accessToken()))
-                                             .andExpect(cookie().httpOnly("accessToken", true))
-                                             .andExpect(cookie().secure("accessToken", true))
-                                             .andExpect(cookie().path("accessToken", "/"))
-                                             .andExpect(header().stringValues(HttpHeaders.SET_COOKIE, iterableWithSize(2)))
-                                             .andExpect(header().stringValues(HttpHeaders.SET_COOKIE, hasItem(allOf(
-                                                     containsString("refreshToken="),
-                                                     containsString("Max-Age="),
-                                                     containsString("SameSite=None")
-                                             ))))
-                                             .andExpect(header().stringValues(HttpHeaders.SET_COOKIE, hasItem(allOf(
-                                                     containsString("accessToken="),
-                                                     containsString("Max-Age="),
-                                                     containsString("SameSite=None")
-                                             ))));
+                                                        .andExpect(cookie().exists("refreshToken"))
+                                                        .andExpect(cookie().value("refreshToken", tokenDto.refreshToken()))
+                                                        .andExpect(cookie().httpOnly("refreshToken", true))
+                                                        .andExpect(cookie().secure("refreshToken", true))
+                                                        .andExpect(cookie().path("refreshToken", "/"))
+                                                        .andExpect(header().stringValues(HttpHeaders.SET_COOKIE, iterableWithSize(1)))
+                                                        .andExpect(header().stringValues(HttpHeaders.SET_COOKIE, hasItem(allOf(
+                                                                containsString("refreshToken="),
+                                                                containsString("Max-Age="),
+                                                                containsString("SameSite=None")
+                                                        ))))
+                                                        .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
+                                                        .andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
+                                                        .andExpect(jsonPath("$.authorization").value("Bearer new-access-token"));
 
         토큰_재발급_문서화(resultActions);
     }
 
     private void 토큰_재발급_문서화(ResultActions resultActions) throws Exception {
         resultActions.andDo(
-                restDocs.document(
-                        requestCookies(
-                                cookieWithName("refreshToken").description("토큰 재발급을 위한 refresh token cookie")
-                        ),
-                        responseCookies(
-                                cookieWithName("accessToken").description("새롭게 발급된 access token"),
-                                cookieWithName("refreshToken").description("새롭게 발급된 refresh token")
+                        restDocs.document(
+                                requestCookies(
+                                        cookieWithName("refreshToken").description("토큰 재발급을 위한 refresh token cookie")
+                                ),
+                                responseCookies(
+                                        cookieWithName("refreshToken").description("새롭게 발급된 refresh token")
+                                ),
+                                responseFields(
+                                        fieldWithPath("authorization").description("새롭게 발급된 access token")
+                                )
                         )
-                )
-        );
+                );
     }
 
     @Test
