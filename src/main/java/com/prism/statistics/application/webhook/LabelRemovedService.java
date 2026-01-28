@@ -40,7 +40,7 @@ public class LabelRemovedService {
         Long pullRequestId = pullRequest.getId();
         LocalDateTime unlabeledAt = toLocalDateTime(request.unlabeledAt());
 
-        int deleted = prLabelRepository.deleteLabel(pullRequestId, labelName);
+        long deleted = prLabelRepository.deleteLabel(pullRequestId, labelName);
         if (deleted == 0) {
             return;
         }

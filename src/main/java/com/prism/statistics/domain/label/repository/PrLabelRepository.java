@@ -8,5 +8,5 @@ public interface PrLabelRepository {
 
     boolean exists(Long pullRequestId, String labelName);
 
-    int deleteLabel(Long pullRequestId, String labelName);
+    long deleteLabel(Long pullRequestId, String labelName);
 }

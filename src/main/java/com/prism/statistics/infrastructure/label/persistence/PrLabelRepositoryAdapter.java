@@ -37,8 +37,8 @@ public class PrLabelRepositoryAdapter implements PrLabelRepository {
 
     @Override
     @Transactional
-    public int deleteLabel(Long pullRequestId, String labelName) {
-        return (int) queryFactory
+    public long deleteLabel(Long pullRequestId, String labelName) {
+        return queryFactory
                 .delete(prLabel)
                 .where(
                         prLabel.pullRequestId.eq(pullRequestId),
