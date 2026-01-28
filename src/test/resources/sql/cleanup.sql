@@ -1,5 +1,7 @@
 SET REFERENTIAL_INTEGRITY FALSE;
 
+TRUNCATE TABLE pr_label_histories;
+TRUNCATE TABLE pr_labels;
 TRUNCATE TABLE pr_file_histories;
 TRUNCATE TABLE pr_change_histories;
 TRUNCATE TABLE pr_state_change_histories;
