@@ -8,9 +8,11 @@ import com.prism.statistics.global.exception.dto.response.DefaultErrorCode;
 import com.prism.statistics.global.exception.dto.response.ErrorCode;
 import com.prism.statistics.global.exception.dto.response.ExceptionResponse;
 import com.prism.statistics.global.exception.dto.response.ProjectErrorCode;
+import com.prism.statistics.global.exception.dto.response.PullRequestErrorCode;
 import com.prism.statistics.global.exception.dto.response.UserErrorCode;
 import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUserIdentityException;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -89,6 +91,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.info("ProjectNotFoundException : {}", ex.getMessage());
 
         return createResponseEntity(ProjectErrorCode.PROJECT_NOT_FOUND);
+    }
+
+    @ExceptionHandler(PullRequestNotFoundException.class)
+    public ResponseEntity<Object> handlePullRequestNotFoundException(PullRequestNotFoundException ex) {
+        log.info("PullRequestNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(PullRequestErrorCode.PULL_REQUEST_NOT_FOUND);
     }
 
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
