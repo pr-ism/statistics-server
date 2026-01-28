@@ -26,7 +26,7 @@ public class PrLabelRepositoryAdapter implements PrLabelRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<PrLabel> findLabel(Long pullRequest, String labelName) {
+    public Optional<PrLabel> findLabel(Long pullRequestId, String labelName) {
         return Optional.ofNullable(
                 queryFactory
                         .selectFrom(prLabel)
