@@ -26,6 +26,9 @@ on:
   pull_request:
     types: [opened, labeled, unlabeled]
 
+env:
+  WEBHOOK_URL: ${{ secrets.STATISTICS_WEBHOOK_URL }}
+
 # ... (opened 처리 생략)
 
       - name: Handle labeled event
