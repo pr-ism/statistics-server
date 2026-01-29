@@ -45,6 +45,14 @@ public record PullRequestDetailResponse(
     }
 
     public static PullRequestDetailResponse from(PullRequest pullRequest) {
+        PrChangeStats changeStats = pullRequest.getChangeStats();
+        if (changeStats == null) {
+            throw new IllegalStateException("변경 통계가 준비되지 않았습니다.");
+        }
+        PrTiming timing = pullRequest.getTiming();
+        if (timing == null) {
+            throw new IllegalStateException("타이밍 정보가 준비되지 않았습니다.");
+        }
         return new PullRequestDetailResponse(
                 pullRequest.getId(),
                 pullRequest.getPrNumber(),
@@ -53,8 +61,8 @@ public record PullRequestDetailResponse(
                 pullRequest.getAuthorGithubId(),
                 pullRequest.getLink(),
                 pullRequest.getCommitCount(),
-                ChangeStatsResponse.from(pullRequest.getChangeStats()),
-                TimingResponse.from(pullRequest.getTiming())
+                ChangeStatsResponse.from(changeStats),
+                TimingResponse.from(timing)
         );
     }
 }
