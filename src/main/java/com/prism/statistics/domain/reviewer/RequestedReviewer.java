@@ -18,23 +18,23 @@ public class RequestedReviewer extends CreatedAtEntity {
 
     private Long pullRequestId;
 
-    private String reviewerUsername;
+    private String githubMention;
 
-    private Long reviewerGithubId;
+    private Long githubUid;
 
     private LocalDateTime requestedAt;
 
     public static RequestedReviewer create(
             Long pullRequestId,
-            String reviewerUsername,
-            Long reviewerGithubId,
+            String githubMention,
+            Long githubUid,
             LocalDateTime requestedAt
     ) {
         validatePullRequestId(pullRequestId);
-        validateReviewerUsername(reviewerUsername);
-        validateReviewerGithubId(reviewerGithubId);
+        validateGithubMention(githubMention);
+        validateGithubUid(githubUid);
         validateRequestedAt(requestedAt);
-        return new RequestedReviewer(pullRequestId, reviewerUsername, reviewerGithubId, requestedAt);
+        return new RequestedReviewer(pullRequestId, githubMention, githubUid, requestedAt);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
@@ -43,15 +43,15 @@ public class RequestedReviewer extends CreatedAtEntity {
         }
     }
 
-    private static void validateReviewerUsername(String reviewerUsername) {
-        if (reviewerUsername == null || reviewerUsername.isBlank()) {
-            throw new IllegalArgumentException("리뷰어 사용자명은 필수입니다.");
+    private static void validateGithubMention(String githubMention) {
+        if (githubMention == null || githubMention.isBlank()) {
+            throw new IllegalArgumentException("GitHub 멘션은 필수입니다.");
         }
     }
 
-    private static void validateReviewerGithubId(Long reviewerGithubId) {
-        if (reviewerGithubId == null) {
-            throw new IllegalArgumentException("리뷰어 GitHub ID는 필수입니다.");
+    private static void validateGithubUid(Long githubUid) {
+        if (githubUid == null) {
+            throw new IllegalArgumentException("GitHub UID는 필수입니다.");
         }
     }
 
@@ -63,13 +63,13 @@ public class RequestedReviewer extends CreatedAtEntity {
 
     private RequestedReviewer(
             Long pullRequestId,
-            String reviewerUsername,
-            Long reviewerGithubId,
+            String githubMention,
+            Long githubUid,
             LocalDateTime requestedAt
     ) {
         this.pullRequestId = pullRequestId;
-        this.reviewerUsername = reviewerUsername;
-        this.reviewerGithubId = reviewerGithubId;
+        this.githubMention = githubMention;
+        this.githubUid = githubUid;
         this.requestedAt = requestedAt;
     }
 }
