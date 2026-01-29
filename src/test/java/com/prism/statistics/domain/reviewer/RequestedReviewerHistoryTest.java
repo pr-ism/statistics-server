@@ -31,8 +31,8 @@ class RequestedReviewerHistoryTest {
         // then
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isEqualTo(1L),
-                () -> assertThat(history.getReviewerUsername()).isEqualTo("reviewer1"),
-                () -> assertThat(history.getReviewerGithubId()).isEqualTo(12345L),
+                () -> assertThat(history.getGithubMention()).isEqualTo("reviewer1"),
+                () -> assertThat(history.getGithubUid()).isEqualTo(12345L),
                 () -> assertThat(history.getAction()).isEqualTo(ReviewerAction.REQUESTED),
                 () -> assertThat(history.getChangedAt()).isEqualTo(CHANGED_AT)
         );
@@ -48,8 +48,8 @@ class RequestedReviewerHistoryTest {
         // then
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isEqualTo(1L),
-                () -> assertThat(history.getReviewerUsername()).isEqualTo("reviewer1"),
-                () -> assertThat(history.getReviewerGithubId()).isEqualTo(12345L),
+                () -> assertThat(history.getGithubMention()).isEqualTo("reviewer1"),
+                () -> assertThat(history.getGithubUid()).isEqualTo(12345L),
                 () -> assertThat(history.getAction()).isEqualTo(ReviewerAction.REMOVED),
                 () -> assertThat(history.getChangedAt()).isEqualTo(CHANGED_AT)
         );
@@ -68,23 +68,23 @@ class RequestedReviewerHistoryTest {
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {" "})
-    void 리뷰어_사용자명이_null이거나_빈_문자열이면_예외가_발생한다(String reviewerUsername) {
+    void GitHub_멘션이_null이거나_빈_문자열이면_예외가_발생한다(String githubMention) {
         // when & then
         assertThatThrownBy(() -> RequestedReviewerHistory.create(
-                1L, reviewerUsername, 12345L, ReviewerAction.REQUESTED, CHANGED_AT
+                1L, githubMention, 12345L, ReviewerAction.REQUESTED, CHANGED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("리뷰어 사용자명은 필수입니다.");
+                .hasMessage("GitHub 멘션은 필수입니다.");
     }
 
     @Test
-    void 리뷰어_GitHub_ID가_null이면_예외가_발생한다() {
+    void GitHub_UID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> RequestedReviewerHistory.create(
                 1L, "reviewer1", null, ReviewerAction.REQUESTED, CHANGED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("리뷰어 GitHub ID는 필수입니다.");
+                .hasMessage("GitHub UID는 필수입니다.");
     }
 
     @Test

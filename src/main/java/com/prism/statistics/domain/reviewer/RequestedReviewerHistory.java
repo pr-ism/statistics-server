@@ -20,9 +20,9 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
 
     private Long pullRequestId;
 
-    private String reviewerUsername;
+    private String githubMention;
 
-    private Long reviewerGithubId;
+    private Long githubUid;
 
     @Enumerated(EnumType.STRING)
     private ReviewerAction action;
@@ -31,17 +31,17 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
 
     public static RequestedReviewerHistory create(
             Long pullRequestId,
-            String reviewerUsername,
-            Long reviewerGithubId,
+            String githubMention,
+            Long githubUid,
             ReviewerAction action,
             LocalDateTime changedAt
     ) {
         validatePullRequestId(pullRequestId);
-        validateReviewerUsername(reviewerUsername);
-        validateReviewerGithubId(reviewerGithubId);
+        validateGithubMention(githubMention);
+        validateGithubUid(githubUid);
         validateAction(action);
         validateChangedAt(changedAt);
-        return new RequestedReviewerHistory(pullRequestId, reviewerUsername, reviewerGithubId, action, changedAt);
+        return new RequestedReviewerHistory(pullRequestId, githubMention, githubUid, action, changedAt);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
@@ -50,15 +50,15 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
         }
     }
 
-    private static void validateReviewerUsername(String reviewerUsername) {
-        if (reviewerUsername == null || reviewerUsername.isBlank()) {
-            throw new IllegalArgumentException("리뷰어 사용자명은 필수입니다.");
+    private static void validateGithubMention(String githubMention) {
+        if (githubMention == null || githubMention.isBlank()) {
+            throw new IllegalArgumentException("GitHub 멘션은 필수입니다.");
         }
     }
 
-    private static void validateReviewerGithubId(Long reviewerGithubId) {
-        if (reviewerGithubId == null) {
-            throw new IllegalArgumentException("리뷰어 GitHub ID는 필수입니다.");
+    private static void validateGithubUid(Long githubUid) {
+        if (githubUid == null) {
+            throw new IllegalArgumentException("GitHub UID는 필수입니다.");
         }
     }
 
@@ -76,14 +76,14 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
 
     private RequestedReviewerHistory(
             Long pullRequestId,
-            String reviewerUsername,
-            Long reviewerGithubId,
+            String githubMention,
+            Long githubUid,
             ReviewerAction action,
             LocalDateTime changedAt
     ) {
         this.pullRequestId = pullRequestId;
-        this.reviewerUsername = reviewerUsername;
-        this.reviewerGithubId = reviewerGithubId;
+        this.githubMention = githubMention;
+        this.githubUid = githubUid;
         this.action = action;
         this.changedAt = changedAt;
     }
