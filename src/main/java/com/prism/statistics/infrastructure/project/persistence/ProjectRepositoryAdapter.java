@@ -5,12 +5,11 @@ import static com.prism.statistics.domain.project.QProject.project;
 import com.prism.statistics.domain.project.Project;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -37,7 +36,20 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     }
 
     @Override
-    public List<Project> findByUserId(Long userId) {
+    public List<Project> findAllProjectsByUserId(Long userId) {
         return jpaProjectRepository.findByUserId(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByIdAndUserId(Long projectId, Long userId) {
+        return queryFactory
+                .selectOne()
+                .from(project)
+                .where(
+                        project.id.eq(projectId),
+                        project.userId.eq(userId)
+                )
+                .fetchFirst() != null;
     }
 }
