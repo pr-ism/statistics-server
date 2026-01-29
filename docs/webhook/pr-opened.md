@@ -90,7 +90,7 @@ jobs:
             curl -X POST \
               -H "Content-Type: application/json" \
               -H "X-API-Key: ${{ secrets.PRISM_API_KEY }}" \
-              -d "$PAYLOAD" "$WEBHOOK_URL" --fail --silent --show-error
+              -d "$PAYLOAD" "$WEBHOOK_URL/pr/opened" --fail --silent --show-error
           fi
 ```
 
