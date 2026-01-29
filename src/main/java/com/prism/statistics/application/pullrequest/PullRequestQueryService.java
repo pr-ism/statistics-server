@@ -25,7 +25,7 @@ public class PullRequestQueryService {
         validateProjectOwnership(projectId, userId);
 
         List<PullRequestSummary> pullRequests = pullRequestRepository.findAllByProjectId(projectId).stream()
-                .map(PullRequestSummary::from)
+                .map(pr -> PullRequestSummary.from(pr))
                 .toList();
 
         return new PullRequestListResponse(pullRequests);
@@ -36,13 +36,13 @@ public class PullRequestQueryService {
         validateProjectOwnership(projectId, userId);
 
         PullRequest pullRequest = pullRequestRepository.findPullRequest(projectId, prNumber)
-                .orElseThrow(PullRequestNotFoundException::new);
+                .orElseThrow(() -> new PullRequestNotFoundException());
 
         return PullRequestDetailResponse.from(pullRequest);
     }
 
     private void validateProjectOwnership(Long projectId, Long userId) {
         projectRepository.findIdByProjectIdAndUserId(projectId, userId)
-                .orElseThrow(ProjectNotFoundException::new);
+                .orElseThrow(() -> new ProjectNotFoundException());
     }
 }
