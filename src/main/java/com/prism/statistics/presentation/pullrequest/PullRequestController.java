@@ -23,7 +23,7 @@ public class PullRequestController {
             AuthUserId authUserId,
             @PathVariable Long projectId
     ) {
-        PullRequestListResponse response = pullRequestQueryService.findAllByProjectId(
+        PullRequestListResponse response = pullRequestQueryService.findAll(
                 authUserId.userId(), projectId
         );
         return ResponseEntity.ok(response);
@@ -35,7 +35,7 @@ public class PullRequestController {
             @PathVariable Long projectId,
             @PathVariable int prNumber
     ) {
-        PullRequestDetailResponse response = pullRequestQueryService.findByProjectIdAndPrNumber(
+        PullRequestDetailResponse response = pullRequestQueryService.find(
                 authUserId.userId(), projectId, prNumber
         );
         return ResponseEntity.ok(response);

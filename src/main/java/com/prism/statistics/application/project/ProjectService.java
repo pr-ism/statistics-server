@@ -28,8 +28,8 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public ProjectListResponse findByUserId(Long userId) {
-        List<ProjectListResponse.ProjectResponse> projects = projectRepository.findByUserId(userId).stream()
+    public ProjectListResponse find(Long userId) {
+        List<ProjectListResponse.ProjectResponse> projects = projectRepository.findAllProjectsByUserId(userId).stream()
                 .map(project -> ProjectListResponse.ProjectResponse.from(project))
                 .toList();
 

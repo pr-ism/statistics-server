@@ -30,12 +30,12 @@ public class ProjectController {
         CreateProjectResponse response = projectService.create(authUserId.userId(), request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                             .body(response);
+                .body(response);
     }
 
     @GetMapping
     public ResponseEntity<ProjectListResponse> getProjects(AuthUserId authUserId) {
-        ProjectListResponse response = projectService.findByUserId(authUserId.userId());
+        ProjectListResponse response = projectService.find(authUserId.userId());
         return ResponseEntity.ok(response);
     }
 }

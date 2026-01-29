@@ -21,7 +21,7 @@ public class PullRequestQueryService {
     private final ProjectRepository projectRepository;
 
     @Transactional(readOnly = true)
-    public PullRequestListResponse findAllByProjectId(Long userId, Long projectId) {
+    public PullRequestListResponse findAll(Long userId, Long projectId) {
         validateProjectOwnership(projectId, userId);
 
         List<PullRequestSummary> pullRequests = pullRequestRepository.findAllByProjectId(projectId).stream()
@@ -32,7 +32,7 @@ public class PullRequestQueryService {
     }
 
     @Transactional(readOnly = true)
-    public PullRequestDetailResponse findByProjectIdAndPrNumber(Long userId, Long projectId, int prNumber) {
+    public PullRequestDetailResponse find(Long userId, Long projectId, int prNumber) {
         validateProjectOwnership(projectId, userId);
 
         PullRequest pullRequest = pullRequestRepository.findPullRequest(projectId, prNumber)
