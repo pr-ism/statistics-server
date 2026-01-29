@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -52,5 +53,15 @@ public class PullRequestRepositoryAdapter implements PullRequestRepository {
                         .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                         .fetchOne()
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PullRequest> findAllByProjectId(Long projectId) {
+        return queryFactory
+                .selectFrom(pullRequest)
+                .where(pullRequest.projectId.eq(projectId))
+                .orderBy(pullRequest.prNumber.desc())
+                .fetch();
     }
 }
