@@ -42,16 +42,14 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Long> findIdByProjectIdAndUserId(Long projectId, Long userId) {
-        return Optional.ofNullable(
-                queryFactory
-                        .select(project.id)
-                        .from(project)
-                        .where(
-                                project.id.eq(projectId),
-                                project.userId.eq(userId)
-                        )
-                        .fetchOne()
-        );
+    public boolean existsByIdAndUserId(Long projectId, Long userId) {
+        return queryFactory
+                .selectOne()
+                .from(project)
+                .where(
+                        project.id.eq(projectId),
+                        project.userId.eq(userId)
+                )
+                .fetchFirst() != null;
     }
 }

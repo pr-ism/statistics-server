@@ -42,7 +42,8 @@ public class PullRequestQueryService {
     }
 
     private void validateProjectOwnership(Long projectId, Long userId) {
-        projectRepository.findIdByProjectIdAndUserId(projectId, userId)
-                .orElseThrow(() -> new ProjectNotFoundException());
+        if (!projectRepository.existsByIdAndUserId(projectId, userId)) {
+            throw new ProjectNotFoundException();
+        }
     }
 }
