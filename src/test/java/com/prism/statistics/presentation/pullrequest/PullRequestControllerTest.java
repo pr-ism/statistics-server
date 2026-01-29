@@ -39,9 +39,9 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
         // given
         PullRequestListResponse response = new PullRequestListResponse(
                 List.of(
-                        new PullRequestSummary(1L, 30, "세 번째 PR", "CLOSED", "author1", "https://github.com/test/repo/pull/30"),
-                        new PullRequestSummary(2L, 20, "두 번째 PR", "MERGED", "author2", "https://github.com/test/repo/pull/20"),
-                        new PullRequestSummary(3L, 10, "첫 번째 PR", "OPEN", "author1", "https://github.com/test/repo/pull/10")
+                        new PullRequestSummary(1L, 30, "세 번째 PR", "CLOSED", "author1", "https://github.com/test/repo/pull/30", 1),
+                        new PullRequestSummary(2L, 20, "두 번째 PR", "MERGED", "author2", "https://github.com/test/repo/pull/20", 4),
+                        new PullRequestSummary(3L, 10, "첫 번째 PR", "OPEN", "author1", "https://github.com/test/repo/pull/10", 2)
                 )
         );
 
@@ -78,7 +78,8 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                                 fieldWithPath("pullRequests[].title").description("PR 제목"),
                                 fieldWithPath("pullRequests[].state").description("PR 상태 (OPEN, MERGED, CLOSED, DRAFT)"),
                                 fieldWithPath("pullRequests[].authorGithubId").description("작성자 GitHub ID"),
-                                fieldWithPath("pullRequests[].link").description("PR 링크")
+                                fieldWithPath("pullRequests[].link").description("PR 링크"),
+                                fieldWithPath("pullRequests[].commitCount").description("커밋 수")
                         )
                 )
         );
