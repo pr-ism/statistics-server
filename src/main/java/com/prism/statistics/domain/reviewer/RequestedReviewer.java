@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "reviewer_assignments")
+@Table(name = "requested_reviewers")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RequestedReviewer extends CreatedAtEntity {
 
