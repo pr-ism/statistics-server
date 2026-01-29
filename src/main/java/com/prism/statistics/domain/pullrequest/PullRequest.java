@@ -174,4 +174,8 @@ public class PullRequest extends CreatedAtEntity {
         }
         return timing.calculateMergeTimeMinutes();
     }
+
+    public PrTiming getTimingOrDefault() {
+        return this.timing != null ? this.timing : PrTiming.createOpen(this.getCreatedAt());
+    }
 }

@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PrChangeStats {
 
+    public static final PrChangeStats EMPTY = new PrChangeStats(0, 0, 0);
+
     private int changedFileCount;
 
     private int additionCount;

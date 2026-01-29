@@ -4,6 +4,7 @@ import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.vo.PrChangeStats;
 import com.prism.statistics.domain.pullrequest.vo.PrTiming;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public record PullRequestDetailResponse(
         Long id,
@@ -46,23 +47,17 @@ public record PullRequestDetailResponse(
 
     public static PullRequestDetailResponse from(PullRequest pullRequest) {
         PrChangeStats changeStats = pullRequest.getChangeStats();
-        if (changeStats == null) {
-            throw new IllegalStateException("변경 통계가 준비되지 않았습니다.");
-        }
-        PrTiming timing = pullRequest.getTiming();
-        if (timing == null) {
-            throw new IllegalStateException("타이밍 정보가 준비되지 않았습니다.");
-        }
+
         return new PullRequestDetailResponse(
-                pullRequest.getId(),
-                pullRequest.getPrNumber(),
-                pullRequest.getTitle(),
-                pullRequest.getState().name(),
-                pullRequest.getAuthorGithubId(),
-                pullRequest.getLink(),
-                pullRequest.getCommitCount(),
-                ChangeStatsResponse.from(changeStats),
-                TimingResponse.from(timing)
+            pullRequest.getId(),
+            pullRequest.getPrNumber(),
+            pullRequest.getTitle(),
+            pullRequest.getState().name(),
+            pullRequest.getAuthorGithubId(),
+            pullRequest.getLink(),
+            pullRequest.getCommitCount(),
+            ChangeStatsResponse.from(Objects.requireNonNullElse(changeStats, PrChangeStats.EMPTY)),
+            TimingResponse.from(pullRequest.getTimingOrDefault())
         );
     }
 }
