@@ -7,11 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.webhook.dto.request.ReviewerRemovedRequest;
 import com.prism.statistics.application.webhook.dto.request.ReviewerRemovedRequest.ReviewerData;
-import com.prism.statistics.domain.reviewer.RequestedReviewerHistory;
+import com.prism.statistics.domain.reviewer.RequestedReviewerChangeHistory;
 import com.prism.statistics.domain.reviewer.enums.ReviewerAction;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
-import com.prism.statistics.infrastructure.reviewer.persistence.JpaRequestedReviewerHistoryRepository;
+import com.prism.statistics.infrastructure.reviewer.persistence.JpaRequestedReviewerChangeHistoryRepository;
 import com.prism.statistics.infrastructure.reviewer.persistence.JpaRequestedReviewerRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -40,7 +40,7 @@ class ReviewerRemovedServiceTest {
     private JpaRequestedReviewerRepository jpaRequestedReviewerRepository;
 
     @Autowired
-    private JpaRequestedReviewerHistoryRepository jpaRequestedReviewerHistoryRepository;
+    private JpaRequestedReviewerChangeHistoryRepository jpaRequestedReviewerChangeHistoryRepository;
 
     @Sql("/sql/webhook/insert_project_pr_and_reviewer.sql")
     @Test
@@ -54,7 +54,7 @@ class ReviewerRemovedServiceTest {
         // then
         assertAll(
                 () -> assertThat(jpaRequestedReviewerRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaRequestedReviewerHistoryRepository.count()).isEqualTo(1)
+                () -> assertThat(jpaRequestedReviewerChangeHistoryRepository.count()).isEqualTo(1)
         );
     }
 
@@ -70,10 +70,10 @@ class ReviewerRemovedServiceTest {
         reviewerRemovedService.removeReviewer(TEST_API_KEY, request);
 
         // then
-        List<RequestedReviewerHistory> histories = jpaRequestedReviewerHistoryRepository.findAll();
+        List<RequestedReviewerChangeHistory> histories = jpaRequestedReviewerChangeHistoryRepository.findAll();
         assertThat(histories).hasSize(1);
 
-        RequestedReviewerHistory history = histories.get(0);
+        RequestedReviewerChangeHistory history = histories.get(0);
         assertAll(
                 () -> assertThat(history.getGithubMention()).isEqualTo(githubMention),
                 () -> assertThat(history.getGithubUid()).isEqualTo(githubUid),
@@ -94,7 +94,7 @@ class ReviewerRemovedServiceTest {
         // then
         assertAll(
                 () -> assertThat(jpaRequestedReviewerRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaRequestedReviewerHistoryRepository.count()).isEqualTo(0)
+                () -> assertThat(jpaRequestedReviewerChangeHistoryRepository.count()).isEqualTo(0)
         );
     }
 
@@ -111,7 +111,7 @@ class ReviewerRemovedServiceTest {
         // then
         assertAll(
                 () -> assertThat(jpaRequestedReviewerRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaRequestedReviewerHistoryRepository.count()).isEqualTo(1)
+                () -> assertThat(jpaRequestedReviewerChangeHistoryRepository.count()).isEqualTo(1)
         );
     }
 

@@ -4,9 +4,9 @@ import com.prism.statistics.application.webhook.dto.request.ReviewerRemovedReque
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestRepository;
-import com.prism.statistics.domain.reviewer.RequestedReviewerHistory;
+import com.prism.statistics.domain.reviewer.RequestedReviewerChangeHistory;
 import com.prism.statistics.domain.reviewer.enums.ReviewerAction;
-import com.prism.statistics.domain.reviewer.repository.RequestedReviewerHistoryRepository;
+import com.prism.statistics.domain.reviewer.repository.RequestedReviewerChangeHistoryRepository;
 import com.prism.statistics.domain.reviewer.repository.RequestedReviewerRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
@@ -26,7 +26,7 @@ public class ReviewerRemovedService {
     private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final RequestedReviewerRepository requestedReviewerRepository;
-    private final RequestedReviewerHistoryRepository requestedReviewerHistoryRepository;
+    private final RequestedReviewerChangeHistoryRepository requestedReviewerChangeHistoryRepository;
 
     @Transactional
     public void removeReviewer(String apiKey, ReviewerRemovedRequest request) {
@@ -46,14 +46,14 @@ public class ReviewerRemovedService {
             return;
         }
 
-        RequestedReviewerHistory history = RequestedReviewerHistory.create(
+        RequestedReviewerChangeHistory history = RequestedReviewerChangeHistory.create(
                 pullRequestId,
                 githubMention,
                 githubUid,
                 ReviewerAction.REMOVED,
                 removedAt
         );
-        requestedReviewerHistoryRepository.save(history);
+        requestedReviewerChangeHistoryRepository.save(history);
     }
 
     private LocalDateTime toLocalDateTime(Instant instant) {

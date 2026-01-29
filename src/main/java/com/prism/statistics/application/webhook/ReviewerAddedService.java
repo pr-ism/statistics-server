@@ -5,9 +5,9 @@ import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.reviewer.RequestedReviewer;
-import com.prism.statistics.domain.reviewer.RequestedReviewerHistory;
+import com.prism.statistics.domain.reviewer.RequestedReviewerChangeHistory;
 import com.prism.statistics.domain.reviewer.enums.ReviewerAction;
-import com.prism.statistics.domain.reviewer.repository.RequestedReviewerHistoryRepository;
+import com.prism.statistics.domain.reviewer.repository.RequestedReviewerChangeHistoryRepository;
 import com.prism.statistics.domain.reviewer.repository.RequestedReviewerRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
@@ -28,7 +28,7 @@ public class ReviewerAddedService {
     private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final RequestedReviewerRepository requestedReviewerRepository;
-    private final RequestedReviewerHistoryRepository requestedReviewerHistoryRepository;
+    private final RequestedReviewerChangeHistoryRepository requestedReviewerChangeHistoryRepository;
 
     @Transactional
     public void addReviewer(String apiKey, ReviewerAddedRequest request) {
@@ -61,14 +61,14 @@ public class ReviewerAddedService {
             return;
         }
 
-        RequestedReviewerHistory history = RequestedReviewerHistory.create(
+        RequestedReviewerChangeHistory history = RequestedReviewerChangeHistory.create(
                 pullRequestId,
                 githubMention,
                 githubUid,
                 ReviewerAction.REQUESTED,
                 requestedAt
         );
-        requestedReviewerHistoryRepository.save(history);
+        requestedReviewerChangeHistoryRepository.save(history);
     }
 
     private LocalDateTime toLocalDateTime(Instant instant) {
