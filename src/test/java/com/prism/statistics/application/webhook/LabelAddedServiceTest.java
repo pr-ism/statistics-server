@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.webhook.dto.request.LabelAddedRequest;
 import com.prism.statistics.application.webhook.dto.request.LabelAddedRequest.LabelData;
+import com.prism.statistics.domain.label.PrLabel;
+import com.prism.statistics.domain.label.PrLabelHistory;
 import com.prism.statistics.domain.label.enums.LabelAction;
 import com.prism.statistics.infrastructure.label.persistence.JpaPrLabelHistoryRepository;
 import com.prism.statistics.infrastructure.label.persistence.JpaPrLabelRepository;
@@ -64,7 +66,7 @@ class LabelAddedServiceTest {
         labelAddedService.addLabel(TEST_API_KEY, request);
 
         // then
-        var prLabel = jpaPrLabelRepository.findAll().iterator().next();
+        PrLabel prLabel = jpaPrLabelRepository.findAll().getFirst();
         assertThat(prLabel.getLabelName()).isEqualTo(labelName);
     }
 
@@ -79,7 +81,7 @@ class LabelAddedServiceTest {
         labelAddedService.addLabel(TEST_API_KEY, request);
 
         // then
-        var prLabelHistory = jpaPrLabelHistoryRepository.findAll().iterator().next();
+        PrLabelHistory prLabelHistory = jpaPrLabelHistoryRepository.findAll().getFirst();
         assertAll(
                 () -> assertThat(prLabelHistory.getLabelName()).isEqualTo(labelName),
                 () -> assertThat(prLabelHistory.getAction()).isEqualTo(LabelAction.ADDED)

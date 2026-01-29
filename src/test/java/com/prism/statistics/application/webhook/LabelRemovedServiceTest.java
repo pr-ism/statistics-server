@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.webhook.dto.request.LabelRemovedRequest;
 import com.prism.statistics.application.webhook.dto.request.LabelRemovedRequest.LabelData;
+import com.prism.statistics.domain.label.PrLabelHistory;
 import com.prism.statistics.domain.label.enums.LabelAction;
 import com.prism.statistics.infrastructure.label.persistence.JpaPrLabelHistoryRepository;
 import com.prism.statistics.infrastructure.label.persistence.JpaPrLabelRepository;
@@ -64,7 +65,7 @@ class LabelRemovedServiceTest {
         labelRemovedService.removeLabel(TEST_API_KEY, request);
 
         // then
-        var prLabelHistory = jpaPrLabelHistoryRepository.findAll().iterator().next();
+        PrLabelHistory prLabelHistory = jpaPrLabelHistoryRepository.findAll().getFirst();
         assertAll(
                 () -> assertThat(prLabelHistory.getLabelName()).isEqualTo(labelName),
                 () -> assertThat(prLabelHistory.getAction()).isEqualTo(LabelAction.REMOVED)
