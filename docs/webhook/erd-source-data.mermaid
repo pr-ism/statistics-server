@@ -51,11 +51,11 @@ erDiagram
         LocalDateTime addedAt
     }
 
-    PrLabelChangeHistory {
+    PrLabelHistory {
         Long id PK
-        Long prLabelId FK
-        String previousLabel
-        String newLabel
+        Long pullRequestId FK
+        String labelName
+        LabelAction action "ADDED/REMOVED"
         LocalDateTime changedAt
     }
 
@@ -89,17 +89,20 @@ erDiagram
     }
 
     %% ===== 리뷰어 요청 영역 =====
-    ReviewerAssignment {
+    RequestedReviewer {
         Long id PK
         Long pullRequestId FK
-        String requestedReviewerGithubId
-        LocalDateTime addedAt
+        String githubMention
+        Long githubUid
+        LocalDateTime requestedAt
     }
 
-    ReviewerChangeHistory {
+    RequestedReviewerChangeHistory {
         Long id PK
-        Long reviewerAssignmentId FK
-        String action "added/removed"
+        Long pullRequestId FK
+        String githubMention
+        Long githubUid
+        ReviewerAction action "ADDED/REMOVED"
         LocalDateTime changedAt
     }
 
@@ -162,12 +165,12 @@ erDiagram
     PullRequest ||--o{ PrFile : "has"
     PullRequest ||--o{ PrFileHistory : "has"
     PullRequest ||--o{ Commit : "has"
-    PullRequest ||--o{ ReviewerAssignment : "has"
+    PullRequest ||--o{ RequestedReviewer : "has"
+    PullRequest ||--o{ RequestedReviewerChangeHistory : "has"
     PullRequest ||--o{ Review : "has"
     PullRequest ||--o{ PrClosingIssue : "closes"
     PullRequest ||--o{ SlackNotification : "has"
 
-    PrLabel ||--o{ PrLabelChangeHistory : "has"
-    ReviewerAssignment ||--o{ ReviewerChangeHistory : "has"
+    PullRequest ||--o{ PrLabelHistory : "has"
     Review ||--o{ ReviewComment : "has"
     Issue ||--o{ PrClosingIssue : "closedBy"
