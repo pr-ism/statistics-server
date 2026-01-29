@@ -1,9 +1,8 @@
 package com.prism.statistics.domain.project.repository;
 
 import com.prism.statistics.domain.project.Project;
-import java.util.Optional;
-
 import java.util.List;
+import java.util.Optional;
 
 public interface ProjectRepository {
 
@@ -13,5 +12,5 @@ public interface ProjectRepository {
 
     List<Project> findByUserId(Long userId);
 
-    Optional<Long> existsByIdAndUserId(Long projectId, Long userId);
+    Optional<Long> findIdByProjectIdAndUserId(Long projectId, Long userId);
 }

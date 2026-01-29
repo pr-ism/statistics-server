@@ -52,7 +52,7 @@ class ProjectRepositoryAdapterTest {
         Long userId = 1L;
 
         // when
-        Optional<Long> actual = projectRepositoryAdapter.existsByIdAndUserId(projectId, userId);
+        Optional<Long> actual = projectRepositoryAdapter.findIdByProjectIdAndUserId(projectId, userId);
 
         // then
         assertThat(actual).isPresent();
@@ -67,7 +67,7 @@ class ProjectRepositoryAdapterTest {
         Long otherUserId = 999L;
 
         // when
-        Optional<Long> actual = projectRepositoryAdapter.existsByIdAndUserId(projectId, otherUserId);
+        Optional<Long> actual = projectRepositoryAdapter.findIdByProjectIdAndUserId(projectId, otherUserId);
 
         // then
         assertThat(actual).isEmpty();
