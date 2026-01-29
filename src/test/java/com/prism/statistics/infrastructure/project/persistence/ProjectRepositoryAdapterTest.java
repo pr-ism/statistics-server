@@ -43,4 +43,33 @@ class ProjectRepositoryAdapterTest {
         // then
         assertThat(actual).isEmpty();
     }
+
+    @Sql("/sql/webhook/insert_project.sql")
+    @Test
+    void 프로젝트_ID와_사용자_ID로_존재_여부를_확인한다() {
+        // given
+        Long projectId = 1L;
+        Long userId = 1L;
+
+        // when
+        Optional<Long> actual = projectRepositoryAdapter.existsByIdAndUserId(projectId, userId);
+
+        // then
+        assertThat(actual).isPresent();
+        assertThat(actual.get()).isEqualTo(1L);
+    }
+
+    @Sql("/sql/webhook/insert_project.sql")
+    @Test
+    void 소유하지_않은_프로젝트는_빈_Optional을_반환한다() {
+        // given
+        Long projectId = 1L;
+        Long otherUserId = 999L;
+
+        // when
+        Optional<Long> actual = projectRepositoryAdapter.existsByIdAndUserId(projectId, otherUserId);
+
+        // then
+        assertThat(actual).isEmpty();
+    }
 }
