@@ -12,6 +12,7 @@ import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.Comm
 import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.CommitsConnection;
 import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.FileData;
 import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.PullRequestData;
+import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.enums.PrState;
 import com.prism.statistics.infrastructure.pullrequest.persistence.JpaCommitRepository;
 import com.prism.statistics.infrastructure.pullrequest.persistence.JpaPrChangeHistoryRepository;
@@ -87,7 +88,7 @@ class PrOpenedServiceTest {
         prOpenedService.handle(TEST_API_KEY, request);
 
         // then
-        var pullRequest = jpaPullRequestRepository.findAll().iterator().next();
+        PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
         assertThat(pullRequest.getState()).isEqualTo(PrState.OPEN);
     }
 
