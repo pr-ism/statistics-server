@@ -30,7 +30,7 @@ class PullRequestQueryServiceTest {
         Long projectId = 1L;
 
         // when
-        PullRequestListResponse actual = pullRequestQueryService.findAllByProjectId(userId, projectId);
+        PullRequestListResponse actual = pullRequestQueryService.findAll(userId, projectId);
 
         // then
         assertThat(actual.pullRequests()).hasSize(3)
@@ -46,7 +46,7 @@ class PullRequestQueryServiceTest {
         Long projectId = 1L;
 
         // when
-        PullRequestListResponse actual = pullRequestQueryService.findAllByProjectId(userId, projectId);
+        PullRequestListResponse actual = pullRequestQueryService.findAll(userId, projectId);
 
         // then
         assertThat(actual.pullRequests()).isEmpty();
@@ -61,7 +61,7 @@ class PullRequestQueryServiceTest {
         int prNumber = 20;
 
         // when
-        PullRequestDetailResponse actual = pullRequestQueryService.findByProjectIdAndPrNumber(
+        PullRequestDetailResponse actual = pullRequestQueryService.find(
                 userId, projectId, prNumber
         );
 
@@ -84,7 +84,7 @@ class PullRequestQueryServiceTest {
         Long projectId = 1L;
 
         // when & then
-        assertThatThrownBy(() -> pullRequestQueryService.findAllByProjectId(userId, projectId))
+        assertThatThrownBy(() -> pullRequestQueryService.findAll(userId, projectId))
                 .isInstanceOf(ProjectNotFoundException.class);
     }
 
@@ -97,7 +97,7 @@ class PullRequestQueryServiceTest {
         int prNumber = 10;
 
         // when & then
-        assertThatThrownBy(() -> pullRequestQueryService.findByProjectIdAndPrNumber(userId, projectId, prNumber))
+        assertThatThrownBy(() -> pullRequestQueryService.find(userId, projectId, prNumber))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -110,7 +110,7 @@ class PullRequestQueryServiceTest {
         int prNumber = 10;
 
         // when & then
-        assertThatThrownBy(() -> pullRequestQueryService.findByProjectIdAndPrNumber(userId, projectId, prNumber))
+        assertThatThrownBy(() -> pullRequestQueryService.find(userId, projectId, prNumber))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("타이밍 정보");
     }
@@ -124,7 +124,7 @@ class PullRequestQueryServiceTest {
         int prNumber = 999;
 
         // when & then
-        assertThatThrownBy(() -> pullRequestQueryService.findByProjectIdAndPrNumber(userId, projectId, prNumber))
+        assertThatThrownBy(() -> pullRequestQueryService.find(userId, projectId, prNumber))
                 .isInstanceOf(PullRequestNotFoundException.class);
     }
 }

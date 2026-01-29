@@ -113,7 +113,7 @@ class ProjectControllerTest extends CommonControllerSliceTestSupport {
                 )
         );
 
-        given(projectService.findByUserId(7L)).willReturn(response);
+        given(projectService.find(7L)).willReturn(response);
 
         // when & then
         ResultActions resultActions = mockMvc.perform(

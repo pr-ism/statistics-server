@@ -39,13 +39,16 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
         // given
         PullRequestListResponse response = new PullRequestListResponse(
                 List.of(
-                        new PullRequestSummary(1L, 30, "세 번째 PR", "CLOSED", "author1", "https://github.com/test/repo/pull/30", 1),
-                        new PullRequestSummary(2L, 20, "두 번째 PR", "MERGED", "author2", "https://github.com/test/repo/pull/20", 4),
-                        new PullRequestSummary(3L, 10, "첫 번째 PR", "OPEN", "author1", "https://github.com/test/repo/pull/10", 2)
+                        new PullRequestSummary(1L, 30, "세 번째 PR", "CLOSED", "author1",
+                                "https://github.com/test/repo/pull/30", 1),
+                        new PullRequestSummary(2L, 20, "두 번째 PR", "MERGED", "author2",
+                                "https://github.com/test/repo/pull/20", 4),
+                        new PullRequestSummary(3L, 10, "첫 번째 PR", "OPEN", "author1",
+                                "https://github.com/test/repo/pull/10", 2)
                 )
         );
 
-        given(pullRequestQueryService.findAllByProjectId(7L, 1L)).willReturn(response);
+        given(pullRequestQueryService.findAll(7L, 1L)).willReturn(response);
 
         // when & then
         ResultActions resultActions = mockMvc.perform(
@@ -76,7 +79,8 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                                 fieldWithPath("pullRequests[].id").description("PR 식별자"),
                                 fieldWithPath("pullRequests[].prNumber").description("GitHub PR 번호"),
                                 fieldWithPath("pullRequests[].title").description("PR 제목"),
-                                fieldWithPath("pullRequests[].state").description("PR 상태 (OPEN, MERGED, CLOSED, DRAFT)"),
+                                fieldWithPath("pullRequests[].state").description(
+                                        "PR 상태 (OPEN, MERGED, CLOSED, DRAFT)"),
                                 fieldWithPath("pullRequests[].authorGithubId").description("작성자 GitHub ID"),
                                 fieldWithPath("pullRequests[].link").description("PR 링크"),
                                 fieldWithPath("pullRequests[].commitCount").description("커밋 수")
@@ -105,7 +109,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                 )
         );
 
-        given(pullRequestQueryService.findByProjectIdAndPrNumber(7L, 1L, 20)).willReturn(response);
+        given(pullRequestQueryService.find(7L, 1L, 20)).willReturn(response);
 
         // when & then
         ResultActions resultActions = mockMvc.perform(
@@ -171,7 +175,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
     @WithOAuth2User(userId = 7L)
     void 존재하지_않는_프로젝트의_PR_목록을_조회하면_404를_반환한다() throws Exception {
         // given
-        given(pullRequestQueryService.findAllByProjectId(7L, 999L))
+        given(pullRequestQueryService.findAll(7L, 999L))
                 .willThrow(new ProjectNotFoundException());
 
         // when & then
@@ -187,7 +191,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
     @WithOAuth2User(userId = 7L)
     void 존재하지_않는_PR을_조회하면_404를_반환한다() throws Exception {
         // given
-        given(pullRequestQueryService.findByProjectIdAndPrNumber(7L, 1L, 999))
+        given(pullRequestQueryService.find(7L, 1L, 999))
                 .willThrow(new PullRequestNotFoundException());
 
         // when & then

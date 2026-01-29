@@ -39,14 +39,14 @@ class ProjectServiceTest {
         Long userId = 7L;
 
         // when
-        ProjectListResponse actual = projectService.findByUserId(userId);
+        ProjectListResponse actual = projectService.find(userId);
 
         // then
         assertThat(actual.projects()).hasSize(2)
-                                     .extracting(projectResponse -> projectResponse.name())
-                                     .containsExactlyInAnyOrder(
-                                             "프로젝트 1",
-                                             "프로젝트 2"
-                                     );
+                .extracting(projectResponse -> projectResponse.name())
+                .containsExactlyInAnyOrder(
+                        "프로젝트 1",
+                        "프로젝트 2"
+                );
     }
 }
