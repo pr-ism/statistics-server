@@ -10,3 +10,4 @@
 
 include::{docdir}/domain/auth.adoc[]
 include::{docdir}/domain/project.adoc[]
+include::{docdir}/domain/pull-request.adoc[]
