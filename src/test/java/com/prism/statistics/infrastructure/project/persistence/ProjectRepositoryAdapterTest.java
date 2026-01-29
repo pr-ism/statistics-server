@@ -52,24 +52,23 @@ class ProjectRepositoryAdapterTest {
         Long userId = 1L;
 
         // when
-        Optional<Long> actual = projectRepositoryAdapter.findIdByProjectIdAndUserId(projectId, userId);
+        boolean actual = projectRepositoryAdapter.existsByIdAndUserId(projectId, userId);
 
         // then
-        assertThat(actual).isPresent();
-        assertThat(actual.get()).isEqualTo(1L);
+        assertThat(actual).isTrue();
     }
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void 소유하지_않은_프로젝트는_빈_Optional을_반환한다() {
+    void 소유하지_않은_프로젝트는_false를_반환한다() {
         // given
         Long projectId = 1L;
         Long otherUserId = 999L;
 
         // when
-        Optional<Long> actual = projectRepositoryAdapter.findIdByProjectIdAndUserId(projectId, otherUserId);
+        boolean actual = projectRepositoryAdapter.existsByIdAndUserId(projectId, otherUserId);
 
         // then
-        assertThat(actual).isEmpty();
+        assertThat(actual).isFalse();
     }
 }

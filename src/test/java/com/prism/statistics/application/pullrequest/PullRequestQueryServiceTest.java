@@ -2,6 +2,7 @@ package com.prism.statistics.application.pullrequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.pullrequest.dto.response.PullRequestDetailResponse;
@@ -66,15 +67,17 @@ class PullRequestQueryServiceTest {
         );
 
         // then
-        assertThat(actual.prNumber()).isEqualTo(20);
-        assertThat(actual.title()).isEqualTo("두 번째 PR");
-        assertThat(actual.state()).isEqualTo("MERGED");
-        assertThat(actual.authorGithubId()).isEqualTo("author2");
-        assertThat(actual.commitCount()).isEqualTo(4);
-        assertThat(actual.changeStats().changedFileCount()).isEqualTo(5);
-        assertThat(actual.changeStats().additionCount()).isEqualTo(100);
-        assertThat(actual.changeStats().deletionCount()).isEqualTo(30);
-        assertThat(actual.timing().mergedAt()).isNotNull();
+        assertAll(
+                () -> assertThat(actual.prNumber()).isEqualTo(20),
+                () -> assertThat(actual.title()).isEqualTo("두 번째 PR"),
+                () -> assertThat(actual.state()).isEqualTo("MERGED"),
+                () -> assertThat(actual.authorGithubId()).isEqualTo("author2"),
+                () -> assertThat(actual.commitCount()).isEqualTo(4),
+                () -> assertThat(actual.changeStats().changedFileCount()).isEqualTo(5),
+                () -> assertThat(actual.changeStats().additionCount()).isEqualTo(100),
+                () -> assertThat(actual.changeStats().deletionCount()).isEqualTo(30),
+                () -> assertThat(actual.timing().mergedAt()).isNotNull()
+        );
     }
 
     @Test
