@@ -93,29 +93,42 @@ class PullRequestQueryServiceTest {
 
     @Sql("/sql/pullrequest/insert_project_and_pull_request_with_null_stats.sql")
     @Test
-    void changeStats가_null인_PR을_상세_조회하면_예외가_발생한다() {
+    void changeStats가_null인_PR을_상세_조회하면_기본값이_반환된다() {
         // given
         Long userId = 7L;
         Long projectId = 1L;
         int prNumber = 10;
 
-        // when & then
-        assertThatThrownBy(() -> pullRequestQueryService.find(userId, projectId, prNumber))
-                .isInstanceOf(IllegalStateException.class);
+        // when
+        PullRequestDetailResponse actual = pullRequestQueryService.find(userId, projectId, prNumber);
+
+        // then
+        assertAll(
+                () -> assertThat(actual.prNumber()).isEqualTo(10),
+                () -> assertThat(actual.changeStats().changedFileCount()).isZero(),
+                () -> assertThat(actual.changeStats().additionCount()).isZero(),
+                () -> assertThat(actual.changeStats().deletionCount()).isZero()
+        );
     }
 
     @Sql("/sql/pullrequest/insert_project_and_pull_request_with_null_timing.sql")
     @Test
-    void timing이_null인_PR을_상세_조회하면_예외가_발생한다() {
+    void timing이_null인_PR을_상세_조회하면_기본값이_반환된다() {
         // given
         Long userId = 7L;
         Long projectId = 1L;
         int prNumber = 10;
 
-        // when & then
-        assertThatThrownBy(() -> pullRequestQueryService.find(userId, projectId, prNumber))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("타이밍 정보");
+        // when
+        PullRequestDetailResponse actual = pullRequestQueryService.find(userId, projectId, prNumber);
+
+        // then
+        assertAll(
+                () -> assertThat(actual.prNumber()).isEqualTo(10),
+                () -> assertThat(actual.timing().prCreatedAt()).isNotNull(),
+                () -> assertThat(actual.timing().mergedAt()).isNull(),
+                () -> assertThat(actual.timing().closedAt()).isNull()
+        );
     }
 
     @Sql("/sql/pullrequest/insert_project_and_pull_requests.sql")
