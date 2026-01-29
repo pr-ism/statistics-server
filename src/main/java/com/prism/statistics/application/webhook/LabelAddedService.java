@@ -12,6 +12,7 @@ import com.prism.statistics.domain.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +48,11 @@ public class LabelAddedService {
         LocalDateTime labeledAt = toLocalDateTime(request.labeledAt());
 
         PrLabel prLabel = PrLabel.create(pullRequestId, labelName, labeledAt);
-        prLabelRepository.save(prLabel);
+        try {
+            prLabelRepository.save(prLabel);
+        } catch (DataIntegrityViolationException e) {
+            return;
+        }
 
         PrLabelHistory prLabelHistory = PrLabelHistory.create(
                 pullRequest.getId(),

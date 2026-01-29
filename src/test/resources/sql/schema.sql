@@ -117,7 +117,8 @@ CREATE TABLE IF NOT EXISTS pr_labels (
     created_at TIMESTAMP NOT NULL,
     pull_request_id BIGINT NOT NULL,
     label_name VARCHAR(255),
-    labeled_at TIMESTAMP
+    labeled_at TIMESTAMP,
+    CONSTRAINT uq_pr_labels UNIQUE (pull_request_id, label_name)
 );
 
 CREATE TABLE IF NOT EXISTS pr_label_histories (
