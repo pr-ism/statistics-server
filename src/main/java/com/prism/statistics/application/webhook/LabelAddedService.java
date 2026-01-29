@@ -35,7 +35,7 @@ public class LabelAddedService {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
                 .orElseThrow(() -> new ProjectNotFoundException());
 
-        PullRequest pullRequest = pullRequestRepository.findPullRequest(projectId, request.prNumber())
+        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.prNumber())
                 .orElseThrow(() -> new PullRequestNotFoundException());
 
         String labelName = request.label().name();
