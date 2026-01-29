@@ -1,7 +1,7 @@
 package com.prism.statistics.infrastructure.reviewer.persistence;
 
 import com.prism.statistics.domain.reviewer.RequestedReviewerHistory;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface JpaRequestedReviewerHistoryRepository extends CrudRepository<RequestedReviewerHistory, Long> {
+public interface JpaRequestedReviewerHistoryRepository extends JpaRepository<RequestedReviewerHistory, Long> {
 }
