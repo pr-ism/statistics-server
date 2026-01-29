@@ -101,6 +101,20 @@ class PullRequestQueryServiceTest {
                 .isInstanceOf(IllegalStateException.class);
     }
 
+    @Sql("/sql/pullrequest/insert_project_and_pull_request_with_null_timing.sql")
+    @Test
+    void timing이_null인_PR을_상세_조회하면_예외가_발생한다() {
+        // given
+        Long userId = 7L;
+        Long projectId = 1L;
+        int prNumber = 10;
+
+        // when & then
+        assertThatThrownBy(() -> pullRequestQueryService.findByProjectIdAndPrNumber(userId, projectId, prNumber))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("타이밍 정보");
+    }
+
     @Sql("/sql/pullrequest/insert_project_and_pull_requests.sql")
     @Test
     void 존재하지_않는_PR을_조회하면_예외가_발생한다() {
