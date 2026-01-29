@@ -10,7 +10,7 @@ public interface ProjectRepository {
 
     Optional<Long> findIdByApiKey(String apiKey);
 
-    List<Project> findByUserId(Long userId);
+    List<Project> findAllProjectsByUserId(Long userId);
 
     Optional<Long> findIdByProjectIdAndUserId(Long projectId, Long userId);
 }

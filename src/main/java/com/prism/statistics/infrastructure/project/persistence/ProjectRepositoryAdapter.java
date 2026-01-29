@@ -36,7 +36,7 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     }
 
     @Override
-    public List<Project> findByUserId(Long userId) {
+    public List<Project> findAllProjectsByUserId(Long userId) {
         return jpaProjectRepository.findByUserId(userId);
     }
 
