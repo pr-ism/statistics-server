@@ -10,6 +10,8 @@ public interface ProjectRepository {
     Project save(Project project);
 
     Optional<Long> findIdByApiKey(String apiKey);
-  
+
     List<Project> findByUserId(Long userId);
+
+    Optional<Long> existsByIdAndUserId(Long projectId, Long userId);
 }
