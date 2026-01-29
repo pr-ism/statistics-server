@@ -12,7 +12,8 @@ public record PullRequestListResponse(
             String title,
             String state,
             String authorGithubId,
-            String link
+            String link,
+            int commitCount
     ) {
         public static PullRequestSummary from(PullRequest pullRequest) {
             return new PullRequestSummary(
@@ -21,7 +22,8 @@ public record PullRequestListResponse(
                     pullRequest.getTitle(),
                     pullRequest.getState().name(),
                     pullRequest.getAuthorGithubId(),
-                    pullRequest.getLink()
+                    pullRequest.getLink(),
+                    pullRequest.getCommitCount()
             );
         }
     }
