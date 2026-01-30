@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.prism.statistics.application.webhook.ReviewerRemovedService;
@@ -95,7 +96,9 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
         )
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.errorCode").value("P00"))
+        .andExpect(jsonPath("$.message").value("프로젝트를 찾을 수 없습니다."));
     }
 
     @Test
@@ -122,6 +125,8 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
         )
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.errorCode").value("PR00"))
+        .andExpect(jsonPath("$.message").value("PR을 찾을 수 없습니다."));
     }
 }
