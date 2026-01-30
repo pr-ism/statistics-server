@@ -1,7 +1,7 @@
 package com.prism.statistics.infrastructure.pullrequest.persistence;
 
 import com.prism.statistics.domain.pullrequest.Commit;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.ListCrudRepository;
 
-public interface JpaCommitRepository extends JpaRepository<Commit, Long> {
+public interface JpaCommitRepository extends ListCrudRepository<Commit, Long> {
 }

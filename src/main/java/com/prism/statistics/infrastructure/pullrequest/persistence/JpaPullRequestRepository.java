@@ -1,7 +1,7 @@
 package com.prism.statistics.infrastructure.pullrequest.persistence;
 
 import com.prism.statistics.domain.pullrequest.PullRequest;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.ListCrudRepository;
 
-public interface JpaPullRequestRepository extends CrudRepository<PullRequest, Long> {
+public interface JpaPullRequestRepository extends ListCrudRepository<PullRequest, Long> {
 }
