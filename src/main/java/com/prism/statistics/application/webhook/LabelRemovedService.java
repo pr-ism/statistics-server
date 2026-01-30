@@ -36,17 +36,19 @@ public class LabelRemovedService {
         PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.prNumber())
                 .orElseThrow(() -> new PullRequestNotFoundException());
 
-        String labelName = request.label().name();
         Long pullRequestId = pullRequest.getId();
-        LocalDateTime unlabeledAt = toLocalDateTime(request.unlabeledAt());
+        String labelName = request.label().name();
 
         long deleted = prLabelRepository.deleteLabel(pullRequestId, labelName);
-        if (deleted == 0) {
+
+        if (deleted == 0L) {
             return;
         }
 
+        LocalDateTime unlabeledAt = toLocalDateTime(request.unlabeledAt());
+
         PrLabelHistory prLabelHistory = PrLabelHistory.create(
-                pullRequest.getId(),
+                pullRequestId,
                 labelName,
                 LabelAction.REMOVED,
                 unlabeledAt

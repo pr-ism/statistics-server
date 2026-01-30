@@ -20,6 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
@@ -127,9 +133,51 @@ class LabelRemovedServiceTest {
                 .isInstanceOf(PullRequestNotFoundException.class);
     }
 
+    @Sql("/sql/webhook/insert_project_pr_and_label.sql")
+    @Test
+    void 동일_Label을_동시에_삭제해도_한번만_삭제되고_단일_History만_저장된다() throws Exception {
+        // given
+        String labelName = "bug";
+        LabelRemovedRequest request = createLabelRemovedRequest(labelName);
+        int requestCount = 10;
+
+        CountDownLatch readyLatch = new CountDownLatch(requestCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<Future<Void>> futures = new ArrayList<>();
+
+        try (ExecutorService executorService = Executors.newFixedThreadPool(requestCount)) {
+            for (int i = 0; i < requestCount; i++) {
+                futures.add(executorService.submit(() -> {
+                    readyLatch.countDown();
+                    try {
+                        startLatch.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("시작 대기 중 인터럽트 발생", e);
+                    }
+                    // when
+                    labelRemovedService.removeLabel(TEST_API_KEY, request);
+                    return null;
+                }));
+            }
+
+            readyLatch.await();
+            startLatch.countDown();
+
+            for (Future<Void> future : futures) {
+                future.get();
+            }
+        }
+
+        // then
+        assertAll(
+                () -> assertThat(jpaPrLabelRepository.count()).isEqualTo(0),
+                () -> assertThat(jpaPrLabelHistoryRepository.count()).isEqualTo(1)
+        );
+    }
+
     private LabelRemovedRequest createLabelRemovedRequest(String labelName) {
         return new LabelRemovedRequest(
-                "owner/repo",
                 TEST_PR_NUMBER,
                 new LabelData(labelName),
                 Instant.parse("2024-01-15T10:00:00Z")
