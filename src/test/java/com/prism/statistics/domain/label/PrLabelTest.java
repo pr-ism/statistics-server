@@ -33,7 +33,7 @@ class PrLabelTest {
     }
 
     @Test
-    void PR_ID가_null이면_예외가_발생한다() {
+    void Pull_Request_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> PrLabel.create(null, "bug", LABELED_AT))
                 .isInstanceOf(IllegalArgumentException.class)

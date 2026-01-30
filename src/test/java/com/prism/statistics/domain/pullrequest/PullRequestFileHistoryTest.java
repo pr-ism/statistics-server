@@ -69,7 +69,7 @@ class PullRequestFileHistoryTest {
     }
 
     @Test
-    void PR_ID가_null이면_예외가_발생한다() {
+    void Pull_Request_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.create(null, "file.java", FileChangeType.ADDED, FILE_CHANGES, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
