@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.webhook.event.PullRequestDraftCreatedEvent;
+import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest;
 import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.Author;
 import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.CommitData;
@@ -25,12 +27,15 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Instant;
 import java.util.List;
 
 @IntegrationTest
+@RecordApplicationEvents
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class PullRequestOpenedServiceTest {
@@ -57,6 +62,9 @@ class PullRequestOpenedServiceTest {
 
     @Autowired
     private JpaPullRequestFileHistoryRepository jpaPullRequestFileHistoryRepository;
+
+    @Autowired
+    private ApplicationEvents applicationEvents;
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
@@ -94,7 +102,7 @@ class PullRequestOpenedServiceTest {
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void Draft_PR이면_엔티티가_저장되지_않는다() {
+    void Draft_Pull_Request_이면_엔티티가_저장되지_않는다() {
         // given
         PullRequestOpenedRequest request = createPrOpenedRequest(true);
 
@@ -110,6 +118,34 @@ class PullRequestOpenedServiceTest {
                 () -> assertThat(jpaPullRequestContentHistoryRepository.count()).isEqualTo(0),
                 () -> assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(0)
         );
+    }
+
+    @Sql("/sql/webhook/insert_project.sql")
+    @Test
+    void Pull_Request_생성_시_PullRequestOpenCreatedEvent가_발행된다() {
+        // given
+        PullRequestOpenedRequest request = createPrOpenedRequest(false);
+
+        // when
+        pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
+
+        // then
+        long eventCount = applicationEvents.stream(PullRequestOpenCreatedEvent.class).count();
+        assertThat(eventCount).isEqualTo(1);
+    }
+
+    @Sql("/sql/webhook/insert_project.sql")
+    @Test
+    void Draft_PR_생성_시_PullRequestDraftCreatedEvent가_발행된다() {
+        // given
+        PullRequestOpenedRequest request = createPrOpenedRequest(true);
+
+        // when
+        pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
+
+        // then
+        long eventCount = applicationEvents.stream(PullRequestDraftCreatedEvent.class).count();
+        assertThat(eventCount).isEqualTo(1);
     }
 
     @Test
