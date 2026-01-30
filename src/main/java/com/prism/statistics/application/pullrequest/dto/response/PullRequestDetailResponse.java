@@ -15,16 +15,16 @@ public record PullRequestDetailResponse(
         String authorGithubId,
         String link,
         int commitCount,
-        ChangeStatsResponse changeStats,
+        PullRequestChangeStatsResponse changeStats,
         TimingResponse timing
 ) {
-    public record ChangeStatsResponse(
+    public record PullRequestChangeStatsResponse(
             int changedFileCount,
             int additionCount,
             int deletionCount
     ) {
-        public static ChangeStatsResponse from(PullRequestChangeStats changeStats) {
-            return new ChangeStatsResponse(
+        public static PullRequestChangeStatsResponse from(PullRequestChangeStats changeStats) {
+            return new PullRequestChangeStatsResponse(
                     changeStats.getChangedFileCount(),
                     changeStats.getAdditionCount(),
                     changeStats.getDeletionCount()
@@ -57,7 +57,7 @@ public record PullRequestDetailResponse(
             pullRequest.getAuthorGithubId(),
             pullRequest.getLink(),
             pullRequest.getCommitCount(),
-            ChangeStatsResponse.from(Objects.requireNonNullElse(pullRequestChangeStats, PullRequestChangeStats.EMPTY)),
+            PullRequestChangeStatsResponse.from(Objects.requireNonNullElse(pullRequestChangeStats, PullRequestChangeStats.EMPTY)),
             TimingResponse.from(pullRequest.getTimingOrDefault())
         );
     }
