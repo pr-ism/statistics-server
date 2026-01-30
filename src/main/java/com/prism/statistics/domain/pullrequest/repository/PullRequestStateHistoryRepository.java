@@ -4,5 +4,5 @@ import com.prism.statistics.domain.pullrequest.PullRequestStateHistory;
 
 public interface PullRequestStateHistoryRepository {
 
-    PullRequestStateHistory save(PullRequestStateHistory prStateChangeHistory);
+    PullRequestStateHistory save(PullRequestStateHistory pullRequestStateHistory);
 }

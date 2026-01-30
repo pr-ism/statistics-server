@@ -4,6 +4,7 @@ import com.prism.statistics.domain.pullrequest.PullRequestStateHistory;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestStateHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
@@ -12,7 +13,8 @@ public class PullRequestStateHistoryRepositoryAdapter implements PullRequestStat
     private final JpaPullRequestStateHistoryRepository jpaPullRequestStateHistoryRepository;
 
     @Override
-    public PullRequestStateHistory save(PullRequestStateHistory prStateChangeHistory) {
-        return jpaPullRequestStateHistoryRepository.save(prStateChangeHistory);
+    @Transactional
+    public PullRequestStateHistory save(PullRequestStateHistory pullRequestStateHistory) {
+        return jpaPullRequestStateHistoryRepository.save(pullRequestStateHistory);
     }
 }
