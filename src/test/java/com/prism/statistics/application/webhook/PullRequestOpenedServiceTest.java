@@ -70,7 +70,7 @@ class PullRequestOpenedServiceTest {
     @Test
     void Pull_Request_opened_이벤트를_처리하면_모든_엔티티가_저장된다() {
         // given
-        PullRequestOpenedRequest request = createPrOpenedRequest(false);
+        PullRequestOpenedRequest request = createPullRequestOpenedRequest(false);
 
         // when
         pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
@@ -90,7 +90,7 @@ class PullRequestOpenedServiceTest {
     @Test
     void Pull_Request_opened_이벤트를_처리하면_OPEN_상태로_저장된다() {
         // given
-        PullRequestOpenedRequest request = createPrOpenedRequest(false);
+        PullRequestOpenedRequest request = createPullRequestOpenedRequest(false);
 
         // when
         pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
@@ -104,7 +104,7 @@ class PullRequestOpenedServiceTest {
     @Test
     void Draft_Pull_Request_이면_엔티티가_저장되지_않는다() {
         // given
-        PullRequestOpenedRequest request = createPrOpenedRequest(true);
+        PullRequestOpenedRequest request = createPullRequestOpenedRequest(true);
 
         // when
         pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
@@ -124,7 +124,7 @@ class PullRequestOpenedServiceTest {
     @Test
     void Pull_Request_생성_시_PullRequestOpenCreatedEvent가_발행된다() {
         // given
-        PullRequestOpenedRequest request = createPrOpenedRequest(false);
+        PullRequestOpenedRequest request = createPullRequestOpenedRequest(false);
 
         // when
         pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
@@ -138,7 +138,7 @@ class PullRequestOpenedServiceTest {
     @Test
     void Draft_PR_생성_시_PullRequestDraftCreatedEvent가_발행된다() {
         // given
-        PullRequestOpenedRequest request = createPrOpenedRequest(true);
+        PullRequestOpenedRequest request = createPullRequestOpenedRequest(true);
 
         // when
         pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
@@ -151,7 +151,7 @@ class PullRequestOpenedServiceTest {
     @Test
     void 존재하지_않는_API_Key면_예외가_발생한다() {
         // given
-        PullRequestOpenedRequest request = createPrOpenedRequest(false);
+        PullRequestOpenedRequest request = createPullRequestOpenedRequest(false);
         String invalidApiKey = "invalid-api-key";
 
         // when & then
@@ -160,7 +160,7 @@ class PullRequestOpenedServiceTest {
                 .hasMessage("유효하지 않은 API Key입니다.");
     }
 
-    private PullRequestOpenedRequest createPrOpenedRequest(boolean isDraft) {
+    private PullRequestOpenedRequest createPullRequestOpenedRequest(boolean isDraft) {
         List<CommitNode> commitNodes = List.of(
                 new CommitNode(new CommitData("abc123", Instant.parse("2024-01-15T09:00:00Z"))),
                 new CommitNode(new CommitData("def456", Instant.parse("2024-01-15T09:30:00Z")))

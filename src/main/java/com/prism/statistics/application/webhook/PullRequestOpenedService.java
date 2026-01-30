@@ -46,7 +46,7 @@ public class PullRequestOpenedService {
 
         PullRequest savedPullRequest = savePullRequest(projectId, pullRequestData);
 
-        publishPrOpenCreatedEvent(savedPullRequest, projectId, pullRequestData, request);
+        publishPullRequestOpenCreatedEvent(savedPullRequest, projectId, pullRequestData, request);
     }
 
     private PullRequest savePullRequest(Long projectId, PullRequestData pullRequestData) {
@@ -74,7 +74,7 @@ public class PullRequestOpenedService {
         return pullRequestRepository.save(pullRequest);
     }
 
-    private void publishPrOpenCreatedEvent(
+    private void publishPullRequestOpenCreatedEvent(
             PullRequest savedPullRequest,
             Long projectId,
             PullRequestData pullRequestData,

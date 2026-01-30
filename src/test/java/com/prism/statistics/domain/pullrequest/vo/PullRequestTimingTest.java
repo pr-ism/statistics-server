@@ -59,7 +59,7 @@ class PullRequestTimingTest {
         // when & then
         assertThatThrownBy(() -> PullRequestTiming.createDraft(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 생성 시각은 필수입니다.");
+                .hasMessage("PullRequest 생성 시각은 필수입니다.");
     }
 
     @Test
@@ -167,7 +167,7 @@ class PullRequestTimingTest {
         // when & then
         assertThatThrownBy(() -> PullRequestTiming.createClosed(null, closedAt))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 생성 시각은 필수입니다.");
+                .hasMessage("PullRequest 생성 시각은 필수입니다.");
     }
 
     @Test
