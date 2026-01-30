@@ -7,60 +7,60 @@ erDiagram
         Long userId FK
     }
 
-    %% ===== PR 핵심 영역 =====
+    %% ===== PullRequest 핵심 영역 =====
     PullRequest {
         Long id PK
         Long projectId FK
-        int prNumber
+        int pullRequestNumber
         String title
-        PrState state "DRAFT/OPEN/MERGED/CLOSED"
+        PullRequestState state "DRAFT/OPEN/MERGED/CLOSED"
         String authorGithubId
         String link
-        int changedFileCount "PrChangeStats VO"
-        int additionCount "PrChangeStats VO"
-        int deletionCount "PrChangeStats VO"
+        int changedFileCount "PullRequestChangeStats VO"
+        int additionCount "PullRequestChangeStats VO"
+        int deletionCount "PullRequestChangeStats VO"
         int commitCount
-        LocalDateTime prCreatedAt "PrTiming VO"
-        LocalDateTime mergedAt "PrTiming VO"
-        LocalDateTime closedAt "PrTiming VO"
+        LocalDateTime pullRequestCreatedAt "PullRequestTiming VO"
+        LocalDateTime mergedAt "PullRequestTiming VO"
+        LocalDateTime closedAt "PullRequestTiming VO"
     }
 
-    PrStateChangeHistory {
+    PullRequestStateHistory {
         Long id PK
         Long pullRequestId FK
-        PrState previousState
-        PrState newState
+        PullRequestState previousState
+        PullRequestState newState
         LocalDateTime changedAt
     }
 
-    PrChangeHistory {
+    PullRequestContentHistory {
         Long id PK
         Long pullRequestId FK
-        int changedFileCount "PrChangeStats VO"
-        int additionCount "PrChangeStats VO"
-        int deletionCount "PrChangeStats VO"
+        int changedFileCount "PullRequestChangeStats VO"
+        int additionCount "PullRequestChangeStats VO"
+        int deletionCount "PullRequestChangeStats VO"
         int commitCount
         LocalDateTime changedAt
     }
 
     %% ===== 라벨 영역 =====
-    PrLabel {
+    PullRequestLabel {
         Long id PK
         Long pullRequestId FK
         String labelName
-        LocalDateTime addedAt
+        LocalDateTime labeledAt
     }
 
-    PrLabelHistory {
+    PullRequestLabelHistory {
         Long id PK
         Long pullRequestId FK
         String labelName
-        LabelAction action "ADDED/REMOVED"
+        PullRequestLabelAction action "ADDED/REMOVED"
         LocalDateTime changedAt
     }
 
     %% ===== 파일 변경 영역 =====
-    PrFile {
+    PullRequestFile {
         Long id PK
         Long pullRequestId FK
         String fileName
@@ -69,7 +69,7 @@ erDiagram
         int deletions "FileChanges VO"
     }
 
-    PrFileHistory {
+    PullRequestFileHistory {
         Long id PK
         Long pullRequestId FK
         String fileName
@@ -97,12 +97,12 @@ erDiagram
         LocalDateTime requestedAt
     }
 
-    RequestedReviewerChangeHistory {
+    RequestedReviewerHistory {
         Long id PK
         Long pullRequestId FK
         String githubMention
         Long githubUid
-        ReviewerAction action "ADDED/REMOVED"
+        ReviewerAction action "REQUESTED/REMOVED"
         LocalDateTime changedAt
     }
 
@@ -136,7 +136,7 @@ erDiagram
         LocalDateTime issueClosedAt
     }
 
-    PrClosingIssue {
+    PullRequestClosingIssue {
         Long id PK
         Long pullRequestId FK
         Long issueId FK
@@ -149,7 +149,7 @@ erDiagram
         String reviewerGithubId
         LocalDateTime reviewScheduledAt
         Boolean isReviewFulfilled
-        LocalDateTime prNotifiedAt
+        LocalDateTime pullRequestNotifiedAt
         Integer scheduleCancelCount
         LocalDateTime reviewTimeSelectedAt
         Integer scheduleChangeCount
@@ -159,18 +159,18 @@ erDiagram
     Project ||--o{ PullRequest : "has"
     Project ||--o{ Issue : "has"
 
-    PullRequest ||--o{ PrStateChangeHistory : "has"
-    PullRequest ||--o{ PrChangeHistory : "has"
-    PullRequest ||--o{ PrLabel : "has"
-    PullRequest ||--o{ PrFile : "has"
-    PullRequest ||--o{ PrFileHistory : "has"
+    PullRequest ||--o{ PullRequestStateHistory : "has"
+    PullRequest ||--o{ PullRequestContentHistory : "has"
+    PullRequest ||--o{ PullRequestLabel : "has"
+    PullRequest ||--o{ PullRequestFile : "has"
+    PullRequest ||--o{ PullRequestFileHistory : "has"
     PullRequest ||--o{ Commit : "has"
     PullRequest ||--o{ RequestedReviewer : "has"
-    PullRequest ||--o{ RequestedReviewerChangeHistory : "has"
+    PullRequest ||--o{ RequestedReviewerHistory : "has"
     PullRequest ||--o{ Review : "has"
-    PullRequest ||--o{ PrClosingIssue : "closes"
+    PullRequest ||--o{ PullRequestClosingIssue : "closes"
     PullRequest ||--o{ SlackNotification : "has"
 
-    PullRequest ||--o{ PrLabelHistory : "has"
+    PullRequest ||--o{ PullRequestLabelHistory : "has"
     Review ||--o{ ReviewComment : "has"
-    Issue ||--o{ PrClosingIssue : "closedBy"
+    Issue ||--o{ PullRequestClosingIssue : "closedBy"

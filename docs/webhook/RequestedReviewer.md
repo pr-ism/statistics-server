@@ -1,47 +1,22 @@
-# PR Reviewer 이벤트 스펙
+# PullRequest Reviewer 이벤트 스펙
 
 ## 개요
 
-PR에 리뷰어가 요청/삭제될 때 발생하는 이벤트입니다. `review_requested`와 `review_request_removed` 이벤트를 각각 다른 엔드포인트로 처리합니다.
+PullRequest에 리뷰어가 요청/삭제될 때 발생하는 이벤트입니다. `review_requested`와 `review_request_removed` 이벤트를 각각 다른 엔드포인트로 처리합니다.
 
 ## 수집 대상 원천 메타데이터 (데이터.pdf 기준)
 
 | 원천 메타 데이터 | 영어 표기 | 설명 |
 |----------------|----------|------|
-| 요청된 리뷰어 | requested_reviewer | PR에 리뷰어로 지정된 사람 |
+| 요청된 리뷰어 | requested_reviewer | PullRequest에 리뷰어로 지정된 사람 |
 | 리뷰어 추가 시각 | reviewer_added_at | 리뷰어가 지정된 시각 |
 
 ## 수집 대상 Entity
 
 | Entity | 설명 |
 |--------|------|
-| RequestedReviewer | 현재 PR에 요청된 리뷰어 (현재 상태) |
-| RequestedReviewerChangeHistory | 리뷰어 요청/삭제 이력 |
-
-```mermaid
-erDiagram
-    PullRequest ||--o{ RequestedReviewer : has
-    PullRequest ||--o{ RequestedReviewerChangeHistory : has
-
-    RequestedReviewer {
-        Long id PK
-        Long pullRequestId FK
-        String githubMention
-        Long githubUid
-        LocalDateTime requestedAt
-        LocalDateTime createdAt
-    }
-
-    RequestedReviewerChangeHistory {
-        Long id PK
-        Long pullRequestId FK
-        String githubMention
-        Long githubUid
-        ReviewerAction action
-        LocalDateTime changedAt
-        LocalDateTime createdAt
-    }
-```
+| RequestedReviewer | 현재 PullRequest에 요청된 리뷰어 (현재 상태) |
+| RequestedReviewerHistory | 리뷰어 요청/삭제 이력 |
 
 ---
 
@@ -103,12 +78,8 @@ jobs:
           PAYLOAD=$(jq -n \
             --argjson prData "$PR_DATA" \
             --argjson files "$FILES_DATA" \
-            --arg repositoryFullName "${{ github.repository }}" \
             --argjson isDraft "${{ github.event.pull_request.draft }}" \
             '{
-              eventType: "pull_request",
-              action: "opened",
-              repositoryFullName: $repositoryFullName,
               isDraft: $isDraft,
               pullRequest: $prData.data.repository.pullRequest,
               files: $files
@@ -118,20 +89,18 @@ jobs:
             curl -X POST \
               -H "Content-Type: application/json" \
               -H "X-API-Key: ${{ secrets.PRISM_API_KEY }}" \
-              -d "$PAYLOAD" "$WEBHOOK_URL/pr/opened" --fail --silent --show-error
+              -d "$PAYLOAD" "$WEBHOOK_URL/pull-request/opened" --fail --silent --show-error
           fi
 
       - name: Handle labeled event
         if: github.event.action == 'labeled'
         run: |
           PAYLOAD=$(jq -n \
-            --arg repositoryFullName "${{ github.repository }}" \
-            --argjson prNumber "${{ github.event.pull_request.number }}" \
+            --argjson pullRequestNumber "${{ github.event.pull_request.number }}" \
             --arg labelName "${{ github.event.label.name }}" \
             --arg labeledAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '{
-              repositoryFullName: $repositoryFullName,
-              prNumber: $prNumber,
+              pullRequestNumber: $pullRequestNumber,
               label: {
                 name: $labelName
               },
@@ -142,20 +111,18 @@ jobs:
             curl -X POST \
               -H "Content-Type: application/json" \
               -H "X-API-Key: ${{ secrets.PRISM_API_KEY }}" \
-              -d "$PAYLOAD" "$WEBHOOK_URL/label/added" --fail --silent --show-error
+              -d "$PAYLOAD" "$WEBHOOK_URL/pull-request/label/added" --fail --silent --show-error
           fi
 
       - name: Handle unlabeled event
         if: github.event.action == 'unlabeled'
         run: |
           PAYLOAD=$(jq -n \
-            --arg repositoryFullName "${{ github.repository }}" \
-            --argjson prNumber "${{ github.event.pull_request.number }}" \
+            --argjson pullRequestNumber "${{ github.event.pull_request.number }}" \
             --arg labelName "${{ github.event.label.name }}" \
             --arg unlabeledAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '{
-              repositoryFullName: $repositoryFullName,
-              prNumber: $prNumber,
+              pullRequestNumber: $pullRequestNumber,
               label: {
                 name: $labelName
               },
@@ -166,19 +133,19 @@ jobs:
             curl -X POST \
               -H "Content-Type: application/json" \
               -H "X-API-Key: ${{ secrets.PRISM_API_KEY }}" \
-              -d "$PAYLOAD" "$WEBHOOK_URL/label/removed" --fail --silent --show-error
+              -d "$PAYLOAD" "$WEBHOOK_URL/pull-request/label/removed" --fail --silent --show-error
           fi
 
       - name: Handle review_requested event
         if: github.event.action == 'review_requested'
         run: |
           PAYLOAD=$(jq -n \
-            --argjson prNumber "${{ github.event.pull_request.number }}" \
+            --argjson pullRequestNumber "${{ github.event.pull_request.number }}" \
             --arg login "${{ github.event.requested_reviewer.login }}" \
             --argjson id "${{ github.event.requested_reviewer.id }}" \
             --arg requestedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '{
-              prNumber: $prNumber,
+              pullRequestNumber: $pullRequestNumber,
               reviewer: {
                 login: $login,
                 id: $id
@@ -197,12 +164,12 @@ jobs:
         if: github.event.action == 'review_request_removed'
         run: |
           PAYLOAD=$(jq -n \
-            --argjson prNumber "${{ github.event.pull_request.number }}" \
+            --argjson pullRequestNumber "${{ github.event.pull_request.number }}" \
             --arg login "${{ github.event.requested_reviewer.login }}" \
             --argjson id "${{ github.event.requested_reviewer.id }}" \
             --arg removedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '{
-              prNumber: $prNumber,
+              pullRequestNumber: $pullRequestNumber,
               reviewer: {
                 login: $login,
                 id: $id
@@ -226,7 +193,7 @@ jobs:
 
 ```json
 {
-  "prNumber": 1,
+  "pullRequestNumber": 42,
   "reviewer": {
     "login": "reviewer-username",
     "id": 12345
@@ -239,7 +206,7 @@ jobs:
 
 ```json
 {
-  "prNumber": 1,
+  "pullRequestNumber": 42,
   "reviewer": {
     "login": "reviewer-username",
     "id": 12345
@@ -258,7 +225,7 @@ jobs:
 
 ```java
 public record ReviewerAddedRequest(
-    int prNumber,
+    int pullRequestNumber,
     ReviewerData reviewer,
     Instant requestedAt
 ) {
@@ -273,7 +240,7 @@ public record ReviewerAddedRequest(
 
 ```java
 public record ReviewerRemovedRequest(
-    int prNumber,
+    int pullRequestNumber,
     ReviewerData reviewer,
     Instant removedAt
 ) {
@@ -297,7 +264,7 @@ public record ReviewerRemovedRequest(
 | reviewer.login | githubMention | 직접 매핑 |
 | reviewer.id | githubUid | 직접 매핑 |
 | requestedAt | requestedAt | Instant → LocalDateTime |
-| prNumber | pullRequestId | Project 조회 → PR 조회 후 연결 |
+| pullRequestNumber | pullRequestId | X-API-Key로 Project 조회 → PullRequest 조회 후 연결 |
 
 ```java
 @Getter
@@ -329,7 +296,7 @@ public class RequestedReviewer extends CreatedAtEntity {
 
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
-            throw new IllegalArgumentException("PR ID는 필수입니다.");
+            throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
         }
     }
 
@@ -365,9 +332,9 @@ public class RequestedReviewer extends CreatedAtEntity {
 }
 ```
 
-### RequestedReviewerChangeHistory (리뷰어 변경 이력)
+### RequestedReviewerHistory (리뷰어 변경 이력)
 
-위치: `domain/reviewer/RequestedReviewerChangeHistory.java`
+위치: `domain/reviewer/RequestedReviewerHistory.java`
 
 | Payload 필드 | Entity 필드 | 변환 |
 |-------------|-------------|------|
@@ -375,14 +342,14 @@ public class RequestedReviewer extends CreatedAtEntity {
 | reviewer.id | githubUid | 직접 매핑 |
 | - | action | REQUESTED 또는 REMOVED |
 | requestedAt / removedAt | changedAt | Instant → LocalDateTime |
-| prNumber | pullRequestId | Project 조회 → PR 조회 후 연결 |
+| pullRequestNumber | pullRequestId | X-API-Key로 Project 조회 → PullRequest 조회 후 연결 |
 
 ```java
 @Getter
 @Entity
 @Table(name = "requested_reviewer_change_histories")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RequestedReviewerChangeHistory extends CreatedAtEntity {
+public class RequestedReviewerHistory extends CreatedAtEntity {
 
     private Long pullRequestId;
 
@@ -395,7 +362,7 @@ public class RequestedReviewerChangeHistory extends CreatedAtEntity {
 
     private LocalDateTime changedAt;
 
-    public static RequestedReviewerChangeHistory create(
+    public static RequestedReviewerHistory create(
             Long pullRequestId,
             String githubMention,
             Long githubUid,
@@ -407,12 +374,12 @@ public class RequestedReviewerChangeHistory extends CreatedAtEntity {
         validateGithubUid(githubUid);
         validateAction(action);
         validateChangedAt(changedAt);
-        return new RequestedReviewerChangeHistory(pullRequestId, githubMention, githubUid, action, changedAt);
+        return new RequestedReviewerHistory(pullRequestId, githubMention, githubUid, action, changedAt);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
-            throw new IllegalArgumentException("PR ID는 필수입니다.");
+            throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
         }
     }
 
@@ -440,7 +407,7 @@ public class RequestedReviewerChangeHistory extends CreatedAtEntity {
         }
     }
 
-    private RequestedReviewerChangeHistory(
+    private RequestedReviewerHistory(
             Long pullRequestId,
             String githubMention,
             Long githubUid,
@@ -488,14 +455,14 @@ public interface RequestedReviewerRepository {
 
 > **참고**: `delete`가 `long`을 반환하여 삭제 여부를 명시적으로 검증
 
-### RequestedReviewerChangeHistoryRepository (Domain Interface)
+### RequestedReviewerHistoryRepository (Domain Interface)
 
-위치: `domain/reviewer/repository/RequestedReviewerChangeHistoryRepository.java`
+위치: `domain/reviewer/repository/RequestedReviewerHistoryRepository.java`
 
 ```java
-public interface RequestedReviewerChangeHistoryRepository {
+public interface RequestedReviewerHistoryRepository {
 
-    RequestedReviewerChangeHistory save(RequestedReviewerChangeHistory requestedReviewerHistory);
+    RequestedReviewerHistory save(RequestedReviewerHistory requestedReviewerHistory);
 }
 ```
 
@@ -508,12 +475,12 @@ public interface JpaRequestedReviewerRepository extends ListCrudRepository<Reque
 }
 ```
 
-### JpaRequestedReviewerChangeHistoryRepository
+### JpaRequestedReviewerHistoryRepository
 
-위치: `infrastructure/reviewer/persistence/JpaRequestedReviewerChangeHistoryRepository.java`
+위치: `infrastructure/reviewer/persistence/JpaRequestedReviewerHistoryRepository.java`
 
 ```java
-public interface JpaRequestedReviewerChangeHistoryRepository extends ListCrudRepository<RequestedReviewerChangeHistory, Long> {
+public interface JpaRequestedReviewerHistoryRepository extends ListCrudRepository<RequestedReviewerHistory, Long> {
 }
 ```
 
@@ -580,15 +547,15 @@ public class ReviewerAddedService {
     private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final RequestedReviewerRepository requestedReviewerRepository;
-    private final RequestedReviewerChangeHistoryRepository requestedReviewerHistoryRepository;
+    private final RequestedReviewerHistoryRepository requestedReviewerHistoryRepository;
 
     @Transactional
     public void addReviewer(String apiKey, ReviewerAddedRequest request) {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new ProjectNotFoundException());
+                .orElseThrow(InvalidApiKeyException::new);
 
-        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.prNumber())
-                .orElseThrow(() -> new PullRequestNotFoundException());
+        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.pullRequestNumber())
+                .orElseThrow(PullRequestNotFoundException::new);
 
         Long pullRequestId = pullRequest.getId();
         Long githubUid = request.reviewer().id();
@@ -613,7 +580,7 @@ public class ReviewerAddedService {
             return;
         }
 
-        RequestedReviewerChangeHistory history = RequestedReviewerChangeHistory.create(
+        RequestedReviewerHistory history = RequestedReviewerHistory.create(
                 pullRequestId,
                 githubMention,
                 githubUid,
@@ -642,15 +609,15 @@ public class ReviewerRemovedService {
     private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final RequestedReviewerRepository requestedReviewerRepository;
-    private final RequestedReviewerChangeHistoryRepository requestedReviewerHistoryRepository;
+    private final RequestedReviewerHistoryRepository requestedReviewerHistoryRepository;
 
     @Transactional
     public void removeReviewer(String apiKey, ReviewerRemovedRequest request) {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new ProjectNotFoundException());
+                .orElseThrow(InvalidApiKeyException::new);
 
-        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.prNumber())
-                .orElseThrow(() -> new PullRequestNotFoundException());
+        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.pullRequestNumber())
+                .orElseThrow(PullRequestNotFoundException::new);
 
         Long pullRequestId = pullRequest.getId();
         Long githubUid = request.reviewer().id();
@@ -662,7 +629,7 @@ public class ReviewerRemovedService {
             return;
         }
 
-        RequestedReviewerChangeHistory history = RequestedReviewerChangeHistory.create(
+        RequestedReviewerHistory history = RequestedReviewerHistory.create(
                 pullRequestId,
                 githubMention,
                 githubUid,
@@ -741,13 +708,13 @@ public class ReviewerRemovedController {
    ↓
 3. X-API-Key 헤더로 Project 조회
    ↓
-4. projectId + prNumber로 PullRequest 조회 (SELECT FOR UPDATE)
+4. projectId + pullRequestNumber로 PullRequest 조회 (SELECT FOR UPDATE)
    ↓
 5. pullRequestId + githubUid로 RequestedReviewer 존재 여부 확인
    ↓ (이미 존재하면 종료 - 멱등성 보장)
 6. RequestedReviewer Entity 생성 및 저장
    ↓
-7. RequestedReviewerChangeHistory Entity 생성 및 저장 (action: REQUESTED)
+7. RequestedReviewerHistory Entity 생성 및 저장 (action: REQUESTED)
 ```
 
 ### Reviewer Removed
@@ -759,11 +726,11 @@ public class ReviewerRemovedController {
    ↓
 3. X-API-Key 헤더로 Project 조회
    ↓
-4. projectId + prNumber로 PullRequest 조회 (SELECT FOR UPDATE)
+4. projectId + pullRequestNumber로 PullRequest 조회 (SELECT FOR UPDATE)
    ↓
 5. RequestedReviewer 삭제 (delete 반환값 확인)
    ↓ (deleted == 0이면 종료 - 멱등성 보장)
-6. RequestedReviewerChangeHistory Entity 생성 및 저장 (action: REMOVED)
+6. RequestedReviewerHistory Entity 생성 및 저장 (action: REMOVED)
 ```
 
 ---

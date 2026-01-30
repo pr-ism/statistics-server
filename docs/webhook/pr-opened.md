@@ -1,19 +1,19 @@
-# PR Opened 이벤트 스펙
+# PullRequest Opened 이벤트 스펙
 
 ## 개요
 
-PR이 생성될 때 발생하는 이벤트입니다. Draft PR과 일반 PR 모두 동일한 엔드포인트에서 처리하며, `isDraft` 필드로 구분합니다.
+PullRequest가 생성될 때 발생하는 이벤트입니다. Draft PullRequest와 일반 PullRequest 모두 동일한 엔드포인트에서 처리하며, `isDraft` 필드로 구분합니다.
 
 ## 수집 대상 Entity
 
 | Entity | 설명 |
 |--------|------|
-| PullRequest | PR 기본 정보 |
-| PrFile | PR 내 변경된 파일들 (현재 상태) |
-| PrFileHistory | PR 내 변경된 파일 이력 |
-| Commit | PR에 포함된 커밋들 |
-| PrStateChangeHistory | 최초 상태 기록 (previous: null, new: DRAFT 또는 OPEN) |
-| PrChangeHistory | 최초 변경 내역 기록 |
+| PullRequest | PullRequest 기본 정보 |
+| PullRequestFile | PullRequest 내 변경된 파일들 (현재 상태) |
+| PullRequestFileHistory | PullRequest 내 변경된 파일 이력 |
+| Commit | PullRequest에 포함된 커밋들 |
+| PullRequestStateHistory | 최초 상태 기록 (previous: null, new: DRAFT 또는 OPEN) |
+| PullRequestContentHistory | 최초 변경 내역 기록 |
 
 > **참고**: Label, ReviewRequest, Issue는 별도 이벤트에서 수집
 
@@ -75,12 +75,8 @@ jobs:
           PAYLOAD=$(jq -n \
             --argjson prData "$PR_DATA" \
             --argjson files "$FILES_DATA" \
-            --arg repositoryFullName "${{ github.repository }}" \
             --argjson isDraft "${{ github.event.pull_request.draft }}" \
             '{
-              eventType: "pull_request",
-              action: "opened",
-              repositoryFullName: $repositoryFullName,
               isDraft: $isDraft,
               pullRequest: $prData.data.repository.pullRequest,
               files: $files
@@ -90,7 +86,7 @@ jobs:
             curl -X POST \
               -H "Content-Type: application/json" \
               -H "X-API-Key: ${{ secrets.PRISM_API_KEY }}" \
-              -d "$PAYLOAD" "$WEBHOOK_URL/pr/opened" --fail --silent --show-error
+              -d "$PAYLOAD" "$WEBHOOK_URL/pull-request/opened" --fail --silent --show-error
           fi
 ```
 
@@ -100,13 +96,10 @@ jobs:
 
 ```json
 {
-  "eventType": "pull_request",
-  "action": "opened",
-  "repositoryFullName": "owner/repo",
   "isDraft": false,
   "pullRequest": {
     "number": 1,
-    "title": "PR 제목",
+    "title": "PullRequest 제목",
     "url": "https://github.com/owner/repo/pull/1",
     "additions": 100,
     "deletions": 50,
@@ -136,13 +129,10 @@ jobs:
 
 ## Server DTO
 
-위치: `application/webhook/dto/request/PrOpenedRequest.java`
+위치: `application/webhook/dto/request/PullRequestOpenedRequest.java`
 
 ```java
-public record PrOpenedRequest(
-    String eventType,
-    String action,
-    String repositoryFullName,
+public record PullRequestOpenedRequest(
     boolean isDraft,
     PullRequestData pullRequest,
     List<FileData> files
@@ -184,7 +174,7 @@ public record PrOpenedRequest(
 
 | Payload 필드 | Entity 필드 | 변환 |
 |-------------|-------------|------|
-| pullRequest.number | prNumber | 그대로 |
+| pullRequest.number | pullRequestNumber | 그대로 |
 | pullRequest.title | title | 그대로 |
 | isDraft | state | `isDraft ? DRAFT : OPEN` |
 | pullRequest.author.login | authorGithubId | 그대로 |
@@ -193,12 +183,12 @@ public record PrOpenedRequest(
 | pullRequest.deletions | changeStats.deletionCount | 그대로 |
 | pullRequest.changedFiles | changeStats.changedFileCount | 그대로 |
 | pullRequest.commits.totalCount | commitCount | 그대로 |
-| pullRequest.createdAt | timing.prCreatedAt | Instant → LocalDateTime |
+| pullRequest.createdAt | timing.pullRequestCreatedAt | Instant → LocalDateTime |
 | - | timing.mergedAt | null |
 | - | timing.closedAt | null |
-| repositoryFullName | projectId | Project 조회 후 연결 |
+| - | projectId | X-API-Key로 Project 조회 후 연결 |
 
-### PrFile
+### PullRequestFile
 
 | Payload 필드 | Entity 필드 | 변환 |
 |-------------|-------------|------|
@@ -208,7 +198,7 @@ public record PrOpenedRequest(
 | files[].deletions | fileChanges.deletions | 그대로 |
 | - | pullRequestId | 저장된 PullRequest의 ID |
 
-### PrFileHistory
+### PullRequestFileHistory
 
 | Payload 필드 | Entity 필드 | 변환 |
 |-------------|-------------|------|
@@ -228,7 +218,7 @@ public record PrOpenedRequest(
 | commits.nodes[].commit.committedDate | committedAt | Instant → LocalDateTime |
 | - | pullRequestId | 저장된 PullRequest의 ID |
 
-### PrStateChangeHistory (최초 상태)
+### PullRequestStateHistory (최초 상태)
 
 | 필드 | 값 |
 |------|-----|
@@ -237,7 +227,7 @@ public record PrOpenedRequest(
 | changedAt | pullRequest.createdAt |
 | pullRequestId | 저장된 PullRequest의 ID |
 
-### PrChangeHistory (최초 변경 내역)
+### PullRequestContentHistory (최초 변경 내역)
 
 | Payload 필드 | Entity 필드 |
 |-------------|-------------|
@@ -255,31 +245,31 @@ public record PrOpenedRequest(
 ```text
 1. Webhook 수신 (Controller)
    ↓
-2. PrOpenedRequest로 역직렬화
+2. PullRequestOpenedRequest로 역직렬화
    ↓
 3. X-API-Key 헤더로 Project 조회
    ↓
 4. isDraft 여부에 따라 분기
-   - Draft PR → PrDraftCreatedEvent 발행 후 종료
-   - 일반 PR → 계속 진행
+   - Draft PullRequest → PullRequestDraftCreatedEvent 발행 후 종료
+   - 일반 PullRequest → 계속 진행
    ↓
 5. PullRequest Entity 생성 및 저장
    ↓
-6. PrOpenCreatedEvent 발행
+6. PullRequestOpenCreatedEvent 발행
    ↓
 7. EventListener들이 이벤트 수신 후 저장
-   - PrFileEventListener → PrFile 목록 저장
-   - PrFileHistoryEventListener → PrFileHistory 목록 저장
+   - PullRequestFileEventListener → PullRequestFile 목록 저장
+   - PullRequestFileHistoryEventListener → PullRequestFileHistory 목록 저장
    - CommitEventListener → Commit 목록 저장
-   - PrStateChangeHistoryEventListener → PrStateChangeHistory 저장
-   - PrChangeHistoryEventListener → PrChangeHistory 저장
+   - PullRequestStateHistoryEventListener → PullRequestStateHistory 저장
+   - PullRequestContentHistoryEventListener → PullRequestContentHistory 저장
 ```
 
 ---
 
 ## 참고
 
-- 동일한 PR이 이미 존재하면 업데이트 처리 필요 (재전송 대비)
+- 동일한 PullRequest가 이미 존재하면 업데이트 처리 필요 (재전송 대비)
 - Label, ReviewRequest는 별도 이벤트에서 수집
 - Issue는 별도 `issues` 이벤트에서 수집
 - 커밋이 100개 초과 시 pagination 처리 필요
@@ -290,13 +280,13 @@ public record PrOpenedRequest(
 
 ### 1. Commit - 커밋별 변경량 추가 여부
 
-**고민:** Commit에 additions/deletions를 추가하면 PrFile과 역할이 중복되는 것 아닌가?
-**현재 선택:** Commit은 sha, committedAt만 저장 (파일 기준 추적은 PrFile 담당)
+**고민:** Commit에 additions/deletions를 추가하면 PullRequestFile과 역할이 중복되는 것 아닌가?
+**현재 선택:** Commit은 sha, committedAt만 저장 (파일 기준 추적은 PullRequestFile 담당)
 **검토 필요:** 둘 다 필요한지, 하나로 통합할 수 있는지?
 
-### 2. PrFileHistory - opened 시점 RENAMED 처리
+### 2. PullRequestFileHistory - opened 시점 RENAMED 처리
 
-**고민:** opened 시점에 RENAMED 파일이 있을 수 있음 (브랜치에서 파일명 변경 후 PR 생성)
-**현재 선택:** opened에서는 PrFileHistory.create() 사용 (previousFileName = null)
-**이유:** PrOpenedRequest.FileData에 previousFilename 정보가 없음
+**고민:** opened 시점에 RENAMED 파일이 있을 수 있음 (브랜치에서 파일명 변경 후 PullRequest 생성)
+**현재 선택:** opened에서는 PullRequestFileHistory.create() 사용 (previousFileName = null)
+**이유:** PullRequestOpenedRequest.FileData에 previousFilename 정보가 없음
 **향후:** synchronize 이벤트에서 RENAMED 처리 시 createRenamed() 사용 예정

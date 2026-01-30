@@ -1,17 +1,17 @@
-# PR Label 이벤트 스펙
+# PullRequest Label 이벤트 스펙
 
 ## 개요
 
-PR에 라벨이 추가/삭제될 때 발생하는 이벤트입니다. `labeled`와 `unlabeled` 이벤트를 각각 다른 엔드포인트로 처리합니다.
+PullRequest에 라벨이 추가/삭제될 때 발생하는 이벤트입니다. `labeled`와 `unlabeled` 이벤트를 각각 다른 엔드포인트로 처리합니다.
 
 ## 수집 대상 Entity
 
 | Entity | 설명 |
 |--------|------|
-| PrLabel | 현재 PR에 붙은 라벨 (현재 상태) |
-| PrLabelHistory | 라벨 추가/삭제 이력 |
+| PullRequestLabel | 현재 PullRequest에 붙은 라벨 (현재 상태) |
+| PullRequestLabelHistory | 라벨 추가/삭제 이력 |
 
-> **참고**: Label은 PR과 별도의 생명주기를 가짐
+> **참고**: Label은 PullRequest와 별도의 생명주기를 가짐
 
 ---
 
@@ -35,13 +35,11 @@ env:
         if: github.event.action == 'labeled'
         run: |
           PAYLOAD=$(jq -n \
-            --arg repositoryFullName "${{ github.repository }}" \
-            --argjson prNumber "${{ github.event.pull_request.number }}" \
+            --argjson pullRequestNumber "${{ github.event.pull_request.number }}" \
             --arg labelName "${{ github.event.label.name }}" \
             --arg labeledAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '{
-              repositoryFullName: $repositoryFullName,
-              prNumber: $prNumber,
+              pullRequestNumber: $pullRequestNumber,
               label: {
                 name: $labelName
               },
@@ -52,20 +50,18 @@ env:
             curl -X POST \
               -H "Content-Type: application/json" \
               -H "X-API-Key: ${{ secrets.PRISM_API_KEY }}" \
-              -d "$PAYLOAD" "$WEBHOOK_URL/label/added" --fail --silent --show-error
+              -d "$PAYLOAD" "$WEBHOOK_URL/pull-request/label/added" --fail --silent --show-error
           fi
 
       - name: Handle unlabeled event
         if: github.event.action == 'unlabeled'
         run: |
           PAYLOAD=$(jq -n \
-            --arg repositoryFullName "${{ github.repository }}" \
-            --argjson prNumber "${{ github.event.pull_request.number }}" \
+            --argjson pullRequestNumber "${{ github.event.pull_request.number }}" \
             --arg labelName "${{ github.event.label.name }}" \
             --arg unlabeledAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '{
-              repositoryFullName: $repositoryFullName,
-              prNumber: $prNumber,
+              pullRequestNumber: $pullRequestNumber,
               label: {
                 name: $labelName
               },
@@ -76,7 +72,7 @@ env:
             curl -X POST \
               -H "Content-Type: application/json" \
               -H "X-API-Key: ${{ secrets.PRISM_API_KEY }}" \
-              -d "$PAYLOAD" "$WEBHOOK_URL/label/removed" --fail --silent --show-error
+              -d "$PAYLOAD" "$WEBHOOK_URL/pull-request/label/removed" --fail --silent --show-error
           fi
 ```
 
@@ -88,8 +84,7 @@ env:
 
 ```json
 {
-  "repositoryFullName": "owner/repo",
-  "prNumber": 1,
+  "pullRequestNumber": 42,
   "label": {
     "name": "bug"
   },
@@ -101,8 +96,7 @@ env:
 
 ```json
 {
-  "repositoryFullName": "owner/repo",
-  "prNumber": 1,
+  "pullRequestNumber": 42,
   "label": {
     "name": "bug"
   },
@@ -116,12 +110,11 @@ env:
 
 위치: `application/webhook/dto/request/`
 
-### LabelAddedRequest.java
+### PullRequestLabelAddedRequest.java
 
 ```java
-public record LabelAddedRequest(
-    String repositoryFullName,
-    int prNumber,
+public record PullRequestLabelAddedRequest(
+    int pullRequestNumber,
     LabelData label,
     Instant labeledAt
 ) {
@@ -131,12 +124,11 @@ public record LabelAddedRequest(
 }
 ```
 
-### LabelRemovedRequest.java
+### PullRequestLabelRemovedRequest.java
 
 ```java
-public record LabelRemovedRequest(
-    String repositoryFullName,
-    int prNumber,
+public record PullRequestLabelRemovedRequest(
+    int pullRequestNumber,
     LabelData label,
     Instant unlabeledAt
 ) {
@@ -150,22 +142,22 @@ public record LabelRemovedRequest(
 
 ## Entity 매핑
 
-### PrLabel (라벨 추가 시)
+### PullRequestLabel (라벨 추가 시)
 
 | Payload 필드 | Entity 필드 | 변환 |
 |-------------|-------------|------|
 | label.name | labelName | 직접 매핑 |
 | labeledAt | labeledAt | Instant → LocalDateTime |
-| repositoryFullName + prNumber | pullRequestId | Project 조회 → PR 조회 후 연결 |
+| pullRequestNumber | pullRequestId | X-API-Key로 Project 조회 → PullRequest 조회 후 연결 |
 
-### PrLabelHistory
+### PullRequestLabelHistory
 
 | Payload 필드 | Entity 필드 | 변환 |
 |-------------|-------------|------|
 | label.name | labelName | 직접 매핑 |
 | - | action | ADDED 또는 REMOVED |
 | labeledAt / unlabeledAt | changedAt | Instant → LocalDateTime |
-| repositoryFullName + prNumber | pullRequestId | Project 조회 → PR 조회 후 연결 |
+| pullRequestNumber | pullRequestId | X-API-Key로 Project 조회 → PullRequest 조회 후 연결 |
 
 ---
 
@@ -176,17 +168,17 @@ public record LabelRemovedRequest(
 ```text
 1. Webhook 수신 (Controller)
    ↓
-2. LabelAddedRequest로 역직렬화
+2. PullRequestLabelAddedRequest로 역직렬화
    ↓
 3. X-API-Key 헤더로 Project 조회
    ↓
-4. projectId + prNumber로 PullRequest 조회
+4. projectId + pullRequestNumber로 PullRequest 조회
    ↓
-5. pullRequestId + labelName으로 PrLabel 존재 여부 확인
+5. pullRequestId + labelName으로 PullRequestLabel 존재 여부 확인
    ↓ (이미 존재하면 종료)
-6. PrLabel Entity 생성 및 저장
+6. PullRequestLabel Entity 생성 및 저장
    ↓
-7. PrLabelHistory Entity 생성 및 저장 (action: ADDED)
+7. PullRequestLabelHistory Entity 생성 및 저장 (action: ADDED)
 ```
 
 ### Label Removed
@@ -194,22 +186,22 @@ public record LabelRemovedRequest(
 ```text
 1. Webhook 수신 (Controller)
    ↓
-2. LabelRemovedRequest로 역직렬화
+2. PullRequestLabelRemovedRequest로 역직렬화
    ↓
 3. X-API-Key 헤더로 Project 조회
    ↓
-4. projectId + prNumber로 PullRequest 조회
+4. projectId + pullRequestNumber로 PullRequest 조회
    ↓
-5. pullRequestId + labelName으로 PrLabel 존재 여부 확인
+5. pullRequestId + labelName으로 PullRequestLabel 존재 여부 확인
    ↓ (존재하지 않으면 종료)
-6. PrLabel 삭제
+6. PullRequestLabel 삭제
    ↓
-7. PrLabelHistory Entity 생성 및 저장 (action: REMOVED)
+7. PullRequestLabelHistory Entity 생성 및 저장 (action: REMOVED)
 ```
 
 ---
 
 ## 참고
 
-- 동일한 라벨이 이미 존재하면 중복 저장 방지 (PrLabel, PrLabelHistory 모두 저장하지 않음)
-- 삭제 시 해당 라벨이 없으면 아무 작업도 하지 않음 (PrLabelHistory도 저장하지 않음)
+- 동일한 라벨이 이미 존재하면 중복 저장 방지 (PullRequestLabel, PullRequestLabelHistory 모두 저장하지 않음)
+- 삭제 시 해당 라벨이 없으면 아무 작업도 하지 않음 (PullRequestLabelHistory도 저장하지 않음)
