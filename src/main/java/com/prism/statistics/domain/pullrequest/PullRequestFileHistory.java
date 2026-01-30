@@ -17,9 +17,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "pr_file_histories")
+@Table(name = "pull_request_file_histories")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PrFileHistory extends CreatedAtEntity {
+public class PullRequestFileHistory extends CreatedAtEntity {
 
     private Long pullRequestId;
 
@@ -36,7 +36,7 @@ public class PrFileHistory extends CreatedAtEntity {
 
     private LocalDateTime changedAt;
 
-    public static PrFileHistory create(
+    public static PullRequestFileHistory create(
             Long pullRequestId,
             String fileName,
             FileChangeType changeType,
@@ -45,10 +45,10 @@ public class PrFileHistory extends CreatedAtEntity {
     ) {
         validateBaseFields(pullRequestId, fileName, fileChanges, changedAt);
         validateChangeType(changeType);
-        return new PrFileHistory(pullRequestId, fileName, PreviousFileName.empty(), changeType, fileChanges, changedAt);
+        return new PullRequestFileHistory(pullRequestId, fileName, PreviousFileName.empty(), changeType, fileChanges, changedAt);
     }
 
-    public static PrFileHistory createRenamed(
+    public static PullRequestFileHistory createRenamed(
             Long pullRequestId,
             String fileName,
             String previousFileName,
@@ -56,7 +56,7 @@ public class PrFileHistory extends CreatedAtEntity {
             LocalDateTime changedAt
     ) {
         validateBaseFields(pullRequestId, fileName, fileChanges, changedAt);
-        return new PrFileHistory(pullRequestId, fileName, PreviousFileName.of(previousFileName), FileChangeType.RENAMED, fileChanges, changedAt);
+        return new PullRequestFileHistory(pullRequestId, fileName, PreviousFileName.of(previousFileName), FileChangeType.RENAMED, fileChanges, changedAt);
     }
 
     private static void validateBaseFields(Long pullRequestId, String fileName, FileChanges fileChanges, LocalDateTime changedAt) {
@@ -68,7 +68,7 @@ public class PrFileHistory extends CreatedAtEntity {
 
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
-            throw new IllegalArgumentException("PR ID는 필수입니다.");
+            throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
         }
     }
 
@@ -96,7 +96,7 @@ public class PrFileHistory extends CreatedAtEntity {
         }
     }
 
-    private PrFileHistory(
+    private PullRequestFileHistory(
             Long pullRequestId,
             String fileName,
             PreviousFileName previousFileName,

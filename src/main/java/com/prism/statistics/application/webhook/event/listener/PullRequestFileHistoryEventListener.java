@@ -2,9 +2,9 @@ package com.prism.statistics.application.webhook.event.listener;
 
 import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.FileData;
 import com.prism.statistics.application.webhook.event.PrOpenCreatedEvent;
-import com.prism.statistics.domain.pullrequest.PrFileHistory;
+import com.prism.statistics.domain.pullrequest.PullRequestFileHistory;
 import com.prism.statistics.domain.pullrequest.enums.FileChangeType;
-import com.prism.statistics.domain.pullrequest.repository.PrFileHistoryRepository;
+import com.prism.statistics.domain.pullrequest.repository.PullRequestFileHistoryRepository;
 import com.prism.statistics.domain.pullrequest.vo.FileChanges;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,21 +16,21 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class PrFileHistoryEventListener {
+public class PullRequestFileHistoryEventListener {
 
-    private final PrFileHistoryRepository prFileHistoryRepository;
+    private final PullRequestFileHistoryRepository pullRequestFileHistoryRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(PrOpenCreatedEvent event) {
-        List<PrFileHistory> prFileHistories = event.files().stream()
-                .map(file -> toPrFileHistory(event.pullRequestId(), file, event.prCreatedAt()))
+        List<PullRequestFileHistory> pullRequestFileHistories = event.files().stream()
+                .map(file -> toPullRequestFileHistory(event.pullRequestId(), file, event.prCreatedAt()))
                 .toList();
 
-        prFileHistoryRepository.saveAll(prFileHistories);
+        pullRequestFileHistoryRepository.saveAll(pullRequestFileHistories);
     }
 
-    private PrFileHistory toPrFileHistory(Long pullRequestId, FileData file, LocalDateTime changedAt) {
-        return PrFileHistory.create(
+    private PullRequestFileHistory toPullRequestFileHistory(Long pullRequestId, FileData file, LocalDateTime changedAt) {
+        return PullRequestFileHistory.create(
                 pullRequestId,
                 file.filename(),
                 FileChangeType.fromGitHubStatus(file.status()),
