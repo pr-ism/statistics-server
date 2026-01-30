@@ -148,9 +148,6 @@ class PrOpenedServiceTest {
         );
 
         return new PrOpenedRequest(
-                "pull_request",
-                "opened",
-                "owner/repo",
                 isDraft,
                 pullRequestData,
                 files
