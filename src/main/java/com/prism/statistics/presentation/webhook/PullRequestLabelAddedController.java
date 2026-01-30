@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/webhook")
+@RequestMapping("/webhook/pull-request")
 @RequiredArgsConstructor
 public class PullRequestLabelAddedController {
 
     private final PullRequestLabelAddedService pullRequestLabelAddedService;
 
-    @PostMapping("/pull-request/label/added")
+    @PostMapping("/label/added")
     public ResponseEntity<Void> handlePullRequestLabelAdded(
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody PullRequestLabelAddedRequest request

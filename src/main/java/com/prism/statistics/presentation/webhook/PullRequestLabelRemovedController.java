@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/webhook")
+@RequestMapping("/webhook/pull-request")
 @RequiredArgsConstructor
 public class PullRequestLabelRemovedController {
 
     private final PullRequestLabelRemovedService pullRequestLabelRemovedService;
 
-    @PostMapping("/pull-request/label/removed")
+    @PostMapping("/label/removed")
     public ResponseEntity<Void> handlePullRequestLabelRemoved(
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody PullRequestLabelRemovedRequest request
