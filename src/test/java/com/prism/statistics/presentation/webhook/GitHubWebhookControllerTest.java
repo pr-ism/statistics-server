@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.prism.statistics.application.webhook.PrOpenedService;
 import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
     private PrOpenedService prOpenedService;
 
     @Test
-    void PR_opened_웹훅_요청을_처리한다() throws Exception {
+    void Pull_Request_opened_웹훅_요청을_처리한다() throws Exception {
         // given
         String payload = """
                 {
@@ -82,7 +82,7 @@ class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
     }
 
     @Test
-    void 존재하지_않는_프로젝트면_404_반환한다() throws Exception {
+    void 유효하지_않은_API_Key면_404_반환한다() throws Exception {
         // given
         String payload = """
                 {
@@ -111,7 +111,7 @@ class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
                 }
                 """;
 
-        willThrow(new ProjectNotFoundException())
+        willThrow(new InvalidApiKeyException())
                 .given(prOpenedService).handle(eq(TEST_API_KEY), any(PrOpenedRequest.class));
 
         // when & then
@@ -122,7 +122,7 @@ class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
                         .content(payload)
         )
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.errorCode").value("P00"))
-        .andExpect(jsonPath("$.message").value("프로젝트를 찾을 수 없습니다."));
+        .andExpect(jsonPath("$.errorCode").value("P01"))
+        .andExpect(jsonPath("$.message").value("유효하지 않은 API Key입니다."));
     }
 }
