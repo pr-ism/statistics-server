@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "pr_files")
+@Table(name = "pull_request_files")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PrFile extends CreatedAtEntity {
+public class PullRequestFile extends CreatedAtEntity {
 
     private Long pullRequestId;
 
@@ -28,7 +28,7 @@ public class PrFile extends CreatedAtEntity {
     @Embedded
     private FileChanges fileChanges;
 
-    public static PrFile create(
+    public static PullRequestFile create(
             Long pullRequestId,
             String fileName,
             FileChangeType changeType,
@@ -38,12 +38,12 @@ public class PrFile extends CreatedAtEntity {
         validateFileName(fileName);
         validateChangeType(changeType);
         validateFileChanges(fileChanges);
-        return new PrFile(pullRequestId, fileName, changeType, fileChanges);
+        return new PullRequestFile(pullRequestId, fileName, changeType, fileChanges);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
-            throw new IllegalArgumentException("PR ID는 필수입니다.");
+            throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
         }
     }
 
@@ -65,7 +65,7 @@ public class PrFile extends CreatedAtEntity {
         }
     }
 
-    private PrFile(
+    private PullRequestFile(
             Long pullRequestId,
             String fileName,
             FileChangeType changeType,

@@ -2,9 +2,9 @@ package com.prism.statistics.application.webhook.event.listener;
 
 import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.FileData;
 import com.prism.statistics.application.webhook.event.PrOpenCreatedEvent;
-import com.prism.statistics.domain.pullrequest.PrFile;
+import com.prism.statistics.domain.pullrequest.PullRequestFile;
 import com.prism.statistics.domain.pullrequest.enums.FileChangeType;
-import com.prism.statistics.domain.pullrequest.repository.PrFileRepository;
+import com.prism.statistics.domain.pullrequest.repository.PullRequestFileRepository;
 import com.prism.statistics.domain.pullrequest.vo.FileChanges;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,21 +15,21 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class PrFileEventListener {
+public class PullRequestFileEventListener {
 
-    private final PrFileRepository prFileRepository;
+    private final PullRequestFileRepository pullRequestFileRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(PrOpenCreatedEvent event) {
-        List<PrFile> prFiles = event.files().stream()
-                .map(file -> toPrFile(event.pullRequestId(), file))
+        List<PullRequestFile> pullRequestFiles = event.files().stream()
+                .map(file -> toPullRequestFile(event.pullRequestId(), file))
                 .toList();
 
-        prFileRepository.saveAll(prFiles);
+        pullRequestFileRepository.saveAll(pullRequestFiles);
     }
 
-    private PrFile toPrFile(Long pullRequestId, FileData file) {
-        return PrFile.create(
+    private PullRequestFile toPullRequestFile(Long pullRequestId, FileData file) {
+        return PullRequestFile.create(
                 pullRequestId,
                 file.filename(),
                 FileChangeType.fromGitHubStatus(file.status()),
