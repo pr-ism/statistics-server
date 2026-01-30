@@ -5,13 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest;
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.Author;
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.CommitData;
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.CommitNode;
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.CommitsConnection;
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.FileData;
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.PullRequestData;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.Author;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.CommitData;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.CommitNode;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.CommitsConnection;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.FileData;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.PullRequestData;
 import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
 import com.prism.statistics.infrastructure.pullrequest.persistence.JpaCommitRepository;
@@ -33,12 +33,12 @@ import java.util.List;
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class PrOpenedServiceTest {
+class PullRequestOpenedServiceTest {
 
     private static final String TEST_API_KEY = "test-api-key";
 
     @Autowired
-    private PrOpenedService prOpenedService;
+    private PullRequestOpenedService pullRequestOpenedService;
 
     @Autowired
     private JpaPullRequestRepository jpaPullRequestRepository;
@@ -62,10 +62,10 @@ class PrOpenedServiceTest {
     @Test
     void Pull_Request_opened_이벤트를_처리하면_모든_엔티티가_저장된다() {
         // given
-        PrOpenedRequest request = createPrOpenedRequest(false);
+        PullRequestOpenedRequest request = createPrOpenedRequest(false);
 
         // when
-        prOpenedService.handle(TEST_API_KEY, request);
+        pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
 
         // then
         assertAll(
@@ -82,10 +82,10 @@ class PrOpenedServiceTest {
     @Test
     void Pull_Request_opened_이벤트를_처리하면_OPEN_상태로_저장된다() {
         // given
-        PrOpenedRequest request = createPrOpenedRequest(false);
+        PullRequestOpenedRequest request = createPrOpenedRequest(false);
 
         // when
-        prOpenedService.handle(TEST_API_KEY, request);
+        pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -96,10 +96,10 @@ class PrOpenedServiceTest {
     @Test
     void Draft_PR이면_엔티티가_저장되지_않는다() {
         // given
-        PrOpenedRequest request = createPrOpenedRequest(true);
+        PullRequestOpenedRequest request = createPrOpenedRequest(true);
 
         // when
-        prOpenedService.handle(TEST_API_KEY, request);
+        pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
 
         // then
         assertAll(
@@ -115,16 +115,16 @@ class PrOpenedServiceTest {
     @Test
     void 존재하지_않는_API_Key면_예외가_발생한다() {
         // given
-        PrOpenedRequest request = createPrOpenedRequest(false);
+        PullRequestOpenedRequest request = createPrOpenedRequest(false);
         String invalidApiKey = "invalid-api-key";
 
         // when & then
-        assertThatThrownBy(() -> prOpenedService.handle(invalidApiKey, request))
+        assertThatThrownBy(() -> pullRequestOpenedService.createPullRequest(invalidApiKey, request))
                 .isInstanceOf(InvalidApiKeyException.class)
                 .hasMessage("유효하지 않은 API Key입니다.");
     }
 
-    private PrOpenedRequest createPrOpenedRequest(boolean isDraft) {
+    private PullRequestOpenedRequest createPrOpenedRequest(boolean isDraft) {
         List<CommitNode> commitNodes = List.of(
                 new CommitNode(new CommitData("abc123", Instant.parse("2024-01-15T09:00:00Z"))),
                 new CommitNode(new CommitData("def456", Instant.parse("2024-01-15T09:30:00Z")))
@@ -147,7 +147,7 @@ class PrOpenedServiceTest {
                 new FileData("src/main/java/NewFile.java", "added", 20, 0)
         );
 
-        return new PrOpenedRequest(
+        return new PullRequestOpenedRequest(
                 isDraft,
                 pullRequestData,
                 files

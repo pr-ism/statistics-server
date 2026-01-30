@@ -1,6 +1,6 @@
 package com.prism.statistics.application.webhook.event.listener;
 
-import com.prism.statistics.application.webhook.event.PrOpenCreatedEvent;
+import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.domain.pullrequest.PullRequestStateHistory;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestStateHistoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ public class PullRequestStateHistoryEventListener {
     private final PullRequestStateHistoryRepository pullRequestStateHistoryRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void handle(PrOpenCreatedEvent event) {
+    public void handle(PullRequestOpenCreatedEvent event) {
         PullRequestStateHistory pullRequestStateHistoryhistory = PullRequestStateHistory.createInitial(
                 event.pullRequestId(),
                 event.initialState(),

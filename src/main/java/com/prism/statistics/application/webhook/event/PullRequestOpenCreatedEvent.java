@@ -1,13 +1,13 @@
 package com.prism.statistics.application.webhook.event;
 
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.FileData;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.FileData;
 import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record PrOpenCreatedEvent(
+public record PullRequestOpenCreatedEvent(
         Long pullRequestId,
         Long projectId,
         PullRequestState initialState,

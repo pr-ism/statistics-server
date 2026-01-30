@@ -1,7 +1,7 @@
 package com.prism.statistics.presentation.webhook;
 
-import com.prism.statistics.application.webhook.PrOpenedService;
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest;
+import com.prism.statistics.application.webhook.PullRequestOpenedService;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,16 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/webhook")
 @RequiredArgsConstructor
-public class GitHubWebhookController {
+public class PullRequestOpenedController {
 
-    private final PrOpenedService prOpenedService;
+    private final PullRequestOpenedService pullRequestOpenedService;
 
-    @PostMapping("/pr/opened")
-    public ResponseEntity<Void> handlePrOpened(
+    @PostMapping("/pull-request/opened")
+    public ResponseEntity<Void> handlePullRequestOpened(
             @RequestHeader("X-API-Key") String apiKey,
-            @RequestBody PrOpenedRequest request
+            @RequestBody PullRequestOpenedRequest request
     ) {
-        prOpenedService.handle(apiKey, request);
+        pullRequestOpenedService.createPullRequest(apiKey, request);
         return ResponseEntity.ok().build();
     }
 }

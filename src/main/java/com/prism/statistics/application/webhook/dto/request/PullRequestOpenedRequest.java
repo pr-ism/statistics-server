@@ -3,7 +3,7 @@ package com.prism.statistics.application.webhook.dto.request;
 import java.time.Instant;
 import java.util.List;
 
-public record PrOpenedRequest(
+public record PullRequestOpenedRequest(
         boolean isDraft,
         PullRequestData pullRequest,
         List<FileData> files

@@ -9,8 +9,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.prism.statistics.application.webhook.PrOpenedService;
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest;
+import com.prism.statistics.application.webhook.PullRequestOpenedService;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
@@ -18,13 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 @SuppressWarnings("NonAsciiCharacters")
-class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
+class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
 
     private static final String API_KEY_HEADER = "X-API-Key";
     private static final String TEST_API_KEY = "test-api-key";
 
     @Autowired
-    private PrOpenedService prOpenedService;
+    private PullRequestOpenedService pullRequestOpenedService;
 
     @Test
     void Pull_Request_opened_웹훅_요청을_처리한다() throws Exception {
@@ -56,25 +56,25 @@ class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
                 }
                 """;
 
-        willDoNothing().given(prOpenedService).handle(eq(TEST_API_KEY), any(PrOpenedRequest.class));
+        willDoNothing().given(pullRequestOpenedService).createPullRequest(eq(TEST_API_KEY), any(PullRequestOpenedRequest.class));
 
         // when & then
         mockMvc.perform(
-                post("/webhook/pr/opened")
+                post("/webhook/pull-request/opened")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
         )
         .andExpect(status().isOk());
 
-        verify(prOpenedService).handle(eq(TEST_API_KEY), any(PrOpenedRequest.class));
+        verify(pullRequestOpenedService).createPullRequest(eq(TEST_API_KEY), any(PullRequestOpenedRequest.class));
     }
 
     @Test
     void API_Key_헤더_누락_시_400_반환한다() throws Exception {
         // when & then
         mockMvc.perform(
-                post("/webhook/pr/opened")
+                post("/webhook/pull-request/opened")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}")
         )
@@ -112,11 +112,11 @@ class GitHubWebhookControllerTest extends CommonControllerSliceTestSupport {
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(prOpenedService).handle(eq(TEST_API_KEY), any(PrOpenedRequest.class));
+                .given(pullRequestOpenedService).createPullRequest(eq(TEST_API_KEY), any(PullRequestOpenedRequest.class));
 
         // when & then
         mockMvc.perform(
-                post("/webhook/pr/opened")
+                post("/webhook/pull-request/opened")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)

@@ -1,7 +1,7 @@
 package com.prism.statistics.application.webhook.event.listener;
 
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.FileData;
-import com.prism.statistics.application.webhook.event.PrOpenCreatedEvent;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.FileData;
+import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.domain.pullrequest.PullRequestFileHistory;
 import com.prism.statistics.domain.pullrequest.enums.FileChangeType;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestFileHistoryRepository;
@@ -21,7 +21,7 @@ public class PullRequestFileHistoryEventListener {
     private final PullRequestFileHistoryRepository pullRequestFileHistoryRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void handle(PrOpenCreatedEvent event) {
+    public void handle(PullRequestOpenCreatedEvent event) {
         List<PullRequestFileHistory> pullRequestFileHistories = event.files().stream()
                 .map(file -> toPullRequestFileHistory(event.pullRequestId(), file, event.prCreatedAt()))
                 .toList();

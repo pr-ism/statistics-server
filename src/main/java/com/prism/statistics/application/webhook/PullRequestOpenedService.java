@@ -1,11 +1,11 @@
 package com.prism.statistics.application.webhook;
 
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest;
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.CommitNode;
-import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.PullRequestData;
-import com.prism.statistics.application.webhook.event.PrDraftCreatedEvent;
-import com.prism.statistics.application.webhook.event.PrOpenCreatedEvent;
-import com.prism.statistics.application.webhook.event.PrOpenCreatedEvent.CommitData;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.CommitNode;
+import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.PullRequestData;
+import com.prism.statistics.application.webhook.event.PullRequestDraftCreatedEvent;
+import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent;
+import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent.CommitData;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
@@ -25,7 +25,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PrOpenedService {
+public class PullRequestOpenedService {
 
     private final Clock clock;
     private final ProjectRepository projectRepository;
@@ -33,40 +33,41 @@ public class PrOpenedService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void handle(String apiKey, PrOpenedRequest request) {
+    public void createPullRequest(String apiKey, PullRequestOpenedRequest request) {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
                 .orElseThrow(() -> new InvalidApiKeyException());
 
         if (request.isDraft()) {
-            eventPublisher.publishEvent(new PrDraftCreatedEvent(request));
+            eventPublisher.publishEvent(new PullRequestDraftCreatedEvent(request));
             return;
         }
-        PullRequestData prData = request.pullRequest();
+        
+        PullRequestData pullRequestData = request.pullRequest();
 
-        PullRequest savedPullRequest = savePullRequest(projectId, prData);
+        PullRequest savedPullRequest = savePullRequest(projectId, pullRequestData);
 
-        publishPrOpenCreatedEvent(savedPullRequest, projectId, prData, request);
+        publishPrOpenCreatedEvent(savedPullRequest, projectId, pullRequestData, request);
     }
 
-    private PullRequest savePullRequest(Long projectId, PullRequestData prData) {
-        LocalDateTime prCreatedAt = toLocalDateTime(prData.createdAt());
+    private PullRequest savePullRequest(Long projectId, PullRequestData pullRequestData) {
+        LocalDateTime prCreatedAt = toLocalDateTime(pullRequestData.createdAt());
 
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(
-                prData.changedFiles(),
-                prData.additions(),
-                prData.deletions()
+                pullRequestData.changedFiles(),
+                pullRequestData.additions(),
+                pullRequestData.deletions()
         );
 
         PullRequestTiming pullRequestTiming = PullRequestTiming.createOpen(prCreatedAt);
 
         PullRequest pullRequest = PullRequest.opened(
                 projectId,
-                prData.author().login(),
-                prData.number(),
-                prData.title(),
-                prData.url(),
+                pullRequestData.author().login(),
+                pullRequestData.number(),
+                pullRequestData.title(),
+                pullRequestData.url(),
                 pullRequestChangeStats,
-                prData.commits().totalCount(),
+                pullRequestData.commits().totalCount(),
                 pullRequestTiming
         );
 
@@ -76,26 +77,26 @@ public class PrOpenedService {
     private void publishPrOpenCreatedEvent(
             PullRequest savedPullRequest,
             Long projectId,
-            PullRequestData prData,
-            PrOpenedRequest request
+            PullRequestData pullRequestData,
+            PullRequestOpenedRequest request
     ) {
-        LocalDateTime prCreatedAt = toLocalDateTime(prData.createdAt());
+        LocalDateTime prCreatedAt = toLocalDateTime(pullRequestData.createdAt());
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(
-                prData.changedFiles(),
-                prData.additions(),
-                prData.deletions()
+                pullRequestData.changedFiles(),
+                pullRequestData.additions(),
+                pullRequestData.deletions()
         );
 
-        List<CommitData> commits = prData.commits().nodes().stream()
+        List<CommitData> commits = pullRequestData.commits().nodes().stream()
                 .map(node -> toCommitData(node))
                 .toList();
 
-        PrOpenCreatedEvent event = new PrOpenCreatedEvent(
+        PullRequestOpenCreatedEvent event = new PullRequestOpenCreatedEvent(
                 savedPullRequest.getId(),
                 projectId,
                 PullRequestState.OPEN,
                 pullRequestChangeStats,
-                prData.commits().totalCount(),
+                pullRequestData.commits().totalCount(),
                 prCreatedAt,
                 request.files(),
                 commits
