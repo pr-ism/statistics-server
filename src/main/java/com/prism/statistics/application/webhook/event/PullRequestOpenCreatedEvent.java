@@ -13,7 +13,7 @@ public record PullRequestOpenCreatedEvent(
         PullRequestState initialState,
         PullRequestChangeStats changeStats,
         int commitCount,
-        LocalDateTime prCreatedAt,
+        LocalDateTime pullRequestCreatedAt,
         List<FileData> files,
         List<CommitData> commits
 ) {

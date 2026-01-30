@@ -50,7 +50,7 @@ public class PullRequestOpenedService {
     }
 
     private PullRequest savePullRequest(Long projectId, PullRequestData pullRequestData) {
-        LocalDateTime prCreatedAt = toLocalDateTime(pullRequestData.createdAt());
+        LocalDateTime pullRequestCreatedAt = toLocalDateTime(pullRequestData.createdAt());
 
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(
                 pullRequestData.changedFiles(),
@@ -58,7 +58,7 @@ public class PullRequestOpenedService {
                 pullRequestData.deletions()
         );
 
-        PullRequestTiming pullRequestTiming = PullRequestTiming.createOpen(prCreatedAt);
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createOpen(pullRequestCreatedAt);
 
         PullRequest pullRequest = PullRequest.opened(
                 projectId,
@@ -80,7 +80,7 @@ public class PullRequestOpenedService {
             PullRequestData pullRequestData,
             PullRequestOpenedRequest request
     ) {
-        LocalDateTime prCreatedAt = toLocalDateTime(pullRequestData.createdAt());
+        LocalDateTime pullRequestCreatedAt = toLocalDateTime(pullRequestData.createdAt());
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(
                 pullRequestData.changedFiles(),
                 pullRequestData.additions(),
@@ -97,7 +97,7 @@ public class PullRequestOpenedService {
                 PullRequestState.OPEN,
                 pullRequestChangeStats,
                 pullRequestData.commits().totalCount(),
-                prCreatedAt,
+                pullRequestCreatedAt,
                 request.files(),
                 commits
         );

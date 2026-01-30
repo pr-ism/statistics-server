@@ -20,7 +20,7 @@ public class PullRequestContentHistoryEventListener {
                 event.pullRequestId(),
                 event.changeStats(),
                 event.commitCount(),
-                event.prCreatedAt()
+                event.pullRequestCreatedAt()
         );
 
         pullRequestContentHistoryRepository.save(pullRequestContentHistory);
