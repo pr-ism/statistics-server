@@ -1,8 +1,8 @@
 package com.prism.statistics.application.webhook.event.listener;
 
 import com.prism.statistics.application.webhook.event.PrOpenCreatedEvent;
-import com.prism.statistics.domain.pullrequest.PrStateChangeHistory;
-import com.prism.statistics.domain.pullrequest.repository.PrStateChangeHistoryRepository;
+import com.prism.statistics.domain.pullrequest.PullRequestStateHistory;
+import com.prism.statistics.domain.pullrequest.repository.PullRequestStateHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -10,18 +10,18 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
-public class PrStateChangeHistoryEventListener {
+public class PullRequestStateHistoryEventListener {
 
-    private final PrStateChangeHistoryRepository prStateChangeHistoryRepository;
+    private final PullRequestStateHistoryRepository pullRequestStateHistoryRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(PrOpenCreatedEvent event) {
-        PrStateChangeHistory history = PrStateChangeHistory.createInitial(
+        PullRequestStateHistory history = PullRequestStateHistory.createInitial(
                 event.pullRequestId(),
                 event.initialState(),
                 event.prCreatedAt()
         );
 
-        prStateChangeHistoryRepository.save(history);
+        pullRequestStateHistoryRepository.save(history);
     }
 }

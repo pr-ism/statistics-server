@@ -14,14 +14,14 @@ import com.prism.statistics.domain.pullrequest.enums.PrState;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class PrStateChangeHistoryTest {
+class PullRequestStateHistoryTest {
 
     private static final LocalDateTime CHANGED_AT = LocalDateTime.of(2024, 1, 15, 10, 0);
 
     @Test
     void 상태_변경_이력을_생성한다() {
         // when
-        PrStateChangeHistory history = PrStateChangeHistory.create(
+        PullRequestStateHistory history = PullRequestStateHistory.create(
                 1L, PrState.OPEN, PrState.MERGED, CHANGED_AT
         );
 
@@ -38,7 +38,7 @@ class PrStateChangeHistoryTest {
     @Test
     void 최초_상태_이력을_생성한다() {
         // when
-        PrStateChangeHistory history = PrStateChangeHistory.createInitial(1L, PrState.OPEN, CHANGED_AT);
+        PullRequestStateHistory history = PullRequestStateHistory.createInitial(1L, PrState.OPEN, CHANGED_AT);
 
         // then
         assertAll(
@@ -53,7 +53,7 @@ class PrStateChangeHistoryTest {
     @Test
     void 최초_상태가_DRAFT인_이력을_생성한다() {
         // when
-        PrStateChangeHistory history = PrStateChangeHistory.createInitial(1L, PrState.DRAFT, CHANGED_AT);
+        PullRequestStateHistory history = PullRequestStateHistory.createInitial(1L, PrState.DRAFT, CHANGED_AT);
 
         // then
         assertAll(
@@ -66,7 +66,7 @@ class PrStateChangeHistoryTest {
     @Test
     void PR_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PrStateChangeHistory.create(null, PrState.OPEN, PrState.MERGED, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestStateHistory.create(null, PrState.OPEN, PrState.MERGED, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PR ID는 필수입니다.");
     }
@@ -74,7 +74,7 @@ class PrStateChangeHistoryTest {
     @Test
     void 최초_상태_생성시_PR_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PrStateChangeHistory.createInitial(null, PrState.OPEN, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(null, PrState.OPEN, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PR ID는 필수입니다.");
     }
@@ -82,7 +82,7 @@ class PrStateChangeHistoryTest {
     @Test
     void 새로운_상태가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PrStateChangeHistory.create(1L, PrState.OPEN, null, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestStateHistory.create(1L, PrState.OPEN, null, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("새로운 상태는 필수입니다.");
     }
@@ -90,7 +90,7 @@ class PrStateChangeHistoryTest {
     @Test
     void 최초_상태_생성시_상태가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PrStateChangeHistory.createInitial(1L, null, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(1L, null, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("새로운 상태는 필수입니다.");
     }
@@ -98,7 +98,7 @@ class PrStateChangeHistoryTest {
     @Test
     void 변경_시각이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PrStateChangeHistory.create(1L, PrState.OPEN, PrState.MERGED, null))
+        assertThatThrownBy(() -> PullRequestStateHistory.create(1L, PrState.OPEN, PrState.MERGED, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 시각은 필수입니다.");
     }
@@ -106,7 +106,7 @@ class PrStateChangeHistoryTest {
     @Test
     void 최초_상태_생성시_변경_시각이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PrStateChangeHistory.createInitial(1L, PrState.OPEN, null))
+        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(1L, PrState.OPEN, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 시각은 필수입니다.");
     }

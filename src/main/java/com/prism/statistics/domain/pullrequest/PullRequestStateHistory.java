@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "pr_state_change_histories")
+@Table(name = "pull_request_state__histories")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PrStateChangeHistory extends CreatedAtEntity {
+public class PullRequestStateHistory extends CreatedAtEntity {
 
     private Long pullRequestId;
 
@@ -28,7 +28,7 @@ public class PrStateChangeHistory extends CreatedAtEntity {
 
     private LocalDateTime changedAt;
 
-    public static PrStateChangeHistory create(
+    public static PullRequestStateHistory create(
             Long pullRequestId,
             PrState previousState,
             PrState newState,
@@ -37,14 +37,14 @@ public class PrStateChangeHistory extends CreatedAtEntity {
         validatePullRequestId(pullRequestId);
         validateNewState(newState);
         validateChangedAt(changedAt);
-        return new PrStateChangeHistory(pullRequestId, previousState, newState, changedAt);
+        return new PullRequestStateHistory(pullRequestId, previousState, newState, changedAt);
     }
 
-    public static PrStateChangeHistory createInitial(Long pullRequestId, PrState initialState, LocalDateTime changedAt) {
+    public static PullRequestStateHistory createInitial(Long pullRequestId, PrState initialState, LocalDateTime changedAt) {
         validatePullRequestId(pullRequestId);
         validateNewState(initialState);
         validateChangedAt(changedAt);
-        return new PrStateChangeHistory(pullRequestId, null, initialState, changedAt);
+        return new PullRequestStateHistory(pullRequestId, null, initialState, changedAt);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
@@ -65,7 +65,7 @@ public class PrStateChangeHistory extends CreatedAtEntity {
         }
     }
 
-    private PrStateChangeHistory(
+    private PullRequestStateHistory(
             Long pullRequestId,
             PrState previousState,
             PrState newState,
