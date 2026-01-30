@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "requested_reviewer_change_histories")
+@Table(name = "requested_reviewer_histories")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RequestedReviewerChangeHistory extends CreatedAtEntity {
+public class RequestedReviewerHistory extends CreatedAtEntity {
 
     private Long pullRequestId;
 
@@ -29,7 +29,7 @@ public class RequestedReviewerChangeHistory extends CreatedAtEntity {
 
     private LocalDateTime changedAt;
 
-    public static RequestedReviewerChangeHistory create(
+    public static RequestedReviewerHistory create(
             Long pullRequestId,
             String githubMention,
             Long githubUid,
@@ -41,7 +41,7 @@ public class RequestedReviewerChangeHistory extends CreatedAtEntity {
         validateGithubUid(githubUid);
         validateAction(action);
         validateChangedAt(changedAt);
-        return new RequestedReviewerChangeHistory(pullRequestId, githubMention, githubUid, action, changedAt);
+        return new RequestedReviewerHistory(pullRequestId, githubMention, githubUid, action, changedAt);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
@@ -74,7 +74,7 @@ public class RequestedReviewerChangeHistory extends CreatedAtEntity {
         }
     }
 
-    private RequestedReviewerChangeHistory(
+    private RequestedReviewerHistory(
             Long pullRequestId,
             String githubMention,
             Long githubUid,

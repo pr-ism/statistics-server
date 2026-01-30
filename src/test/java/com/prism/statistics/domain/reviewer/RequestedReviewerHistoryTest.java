@@ -17,14 +17,14 @@ import com.prism.statistics.domain.reviewer.enums.ReviewerAction;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class RequestedReviewerChangeHistoryTest {
+class RequestedReviewerHistoryTest {
 
     private static final LocalDateTime CHANGED_AT = LocalDateTime.of(2024, 1, 15, 10, 0, 0);
 
     @Test
     void 리뷰어_요청_이력을_생성한다() {
         // when
-        RequestedReviewerChangeHistory history = RequestedReviewerChangeHistory.create(
+        RequestedReviewerHistory history = RequestedReviewerHistory.create(
                 1L, "reviewer1", 12345L, ReviewerAction.REQUESTED, CHANGED_AT
         );
 
@@ -41,7 +41,7 @@ class RequestedReviewerChangeHistoryTest {
     @Test
     void 리뷰어_제거_이력을_생성한다() {
         // when
-        RequestedReviewerChangeHistory history = RequestedReviewerChangeHistory.create(
+        RequestedReviewerHistory history = RequestedReviewerHistory.create(
                 1L, "reviewer1", 12345L, ReviewerAction.REMOVED, CHANGED_AT
         );
 
@@ -58,7 +58,7 @@ class RequestedReviewerChangeHistoryTest {
     @Test
     void Pull_Request_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> RequestedReviewerChangeHistory.create(
+        assertThatThrownBy(() -> RequestedReviewerHistory.create(
                 null, "reviewer1", 12345L, ReviewerAction.REQUESTED, CHANGED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -70,7 +70,7 @@ class RequestedReviewerChangeHistoryTest {
     @ValueSource(strings = {" "})
     void GitHub_멘션이_null이거나_빈_문자열이면_예외가_발생한다(String githubMention) {
         // when & then
-        assertThatThrownBy(() -> RequestedReviewerChangeHistory.create(
+        assertThatThrownBy(() -> RequestedReviewerHistory.create(
                 1L, githubMention, 12345L, ReviewerAction.REQUESTED, CHANGED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -80,7 +80,7 @@ class RequestedReviewerChangeHistoryTest {
     @Test
     void GitHub_UID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> RequestedReviewerChangeHistory.create(
+        assertThatThrownBy(() -> RequestedReviewerHistory.create(
                 1L, "reviewer1", null, ReviewerAction.REQUESTED, CHANGED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -90,7 +90,7 @@ class RequestedReviewerChangeHistoryTest {
     @Test
     void 리뷰어_액션이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> RequestedReviewerChangeHistory.create(
+        assertThatThrownBy(() -> RequestedReviewerHistory.create(
                 1L, "reviewer1", 12345L, null, CHANGED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -100,7 +100,7 @@ class RequestedReviewerChangeHistoryTest {
     @Test
     void 변경_시각이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> RequestedReviewerChangeHistory.create(
+        assertThatThrownBy(() -> RequestedReviewerHistory.create(
                 1L, "reviewer1", 12345L, ReviewerAction.REQUESTED, null
         ))
                 .isInstanceOf(IllegalArgumentException.class)
