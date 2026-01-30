@@ -19,7 +19,7 @@ class PullRequestContentHistoryTest {
     private static final LocalDateTime CHANGED_AT = LocalDateTime.of(2024, 1, 15, 10, 0);
 
     @Test
-    void PullRequestHistory를_생성한다() {
+    void PullRequestContentHistory를_생성한다() {
         // given
         PrChangeStats changeStats = PrChangeStats.create(5, 100, 50);
 
