@@ -13,14 +13,14 @@ import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.Comm
 import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.FileData;
 import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.PullRequestData;
 import com.prism.statistics.domain.pullrequest.PullRequest;
-import com.prism.statistics.domain.pullrequest.enums.PrState;
+import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
 import com.prism.statistics.infrastructure.pullrequest.persistence.JpaCommitRepository;
-import com.prism.statistics.infrastructure.pullrequest.persistence.JpaPrChangeHistoryRepository;
-import com.prism.statistics.infrastructure.pullrequest.persistence.JpaPrFileHistoryRepository;
-import com.prism.statistics.infrastructure.pullrequest.persistence.JpaPrFileRepository;
-import com.prism.statistics.infrastructure.pullrequest.persistence.JpaPrStateChangeHistoryRepository;
+import com.prism.statistics.infrastructure.pullrequest.persistence.JpaPullRequestContentHistoryRepository;
+import com.prism.statistics.infrastructure.pullrequest.persistence.JpaPullRequestFileHistoryRepository;
+import com.prism.statistics.infrastructure.pullrequest.persistence.JpaPullRequestFileRepository;
+import com.prism.statistics.infrastructure.pullrequest.persistence.JpaPullRequestStateHistoryRepository;
 import com.prism.statistics.infrastructure.pullrequest.persistence.JpaPullRequestRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -44,23 +44,23 @@ class PrOpenedServiceTest {
     private JpaPullRequestRepository jpaPullRequestRepository;
 
     @Autowired
-    private JpaPrFileRepository jpaPrFileRepository;
+    private JpaPullRequestFileRepository jpaPullRequestFileRepository;
 
     @Autowired
     private JpaCommitRepository jpaCommitRepository;
 
     @Autowired
-    private JpaPrStateChangeHistoryRepository jpaPrStateChangeHistoryRepository;
+    private JpaPullRequestStateHistoryRepository jpaPullRequestStateHistoryRepository;
 
     @Autowired
-    private JpaPrChangeHistoryRepository jpaPrChangeHistoryRepository;
+    private JpaPullRequestContentHistoryRepository jpaPullRequestContentHistoryRepository;
 
     @Autowired
-    private JpaPrFileHistoryRepository jpaPrFileHistoryRepository;
+    private JpaPullRequestFileHistoryRepository jpaPullRequestFileHistoryRepository;
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void PR_opened_이벤트를_처리하면_모든_엔티티가_저장된다() {
+    void Pull_Request_opened_이벤트를_처리하면_모든_엔티티가_저장된다() {
         // given
         PrOpenedRequest request = createPrOpenedRequest(false);
 
@@ -70,17 +70,17 @@ class PrOpenedServiceTest {
         // then
         assertAll(
                 () -> assertThat(jpaPullRequestRepository.count()).isEqualTo(1),
-                () -> assertThat(jpaPrFileRepository.count()).isEqualTo(2),
+                () -> assertThat(jpaPullRequestFileRepository.count()).isEqualTo(2),
                 () -> assertThat(jpaCommitRepository.count()).isEqualTo(2),
-                () -> assertThat(jpaPrStateChangeHistoryRepository.count()).isEqualTo(1),
-                () -> assertThat(jpaPrChangeHistoryRepository.count()).isEqualTo(1),
-                () -> assertThat(jpaPrFileHistoryRepository.count()).isEqualTo(2)
+                () -> assertThat(jpaPullRequestStateHistoryRepository.count()).isEqualTo(1),
+                () -> assertThat(jpaPullRequestContentHistoryRepository.count()).isEqualTo(1),
+                () -> assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(2)
         );
     }
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void PR_opened_이벤트를_처리하면_OPEN_상태로_저장된다() {
+    void Pull_Request_opened_이벤트를_처리하면_OPEN_상태로_저장된다() {
         // given
         PrOpenedRequest request = createPrOpenedRequest(false);
 
@@ -89,7 +89,7 @@ class PrOpenedServiceTest {
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
-        assertThat(pullRequest.getState()).isEqualTo(PrState.OPEN);
+        assertThat(pullRequest.getState()).isEqualTo(PullRequestState.OPEN);
     }
 
     @Sql("/sql/webhook/insert_project.sql")
@@ -104,11 +104,11 @@ class PrOpenedServiceTest {
         // then
         assertAll(
                 () -> assertThat(jpaPullRequestRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaPrFileRepository.count()).isEqualTo(0),
+                () -> assertThat(jpaPullRequestFileRepository.count()).isEqualTo(0),
                 () -> assertThat(jpaCommitRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaPrStateChangeHistoryRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaPrChangeHistoryRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaPrFileHistoryRepository.count()).isEqualTo(0)
+                () -> assertThat(jpaPullRequestStateHistoryRepository.count()).isEqualTo(0),
+                () -> assertThat(jpaPullRequestContentHistoryRepository.count()).isEqualTo(0),
+                () -> assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(0)
         );
     }
 
@@ -120,7 +120,7 @@ class PrOpenedServiceTest {
 
         // when & then
         assertThatThrownBy(() -> prOpenedService.handle(invalidApiKey, request))
-                .isInstanceOf(ProjectNotFoundException.class)
+                .isInstanceOf(InvalidApiKeyException.class)
                 .hasMessage("유효하지 않은 API Key입니다.");
     }
 
