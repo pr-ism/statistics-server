@@ -1,15 +1,15 @@
 package com.prism.statistics.application.webhook;
 
-import com.prism.statistics.application.webhook.dto.request.LabelAddedRequest;
-import com.prism.statistics.domain.label.PrLabel;
-import com.prism.statistics.domain.label.PrLabelHistory;
-import com.prism.statistics.domain.label.enums.LabelAction;
-import com.prism.statistics.domain.label.repository.PrLabelHistoryRepository;
-import com.prism.statistics.domain.label.repository.PrLabelRepository;
+import com.prism.statistics.application.webhook.dto.request.PullRequestLabelAddedRequest;
+import com.prism.statistics.domain.label.PullRequestLabel;
+import com.prism.statistics.domain.label.PullRequestLabelHistory;
+import com.prism.statistics.domain.label.enums.PullRequestLabelAction;
+import com.prism.statistics.domain.label.repository.PullRequestLabelHistoryRepository;
+import com.prism.statistics.domain.label.repository.PullRequestLabelRepository;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,18 +21,18 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class LabelAddedService {
+public class PullRequestLabelAddedService {
 
     private final Clock clock;
     private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
-    private final PrLabelRepository prLabelRepository;
-    private final PrLabelHistoryRepository prLabelHistoryRepository;
+    private final PullRequestLabelRepository pullRequestLabelRepository;
+    private final PullRequestLabelHistoryRepository pullRequestLabelHistoryRepository;
 
     @Transactional
-    public void addLabel(String apiKey, LabelAddedRequest request) {
+    public void addPullRequestLabel(String apiKey, PullRequestLabelAddedRequest request) {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new ProjectNotFoundException());
+                .orElseThrow(() -> new InvalidApiKeyException());
 
         PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.prNumber())
                 .orElseThrow(() -> new PullRequestNotFoundException());
@@ -40,24 +40,24 @@ public class LabelAddedService {
         Long pullRequestId = pullRequest.getId();
         String labelName = request.label().name();
 
-        if (prLabelRepository.exists(pullRequestId, labelName)) {
+        if (pullRequestLabelRepository.exists(pullRequestId, labelName)) {
             return;
         }
 
         LocalDateTime labeledAt = toLocalDateTime(request.labeledAt());
 
-        PrLabel prLabel = PrLabel.create(pullRequestId, labelName, labeledAt);
+        PullRequestLabel pullRequestLabel = PullRequestLabel.create(pullRequestId, labelName, labeledAt);
 
-        prLabelRepository.save(prLabel);
+        pullRequestLabelRepository.save(pullRequestLabel);
 
-        PrLabelHistory prLabelHistory = PrLabelHistory.create(
+        PullRequestLabelHistory pullRequestLabelHistory = PullRequestLabelHistory.create(
                 pullRequestId,
                 labelName,
-                LabelAction.ADDED,
+                PullRequestLabelAction.ADDED,
                 labeledAt
         );
 
-        prLabelHistoryRepository.save(prLabelHistory);
+        pullRequestLabelHistoryRepository.save(pullRequestLabelHistory);
     }
 
     private LocalDateTime toLocalDateTime(Instant instant) {

@@ -1,7 +1,7 @@
 package com.prism.statistics.presentation.webhook;
 
-import com.prism.statistics.application.webhook.LabelAddedService;
-import com.prism.statistics.application.webhook.dto.request.LabelAddedRequest;
+import com.prism.statistics.application.webhook.PullRequestLabelRemovedService;
+import com.prism.statistics.application.webhook.dto.request.PullRequestLabelRemovedRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,16 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/webhook")
 @RequiredArgsConstructor
-public class LabelAddedController {
+public class PullRequestLabelRemovedController {
 
-    private final LabelAddedService labelAddedService;
+    private final PullRequestLabelRemovedService pullRequestLabelRemovedService;
 
-    @PostMapping("/label/added")
-    public ResponseEntity<Void> handleLabelAdded(
+    @PostMapping("/pull-request/label/removed")
+    public ResponseEntity<Void> handlePullRequestLabelRemoved(
             @RequestHeader("X-API-Key") String apiKey,
-            @RequestBody LabelAddedRequest request
+            @RequestBody PullRequestLabelRemovedRequest request
     ) {
-        labelAddedService.addLabel(apiKey, request);
+        pullRequestLabelRemovedService.removePullRequestLabel(apiKey, request);
         return ResponseEntity.ok().build();
     }
 }

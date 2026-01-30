@@ -1,10 +1,7 @@
 package com.prism.statistics.domain.label;
 
 import com.prism.statistics.domain.common.CreatedAtEntity;
-import com.prism.statistics.domain.label.enums.LabelAction;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -14,30 +11,24 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "pr_label_histories")
+@Table(name = "pull_request_labels")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PrLabelHistory extends CreatedAtEntity {
-
+public class PullRequestLabel extends CreatedAtEntity {
     private Long pullRequestId;
 
     private String labelName;
 
-    @Enumerated(EnumType.STRING)
-    private LabelAction action;
+    private LocalDateTime labeledAt;
 
-    private LocalDateTime changedAt;
-
-    public static PrLabelHistory create(
+    public static PullRequestLabel create(
             Long pullRequestId,
             String labelName,
-            LabelAction action,
-            LocalDateTime changedAt
+            LocalDateTime labeledAt
     ) {
         validatePullRequestId(pullRequestId);
         validateLabelName(labelName);
-        validateAction(action);
-        validateChangedAt(changedAt);
-        return new PrLabelHistory(pullRequestId, labelName, action, changedAt);
+        validateLabeledAt(labeledAt);
+        return new PullRequestLabel(pullRequestId, labelName, labeledAt);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
@@ -52,27 +43,19 @@ public class PrLabelHistory extends CreatedAtEntity {
         }
     }
 
-    private static void validateAction(LabelAction action) {
-        if (action == null) {
-            throw new IllegalArgumentException("라벨 액션은 필수입니다.");
+    private static void validateLabeledAt(LocalDateTime labeledAt) {
+        if (labeledAt == null) {
+            throw new IllegalArgumentException("라벨 추가 시각은 필수입니다.");
         }
     }
 
-    private static void validateChangedAt(LocalDateTime changedAt) {
-        if (changedAt == null) {
-            throw new IllegalArgumentException("변경 시각은 필수입니다.");
-        }
-    }
-
-    private PrLabelHistory(
+    private PullRequestLabel(
             Long pullRequestId,
             String labelName,
-            LabelAction action,
-            LocalDateTime changedAt
+            LocalDateTime labeledAt
     ) {
         this.pullRequestId = pullRequestId;
         this.labelName = labelName;
-        this.action = action;
-        this.changedAt = changedAt;
+        this.labeledAt = labeledAt;
     }
 }

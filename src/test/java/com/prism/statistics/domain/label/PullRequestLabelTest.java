@@ -15,27 +15,27 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class PrLabelTest {
+class PullRequestLabelTest {
 
     private static final LocalDateTime LABELED_AT = LocalDateTime.of(2024, 1, 15, 10, 0, 0);
 
     @Test
-    void PrLabel을_생성한다() {
+    void PullRequestLabel을_생성한다() {
         // when
-        PrLabel prLabel = PrLabel.create(1L, "bug", LABELED_AT);
+        PullRequestLabel pullRequestLabel = PullRequestLabel.create(1L, "bug", LABELED_AT);
 
         // then
         assertAll(
-                () -> assertThat(prLabel.getPullRequestId()).isEqualTo(1L),
-                () -> assertThat(prLabel.getLabelName()).isEqualTo("bug"),
-                () -> assertThat(prLabel.getLabeledAt()).isEqualTo(LABELED_AT)
+                () -> assertThat(pullRequestLabel.getPullRequestId()).isEqualTo(1L),
+                () -> assertThat(pullRequestLabel.getLabelName()).isEqualTo("bug"),
+                () -> assertThat(pullRequestLabel.getLabeledAt()).isEqualTo(LABELED_AT)
         );
     }
 
     @Test
     void Pull_Request_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PrLabel.create(null, "bug", LABELED_AT))
+        assertThatThrownBy(() -> PullRequestLabel.create(null, "bug", LABELED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PR ID는 필수입니다.");
     }
@@ -45,7 +45,7 @@ class PrLabelTest {
     @ValueSource(strings = " ")
     void 라벨_이름이_null이거나_공백이면_예외가_발생한다(String labelName) {
         // when & then
-        assertThatThrownBy(() -> PrLabel.create(1L, labelName, LABELED_AT))
+        assertThatThrownBy(() -> PullRequestLabel.create(1L, labelName, LABELED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("라벨 이름은 필수입니다.");
     }
@@ -53,7 +53,7 @@ class PrLabelTest {
     @Test
     void 라벨_추가_시각이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PrLabel.create(1L, "bug", null))
+        assertThatThrownBy(() -> PullRequestLabel.create(1L, "bug", null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("라벨 추가 시각은 필수입니다.");
     }

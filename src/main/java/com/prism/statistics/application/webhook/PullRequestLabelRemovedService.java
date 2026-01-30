@@ -1,14 +1,14 @@
 package com.prism.statistics.application.webhook;
 
-import com.prism.statistics.application.webhook.dto.request.LabelRemovedRequest;
-import com.prism.statistics.domain.label.PrLabelHistory;
-import com.prism.statistics.domain.label.enums.LabelAction;
-import com.prism.statistics.domain.label.repository.PrLabelHistoryRepository;
-import com.prism.statistics.domain.label.repository.PrLabelRepository;
+import com.prism.statistics.application.webhook.dto.request.PullRequestLabelRemovedRequest;
+import com.prism.statistics.domain.label.PullRequestLabelHistory;
+import com.prism.statistics.domain.label.enums.PullRequestLabelAction;
+import com.prism.statistics.domain.label.repository.PullRequestLabelHistoryRepository;
+import com.prism.statistics.domain.label.repository.PullRequestLabelRepository;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,18 +20,18 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class LabelRemovedService {
+public class PullRequestLabelRemovedService {
 
     private final Clock clock;
     private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
-    private final PrLabelRepository prLabelRepository;
-    private final PrLabelHistoryRepository prLabelHistoryRepository;
+    private final PullRequestLabelRepository pullRequestLabelRepository;
+    private final PullRequestLabelHistoryRepository pullRequestLabelHistoryRepository;
 
     @Transactional
-    public void removeLabel(String apiKey, LabelRemovedRequest request) {
+    public void removePullRequestLabel(String apiKey, PullRequestLabelRemovedRequest request) {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new ProjectNotFoundException());
+                .orElseThrow(() -> new InvalidApiKeyException());
 
         PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.prNumber())
                 .orElseThrow(() -> new PullRequestNotFoundException());
@@ -39,7 +39,7 @@ public class LabelRemovedService {
         Long pullRequestId = pullRequest.getId();
         String labelName = request.label().name();
 
-        long deleted = prLabelRepository.deleteLabel(pullRequestId, labelName);
+        long deleted = pullRequestLabelRepository.deleteLabel(pullRequestId, labelName);
 
         if (deleted == 0L) {
             return;
@@ -47,13 +47,13 @@ public class LabelRemovedService {
 
         LocalDateTime unlabeledAt = toLocalDateTime(request.unlabeledAt());
 
-        PrLabelHistory prLabelHistory = PrLabelHistory.create(
+        PullRequestLabelHistory pullRequestLabelHistory = PullRequestLabelHistory.create(
                 pullRequestId,
                 labelName,
-                LabelAction.REMOVED,
+                PullRequestLabelAction.REMOVED,
                 unlabeledAt
         );
-        prLabelHistoryRepository.save(prLabelHistory);
+        pullRequestLabelHistoryRepository.save(pullRequestLabelHistory);
     }
 
     private LocalDateTime toLocalDateTime(Instant instant) {

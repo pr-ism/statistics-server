@@ -9,9 +9,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.prism.statistics.application.webhook.LabelAddedService;
-import com.prism.statistics.application.webhook.dto.request.LabelAddedRequest;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.application.webhook.PullRequestLabelRemovedService;
+import com.prism.statistics.application.webhook.dto.request.PullRequestLabelRemovedRequest;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
@@ -19,16 +19,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 @SuppressWarnings("NonAsciiCharacters")
-class LabelAddedControllerTest extends CommonControllerSliceTestSupport {
+class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSupport {
 
     private static final String API_KEY_HEADER = "X-API-Key";
     private static final String TEST_API_KEY = "test-api-key";
 
     @Autowired
-    private LabelAddedService labelAddedService;
+    private PullRequestLabelRemovedService pullRequestLabelRemovedService;
 
     @Test
-    void Label_added_웹훅_요청을_처리한다() throws Exception {
+    void Label_removed_웹훅_요청을_처리한다() throws Exception {
         // given
         String payload = """
                 {
@@ -36,22 +36,22 @@ class LabelAddedControllerTest extends CommonControllerSliceTestSupport {
                     "label": {
                         "name": "bug"
                     },
-                    "labeledAt": "2024-01-15T10:00:00Z"
+                    "unlabeledAt": "2024-01-15T10:00:00Z"
                 }
                 """;
 
-        willDoNothing().given(labelAddedService).addLabel(eq(TEST_API_KEY), any(LabelAddedRequest.class));
+        willDoNothing().given(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
 
         // when & then
         mockMvc.perform(
-                post("/webhook/label/added")
+                post("/webhook/pull-request/label/removed")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
         )
         .andExpect(status().isOk());
 
-        verify(labelAddedService).addLabel(eq(TEST_API_KEY), any(LabelAddedRequest.class));
+        verify(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
     }
 
     @Test
@@ -63,13 +63,13 @@ class LabelAddedControllerTest extends CommonControllerSliceTestSupport {
                     "label": {
                         "name": "bug"
                     },
-                    "labeledAt": "2024-01-15T10:00:00Z"
+                    "unlabeledAt": "2024-01-15T10:00:00Z"
                 }
                 """;
 
         // when & then
         mockMvc.perform(
-                post("/webhook/label/added")
+                post("/webhook/pull-request/label/removed")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
         )
@@ -77,7 +77,7 @@ class LabelAddedControllerTest extends CommonControllerSliceTestSupport {
     }
 
     @Test
-    void 존재하지_않는_프로젝트면_404_반환한다() throws Exception {
+    void 유효하지_않은_API_Key면_404_반환한다() throws Exception {
         // given
         String payload = """
                 {
@@ -85,23 +85,23 @@ class LabelAddedControllerTest extends CommonControllerSliceTestSupport {
                     "label": {
                         "name": "bug"
                     },
-                    "labeledAt": "2024-01-15T10:00:00Z"
+                    "unlabeledAt": "2024-01-15T10:00:00Z"
                 }
                 """;
 
-        willThrow(new ProjectNotFoundException())
-                .given(labelAddedService).addLabel(eq(TEST_API_KEY), any(LabelAddedRequest.class));
+        willThrow(new InvalidApiKeyException())
+                .given(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
 
         // when & then
         mockMvc.perform(
-                post("/webhook/label/added")
+                post("/webhook/pull-request/label/removed")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
         )
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.errorCode").value("P00"))
-        .andExpect(jsonPath("$.message").value("프로젝트를 찾을 수 없습니다."));
+        .andExpect(jsonPath("$.errorCode").value("P01"))
+        .andExpect(jsonPath("$.message").value("유효하지 않은 API Key입니다."));
     }
 
     @Test
@@ -113,16 +113,16 @@ class LabelAddedControllerTest extends CommonControllerSliceTestSupport {
                     "label": {
                         "name": "bug"
                     },
-                    "labeledAt": "2024-01-15T10:00:00Z"
+                    "unlabeledAt": "2024-01-15T10:00:00Z"
                 }
                 """;
 
         willThrow(new PullRequestNotFoundException())
-                .given(labelAddedService).addLabel(eq(TEST_API_KEY), any(LabelAddedRequest.class));
+                .given(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
 
         // when & then
         mockMvc.perform(
-                post("/webhook/label/added")
+                post("/webhook/pull-request/label/removed")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)

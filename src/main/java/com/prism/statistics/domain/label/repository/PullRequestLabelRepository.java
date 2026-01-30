@@ -1,10 +1,10 @@
 package com.prism.statistics.domain.label.repository;
 
-import com.prism.statistics.domain.label.PrLabel;
+import com.prism.statistics.domain.label.PullRequestLabel;
 
-public interface PrLabelRepository {
+public interface PullRequestLabelRepository {
 
-    PrLabel save(PrLabel prLabel);
+    PullRequestLabel save(PullRequestLabel pullRequestLabel);
 
     boolean exists(Long pullRequestId, String labelName);
 

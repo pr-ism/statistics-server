@@ -5,14 +5,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
-import com.prism.statistics.application.webhook.dto.request.LabelAddedRequest;
-import com.prism.statistics.application.webhook.dto.request.LabelAddedRequest.LabelData;
-import com.prism.statistics.domain.label.PrLabel;
-import com.prism.statistics.domain.label.PrLabelHistory;
-import com.prism.statistics.domain.label.enums.LabelAction;
-import com.prism.statistics.infrastructure.label.persistence.JpaPrLabelHistoryRepository;
-import com.prism.statistics.infrastructure.label.persistence.JpaPrLabelRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.application.webhook.dto.request.PullRequestLabelAddedRequest;
+import com.prism.statistics.application.webhook.dto.request.PullRequestLabelAddedRequest.LabelData;
+import com.prism.statistics.domain.label.PullRequestLabel;
+import com.prism.statistics.domain.label.PullRequestLabelHistory;
+import com.prism.statistics.domain.label.enums.PullRequestLabelAction;
+import com.prism.statistics.infrastructure.label.persistence.JpaPullRequestLabelHistoryRepository;
+import com.prism.statistics.infrastructure.label.persistence.JpaPullRequestLabelRepository;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -32,66 +32,66 @@ import java.util.concurrent.TimeUnit;
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class LabelAddedServiceTest {
+class PullRequestLabelAddedServiceTest {
 
     private static final String TEST_API_KEY = "test-api-key";
     private static final int TEST_PR_NUMBER = 123;
 
     @Autowired
-    private LabelAddedService labelAddedService;
+    private PullRequestLabelAddedService pullRequestLabelAddedService;
 
     @Autowired
-    private JpaPrLabelRepository jpaPrLabelRepository;
+    private JpaPullRequestLabelRepository jpaPullRequestLabelRepository;
 
     @Autowired
-    private JpaPrLabelHistoryRepository jpaPrLabelHistoryRepository;
+    private JpaPullRequestLabelHistoryRepository jpaPullRequestLabelHistoryRepository;
 
     @Sql("/sql/webhook/insert_project_and_pull_request.sql")
     @Test
-    void Label_추가_시_PrLabel과_PrLabelHistory가_저장된다() {
+    void Label_추가_시_PullRequestLabel과_PullRequestLabelHistory가_저장된다() {
         // given
-        LabelAddedRequest request = createLabelAddedRequest("bug");
+        PullRequestLabelAddedRequest request = createLabelAddedRequest("bug");
 
         // when
-        labelAddedService.addLabel(TEST_API_KEY, request);
+        pullRequestLabelAddedService.addPullRequestLabel(TEST_API_KEY, request);
 
         // then
         assertAll(
-                () -> assertThat(jpaPrLabelRepository.count()).isEqualTo(1),
-                () -> assertThat(jpaPrLabelHistoryRepository.count()).isEqualTo(1)
+                () -> assertThat(jpaPullRequestLabelRepository.count()).isEqualTo(1),
+                () -> assertThat(jpaPullRequestLabelHistoryRepository.count()).isEqualTo(1)
         );
     }
 
     @Sql("/sql/webhook/insert_project_and_pull_request.sql")
     @Test
-    void Label_추가_시_PrLabel_정보가_올바르게_저장된다() {
+    void Label_추가_시_PullRequestLabel_정보가_올바르게_저장된다() {
         // given
         String labelName = "enhancement";
-        LabelAddedRequest request = createLabelAddedRequest(labelName);
+        PullRequestLabelAddedRequest request = createLabelAddedRequest(labelName);
 
         // when
-        labelAddedService.addLabel(TEST_API_KEY, request);
+        pullRequestLabelAddedService.addPullRequestLabel(TEST_API_KEY, request);
 
         // then
-        PrLabel prLabel = jpaPrLabelRepository.findAll().getFirst();
-        assertThat(prLabel.getLabelName()).isEqualTo(labelName);
+        PullRequestLabel pullRequestLabel = jpaPullRequestLabelRepository.findAll().getFirst();
+        assertThat(pullRequestLabel.getLabelName()).isEqualTo(labelName);
     }
 
     @Sql("/sql/webhook/insert_project_and_pull_request.sql")
     @Test
-    void Label_추가_시_PrLabelHistory에_ADDED_액션으로_저장된다() {
+    void Label_추가_시_PullRequestLabelHistory에_ADDED_액션으로_저장된다() {
         // given
         String labelName = "feature";
-        LabelAddedRequest request = createLabelAddedRequest(labelName);
+        PullRequestLabelAddedRequest request = createLabelAddedRequest(labelName);
 
         // when
-        labelAddedService.addLabel(TEST_API_KEY, request);
+        pullRequestLabelAddedService.addPullRequestLabel(TEST_API_KEY, request);
 
         // then
-        PrLabelHistory prLabelHistory = jpaPrLabelHistoryRepository.findAll().getFirst();
+        PullRequestLabelHistory pullRequestLabelHistory = jpaPullRequestLabelHistoryRepository.findAll().getFirst();
         assertAll(
-                () -> assertThat(prLabelHistory.getLabelName()).isEqualTo(labelName),
-                () -> assertThat(prLabelHistory.getAction()).isEqualTo(LabelAction.ADDED)
+                () -> assertThat(pullRequestLabelHistory.getLabelName()).isEqualTo(labelName),
+                () -> assertThat(pullRequestLabelHistory.getAction()).isEqualTo(PullRequestLabelAction.ADDED)
         );
     }
 
@@ -100,38 +100,38 @@ class LabelAddedServiceTest {
     void 중복_Label_추가_시_저장되지_않는다() {
         // given
         String labelName = "duplicate-label";
-        LabelAddedRequest request = createLabelAddedRequest(labelName);
+        PullRequestLabelAddedRequest request = createLabelAddedRequest(labelName);
 
         // when
-        labelAddedService.addLabel(TEST_API_KEY, request);
-        labelAddedService.addLabel(TEST_API_KEY, request);
+        pullRequestLabelAddedService.addPullRequestLabel(TEST_API_KEY, request);
+        pullRequestLabelAddedService.addPullRequestLabel(TEST_API_KEY, request);
 
         // then
         assertAll(
-                () -> assertThat(jpaPrLabelRepository.count()).isEqualTo(1),
-                () -> assertThat(jpaPrLabelHistoryRepository.count()).isEqualTo(1)
+                () -> assertThat(jpaPullRequestLabelRepository.count()).isEqualTo(1),
+                () -> assertThat(jpaPullRequestLabelHistoryRepository.count()).isEqualTo(1)
         );
     }
 
     @Test
     void 존재하지_않는_API_Key면_예외가_발생한다() {
         // given
-        LabelAddedRequest request = createLabelAddedRequest("bug");
+        PullRequestLabelAddedRequest request = createLabelAddedRequest("bug");
         String invalidApiKey = "invalid-api-key";
 
         // when & then
-        assertThatThrownBy(() -> labelAddedService.addLabel(invalidApiKey, request))
-                .isInstanceOf(ProjectNotFoundException.class);
+        assertThatThrownBy(() -> pullRequestLabelAddedService.addPullRequestLabel(invalidApiKey, request))
+                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
     void 존재하지_않는_PR이면_예외가_발생한다() {
         // given
-        LabelAddedRequest request = createLabelAddedRequest("bug");
+        PullRequestLabelAddedRequest request = createLabelAddedRequest("bug");
 
         // when & then
-        assertThatThrownBy(() -> labelAddedService.addLabel(TEST_API_KEY, request))
+        assertThatThrownBy(() -> pullRequestLabelAddedService.addPullRequestLabel(TEST_API_KEY, request))
                 .isInstanceOf(PullRequestNotFoundException.class);
     }
 
@@ -140,7 +140,7 @@ class LabelAddedServiceTest {
     void 동일_Label을_동시에_추가해도_한번만_저장되고_단일_History만_저장된다() throws Exception {
         // given
         String labelName = "concurrent-label";
-        LabelAddedRequest request = createLabelAddedRequest(labelName);
+        PullRequestLabelAddedRequest request = createLabelAddedRequest(labelName);
         int requestCount = 10;
 
         CountDownLatch readyLatch = new CountDownLatch(requestCount);
@@ -158,7 +158,7 @@ class LabelAddedServiceTest {
                         throw new IllegalStateException("시작 대기 중 인터럽트 발생", e);
                     }
                     // when
-                    labelAddedService.addLabel(TEST_API_KEY, request);
+                    pullRequestLabelAddedService.addPullRequestLabel(TEST_API_KEY, request);
                     return null;
                 }));
             }
@@ -173,13 +173,13 @@ class LabelAddedServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(jpaPrLabelRepository.count()).isEqualTo(1),
-                () -> assertThat(jpaPrLabelHistoryRepository.count()).isEqualTo(1)
+                () -> assertThat(jpaPullRequestLabelRepository.count()).isEqualTo(1),
+                () -> assertThat(jpaPullRequestLabelHistoryRepository.count()).isEqualTo(1)
         );
     }
 
-    private LabelAddedRequest createLabelAddedRequest(String labelName) {
-        return new LabelAddedRequest(
+    private PullRequestLabelAddedRequest createLabelAddedRequest(String labelName) {
+        return new PullRequestLabelAddedRequest(
                 TEST_PR_NUMBER,
                 new LabelData(labelName),
                 Instant.parse("2024-01-15T10:00:00Z")

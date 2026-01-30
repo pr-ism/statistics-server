@@ -1,6 +1,6 @@
 package com.prism.statistics.domain.label.enums;
 
-public enum LabelAction {
+public enum PullRequestLabelAction {
     ADDED,
     REMOVED;
 

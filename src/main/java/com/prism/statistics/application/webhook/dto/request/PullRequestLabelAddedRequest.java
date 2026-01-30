@@ -2,7 +2,7 @@ package com.prism.statistics.application.webhook.dto.request;
 
 import java.time.Instant;
 
-public record LabelAddedRequest(
+public record PullRequestLabelAddedRequest(
         int prNumber,
         LabelData label,
         Instant labeledAt
