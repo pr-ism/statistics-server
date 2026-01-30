@@ -68,7 +68,7 @@ class PullRequestStateHistoryTest {
         // when & then
         assertThatThrownBy(() -> PullRequestStateHistory.create(null, PrState.OPEN, PrState.MERGED, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR ID는 필수입니다.");
+                .hasMessage("PullRequest ID는 필수입니다.");
     }
 
     @Test
@@ -76,7 +76,7 @@ class PullRequestStateHistoryTest {
         // when & then
         assertThatThrownBy(() -> PullRequestStateHistory.createInitial(null, PrState.OPEN, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR ID는 필수입니다.");
+                .hasMessage("PullRequest ID는 필수입니다.");
     }
 
     @Test

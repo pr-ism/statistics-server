@@ -95,7 +95,7 @@ class PullRequestTest {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 0, "title", PrState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 번호는 양수여야 합니다.");
+                .hasMessage("PullRequest 번호는 양수여야 합니다.");
     }
 
     @Test
@@ -103,7 +103,7 @@ class PullRequestTest {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", -1, "title", PrState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 번호는 양수여야 합니다.");
+                .hasMessage("PullRequest 번호는 양수여야 합니다.");
     }
 
     @Test
@@ -111,7 +111,7 @@ class PullRequestTest {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, null, PrState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 제목은 필수입니다.");
+                .hasMessage("PullRequest 제목은 필수입니다.");
     }
 
     @Test
@@ -119,7 +119,7 @@ class PullRequestTest {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "  ", PrState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 제목은 필수입니다.");
+                .hasMessage("PullRequest 제목은 필수입니다.");
     }
 
     @Test
@@ -127,7 +127,7 @@ class PullRequestTest {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", null, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 상태는 필수입니다.");
+                .hasMessage("PullRequest 상태는 필수입니다.");
     }
 
     @Test
@@ -135,7 +135,7 @@ class PullRequestTest {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", PrState.OPEN, null, 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 링크는 필수입니다.");
+                .hasMessage("PullRequest 링크는 필수입니다.");
     }
 
     @Test
@@ -143,7 +143,7 @@ class PullRequestTest {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", PrState.OPEN, "  ", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 링크는 필수입니다.");
+                .hasMessage("PullRequest 링크는 필수입니다.");
     }
 
     @Test

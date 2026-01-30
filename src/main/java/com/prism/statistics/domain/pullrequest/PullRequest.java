@@ -90,25 +90,25 @@ public class PullRequest extends CreatedAtEntity {
 
     private static void validatePrNumber(int prNumber) {
         if (prNumber <= 0) {
-            throw new IllegalArgumentException("PR 번호는 양수여야 합니다.");
+            throw new IllegalArgumentException("PullRequest 번호는 양수여야 합니다.");
         }
     }
 
     private static void validateTitle(String title) {
         if (title == null || title.isBlank()) {
-            throw new IllegalArgumentException("PR 제목은 필수입니다.");
+            throw new IllegalArgumentException("PullRequest 제목은 필수입니다.");
         }
     }
 
     private static void validateState(PrState state) {
         if (state == null) {
-            throw new IllegalArgumentException("PR 상태는 필수입니다.");
+            throw new IllegalArgumentException("PullRequest 상태는 필수입니다.");
         }
     }
 
     private static void validateLink(String link) {
         if (link == null || link.isBlank()) {
-            throw new IllegalArgumentException("PR 링크는 필수입니다.");
+            throw new IllegalArgumentException("PullRequest 링크는 필수입니다.");
         }
     }
 
