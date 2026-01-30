@@ -11,7 +11,7 @@ import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 import com.prism.statistics.domain.pullrequest.enums.PrState;
-import com.prism.statistics.domain.pullrequest.vo.PrChangeStats;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.pullrequest.vo.PrTiming;
 
 @SuppressWarnings("NonAsciiCharacters")
@@ -25,14 +25,14 @@ class PullRequestTest {
     @Test
     void PullRequest를_생성한다() {
         // given
-        PrChangeStats changeStats = PrChangeStats.create(5, 100, 50);
+        PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
         PrTiming timing = PrTiming.createOpen(CREATED_AT);
 
         // when
         PullRequest pullRequest = PullRequest.create(
                 1L, "author123", 42, "feat: 새로운 기능 추가",
                 PrState.OPEN, "https://github.com/org/repo/pull/42",
-                changeStats, 3, timing
+                pullRequestChangeStats, 3, timing
         );
 
         // then
@@ -43,7 +43,7 @@ class PullRequestTest {
                 () -> assertThat(pullRequest.getTitle()).isEqualTo("feat: 새로운 기능 추가"),
                 () -> assertThat(pullRequest.getState()).isEqualTo(PrState.OPEN),
                 () -> assertThat(pullRequest.getLink()).isEqualTo("https://github.com/org/repo/pull/42"),
-                () -> assertThat(pullRequest.getChangeStats()).isEqualTo(changeStats),
+                () -> assertThat(pullRequest.getChangeStats()).isEqualTo(pullRequestChangeStats),
                 () -> assertThat(pullRequest.getCommitCount()).isEqualTo(3),
                 () -> assertThat(pullRequest.getTiming()).isEqualTo(timing)
         );
@@ -52,14 +52,14 @@ class PullRequestTest {
     @Test
     void opened로_생성하면_OPEN_상태가_된다() {
         // given
-        PrChangeStats changeStats = PrChangeStats.create(5, 100, 50);
+        PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
         PrTiming timing = PrTiming.createOpen(CREATED_AT);
 
         // when
         PullRequest pullRequest = PullRequest.opened(
                 1L, "author123", 42, "feat: 새로운 기능 추가",
                 "https://github.com/org/repo/pull/42",
-                changeStats, 3, timing
+                pullRequestChangeStats, 3, timing
         );
 
         // then
@@ -170,7 +170,7 @@ class PullRequestTest {
         // when & then
         assertThatThrownBy(() -> PullRequest.create(
                 1L, "author123", 42, "title", PrState.OPEN, "link",
-                PrChangeStats.create(5, 100, 50), 3, null
+                PullRequestChangeStats.create(5, 100, 50), 3, null
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("시간 정보는 필수입니다.");
@@ -261,35 +261,35 @@ class PullRequestTest {
     ) {
         return PullRequest.create(
                 projectId, authorGithubId, prNumber, title, state, link,
-                PrChangeStats.create(5, 100, 50), commitCount, PrTiming.createOpen(CREATED_AT)
+                PullRequestChangeStats.create(5, 100, 50), commitCount, PrTiming.createOpen(CREATED_AT)
         );
     }
 
     private PullRequest createOpenPullRequest() {
         return PullRequest.create(
                 1L, "author123", 42, "title", PrState.OPEN, "link",
-                PrChangeStats.create(5, 100, 50), 3, PrTiming.createOpen(CREATED_AT)
+                PullRequestChangeStats.create(5, 100, 50), 3, PrTiming.createOpen(CREATED_AT)
         );
     }
 
     private PullRequest createDraftPullRequest() {
         return PullRequest.create(
                 1L, "author123", 42, "title", PrState.DRAFT, "link",
-                PrChangeStats.create(5, 100, 50), 3, PrTiming.createDraft(CREATED_AT)
+                PullRequestChangeStats.create(5, 100, 50), 3, PrTiming.createDraft(CREATED_AT)
         );
     }
 
     private PullRequest createClosedPullRequest() {
         return PullRequest.create(
                 1L, "author123", 42, "title", PrState.CLOSED, "link",
-                PrChangeStats.create(5, 100, 50), 3, PrTiming.createClosed(CREATED_AT, CLOSED_AT)
+                PullRequestChangeStats.create(5, 100, 50), 3, PrTiming.createClosed(CREATED_AT, CLOSED_AT)
         );
     }
 
     private PullRequest createMergedPullRequest() {
         return PullRequest.create(
                 1L, "author123", 42, "title", PrState.MERGED, "link",
-                PrChangeStats.create(5, 100, 50), 3, PrTiming.createMerged(CREATED_AT, MERGED_AT, CLOSED_AT)
+                PullRequestChangeStats.create(5, 100, 50), 3, PrTiming.createMerged(CREATED_AT, MERGED_AT, CLOSED_AT)
         );
     }
 }

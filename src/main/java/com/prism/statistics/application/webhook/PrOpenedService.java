@@ -10,9 +10,9 @@ import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.enums.PrState;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestRepository;
-import com.prism.statistics.domain.pullrequest.vo.PrChangeStats;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.pullrequest.vo.PrTiming;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class PrOpenedService {
     @Transactional
     public void handle(String apiKey, PrOpenedRequest request) {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new ProjectNotFoundException());
+                .orElseThrow(() -> new InvalidApiKeyException());
 
         if (request.isDraft()) {
             eventPublisher.publishEvent(new PrDraftCreatedEvent(request));
@@ -51,7 +51,7 @@ public class PrOpenedService {
     private PullRequest savePullRequest(Long projectId, PullRequestData prData) {
         LocalDateTime prCreatedAt = toLocalDateTime(prData.createdAt());
 
-        PrChangeStats changeStats = PrChangeStats.create(
+        PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(
                 prData.changedFiles(),
                 prData.additions(),
                 prData.deletions()
@@ -65,7 +65,7 @@ public class PrOpenedService {
                 prData.number(),
                 prData.title(),
                 prData.url(),
-                changeStats,
+                pullRequestChangeStats,
                 prData.commits().totalCount(),
                 timing
         );
@@ -80,7 +80,7 @@ public class PrOpenedService {
             PrOpenedRequest request
     ) {
         LocalDateTime prCreatedAt = toLocalDateTime(prData.createdAt());
-        PrChangeStats changeStats = PrChangeStats.create(
+        PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(
                 prData.changedFiles(),
                 prData.additions(),
                 prData.deletions()
@@ -94,7 +94,7 @@ public class PrOpenedService {
                 savedPullRequest.getId(),
                 projectId,
                 PrState.OPEN,
-                changeStats,
+                pullRequestChangeStats,
                 prData.commits().totalCount(),
                 prCreatedAt,
                 request.files(),

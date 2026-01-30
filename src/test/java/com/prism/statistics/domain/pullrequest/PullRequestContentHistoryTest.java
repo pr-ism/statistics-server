@@ -10,7 +10,7 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
-import com.prism.statistics.domain.pullrequest.vo.PrChangeStats;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -21,15 +21,15 @@ class PullRequestContentHistoryTest {
     @Test
     void PullRequestContentHistory를_생성한다() {
         // given
-        PrChangeStats changeStats = PrChangeStats.create(5, 100, 50);
+        PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
 
         // when
-        PullRequestContentHistory history = PullRequestContentHistory.create(1L, changeStats, 3, CHANGED_AT);
+        PullRequestContentHistory history = PullRequestContentHistory.create(1L, pullRequestChangeStats, 3, CHANGED_AT);
 
         // then
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isEqualTo(1L),
-                () -> assertThat(history.getChangeStats()).isEqualTo(changeStats),
+                () -> assertThat(history.getChangeStats()).isEqualTo(pullRequestChangeStats),
                 () -> assertThat(history.getCommitCount()).isEqualTo(3),
                 () -> assertThat(history.getChangedAt()).isEqualTo(CHANGED_AT)
         );
@@ -38,10 +38,10 @@ class PullRequestContentHistoryTest {
     @Test
     void Pull_Request_ID가_null이면_예외가_발생한다() {
         // given
-        PrChangeStats changeStats = PrChangeStats.create(5, 100, 50);
+        PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestContentHistory.create(null, changeStats, 3, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestContentHistory.create(null, pullRequestChangeStats, 3, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PullRequest ID는 필수입니다.");
     }
@@ -57,10 +57,10 @@ class PullRequestContentHistoryTest {
     @Test
     void 커밋_수가_음수이면_예외가_발생한다() {
         // given
-        PrChangeStats changeStats = PrChangeStats.create(5, 100, 50);
+        PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, changeStats, -1, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, pullRequestChangeStats, -1, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("커밋 수는 0보다 작을 수 없습니다.");
     }
@@ -68,10 +68,10 @@ class PullRequestContentHistoryTest {
     @Test
     void 변경_시각이_null이면_예외가_발생한다() {
         // given
-        PrChangeStats changeStats = PrChangeStats.create(5, 100, 50);
+        PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, changeStats, 3, null))
+        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, pullRequestChangeStats, 3, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 시각은 필수입니다.");
     }

@@ -2,7 +2,7 @@ package com.prism.statistics.domain.pullrequest;
 
 import com.prism.statistics.domain.common.CreatedAtEntity;
 import com.prism.statistics.domain.pullrequest.enums.PrState;
-import com.prism.statistics.domain.pullrequest.vo.PrChangeStats;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.pullrequest.vo.PrTiming;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -33,7 +33,7 @@ public class PullRequest extends CreatedAtEntity {
     private String link;
 
     @Embedded
-    private PrChangeStats changeStats;
+    private PullRequestChangeStats changeStats;
 
     private int commitCount;
 
@@ -47,7 +47,7 @@ public class PullRequest extends CreatedAtEntity {
             String title,
             PrState state,
             String link,
-            PrChangeStats changeStats,
+            PullRequestChangeStats changeStats,
             int commitCount,
             PrTiming timing
     ) {
@@ -69,7 +69,7 @@ public class PullRequest extends CreatedAtEntity {
             int prNumber,
             String title,
             String link,
-            PrChangeStats changeStats,
+            PullRequestChangeStats changeStats,
             int commitCount,
             PrTiming timing
     ) {
@@ -112,7 +112,7 @@ public class PullRequest extends CreatedAtEntity {
         }
     }
 
-    private static void validateChangeStats(PrChangeStats changeStats) {
+    private static void validateChangeStats(PullRequestChangeStats changeStats) {
         if (changeStats == null) {
             throw new IllegalArgumentException("변경 통계는 필수입니다.");
         }
@@ -137,7 +137,7 @@ public class PullRequest extends CreatedAtEntity {
             String title,
             PrState state,
             String link,
-            PrChangeStats changeStats,
+            PullRequestChangeStats changeStats,
             int commitCount,
             PrTiming timing
     ) {

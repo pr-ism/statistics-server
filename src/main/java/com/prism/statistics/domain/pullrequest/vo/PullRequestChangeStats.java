@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PrChangeStats {
+public class PullRequestChangeStats {
 
-    public static final PrChangeStats EMPTY = new PrChangeStats(0, 0, 0);
+    public static final PullRequestChangeStats EMPTY = new PullRequestChangeStats(0, 0, 0);
 
     private int changedFileCount;
 
@@ -20,12 +20,12 @@ public class PrChangeStats {
 
     private int deletionCount;
 
-    public static PrChangeStats create(int changedFileCount, int additionCount, int deletionCount) {
+    public static PullRequestChangeStats create(int changedFileCount, int additionCount, int deletionCount) {
         validateChangedFileCount(changedFileCount);
         validateAdditionCount(additionCount);
         validateDeletionCount(deletionCount);
         validateChangesConsistency(changedFileCount, additionCount, deletionCount);
-        return new PrChangeStats(changedFileCount, additionCount, deletionCount);
+        return new PullRequestChangeStats(changedFileCount, additionCount, deletionCount);
     }
 
     private static void validateChangedFileCount(int changedFileCount) {
@@ -52,7 +52,7 @@ public class PrChangeStats {
         }
     }
 
-    private PrChangeStats(int changedFileCount, int additionCount, int deletionCount) {
+    private PullRequestChangeStats(int changedFileCount, int additionCount, int deletionCount) {
         this.changedFileCount = changedFileCount;
         this.additionCount = additionCount;
         this.deletionCount = deletionCount;

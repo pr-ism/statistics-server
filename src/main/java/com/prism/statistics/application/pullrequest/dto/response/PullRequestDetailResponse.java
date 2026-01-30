@@ -1,8 +1,9 @@
 package com.prism.statistics.application.pullrequest.dto.response;
 
 import com.prism.statistics.domain.pullrequest.PullRequest;
-import com.prism.statistics.domain.pullrequest.vo.PrChangeStats;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.pullrequest.vo.PrTiming;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -22,7 +23,7 @@ public record PullRequestDetailResponse(
             int additionCount,
             int deletionCount
     ) {
-        public static ChangeStatsResponse from(PrChangeStats changeStats) {
+        public static ChangeStatsResponse from(PullRequestChangeStats changeStats) {
             return new ChangeStatsResponse(
                     changeStats.getChangedFileCount(),
                     changeStats.getAdditionCount(),
@@ -46,7 +47,7 @@ public record PullRequestDetailResponse(
     }
 
     public static PullRequestDetailResponse from(PullRequest pullRequest) {
-        PrChangeStats changeStats = pullRequest.getChangeStats();
+        PullRequestChangeStats pullRequestChangeStats = pullRequest.getChangeStats();
 
         return new PullRequestDetailResponse(
             pullRequest.getId(),
@@ -56,7 +57,7 @@ public record PullRequestDetailResponse(
             pullRequest.getAuthorGithubId(),
             pullRequest.getLink(),
             pullRequest.getCommitCount(),
-            ChangeStatsResponse.from(Objects.requireNonNullElse(changeStats, PrChangeStats.EMPTY)),
+            ChangeStatsResponse.from(Objects.requireNonNullElse(pullRequestChangeStats, PullRequestChangeStats.EMPTY)),
             TimingResponse.from(pullRequest.getTimingOrDefault())
         );
     }

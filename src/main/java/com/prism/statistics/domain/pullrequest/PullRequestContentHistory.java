@@ -1,7 +1,7 @@
 package com.prism.statistics.domain.pullrequest;
 
 import com.prism.statistics.domain.common.CreatedAtEntity;
-import com.prism.statistics.domain.pullrequest.vo.PrChangeStats;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -20,7 +20,7 @@ public class PullRequestContentHistory extends CreatedAtEntity {
     private Long pullRequestId;
 
     @Embedded
-    private PrChangeStats changeStats;
+    private PullRequestChangeStats changeStats;
 
     private int commitCount;
 
@@ -28,7 +28,7 @@ public class PullRequestContentHistory extends CreatedAtEntity {
 
     public static PullRequestContentHistory create(
             Long pullRequestId,
-            PrChangeStats changeStats,
+            PullRequestChangeStats changeStats,
             int commitCount,
             LocalDateTime changedAt
     ) {
@@ -45,7 +45,7 @@ public class PullRequestContentHistory extends CreatedAtEntity {
         }
     }
 
-    private static void validateChangeStats(PrChangeStats changeStats) {
+    private static void validateChangeStats(PullRequestChangeStats changeStats) {
         if (changeStats == null) {
             throw new IllegalArgumentException("변경 내역은 필수입니다.");
         }
@@ -65,7 +65,7 @@ public class PullRequestContentHistory extends CreatedAtEntity {
 
     private PullRequestContentHistory(
             Long pullRequestId,
-            PrChangeStats changeStats,
+            PullRequestChangeStats changeStats,
             int commitCount,
             LocalDateTime changedAt
     ) {
