@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "pull_request_state__histories")
+@Table(name = "pull_request_state_histories")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PullRequestStateHistory extends CreatedAtEntity {
 
