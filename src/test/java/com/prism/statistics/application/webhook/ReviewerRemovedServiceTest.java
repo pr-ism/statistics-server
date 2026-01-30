@@ -9,7 +9,7 @@ import com.prism.statistics.application.webhook.dto.request.ReviewerRemovedReque
 import com.prism.statistics.application.webhook.dto.request.ReviewerRemovedRequest.ReviewerData;
 import com.prism.statistics.domain.reviewer.RequestedReviewerChangeHistory;
 import com.prism.statistics.domain.reviewer.enums.ReviewerAction;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import com.prism.statistics.infrastructure.reviewer.persistence.JpaRequestedReviewerChangeHistoryRepository;
 import com.prism.statistics.infrastructure.reviewer.persistence.JpaRequestedReviewerRepository;
@@ -129,7 +129,7 @@ class ReviewerRemovedServiceTest {
 
         // when & then
         assertThatThrownBy(() -> reviewerRemovedService.removeReviewer(invalidApiKey, request))
-                .isInstanceOf(ProjectNotFoundException.class);
+                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     @Sql("/sql/webhook/insert_project.sql")

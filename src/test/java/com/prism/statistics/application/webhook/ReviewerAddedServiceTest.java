@@ -10,7 +10,7 @@ import com.prism.statistics.application.webhook.dto.request.ReviewerAddedRequest
 import com.prism.statistics.domain.reviewer.RequestedReviewer;
 import com.prism.statistics.domain.reviewer.RequestedReviewerChangeHistory;
 import com.prism.statistics.domain.reviewer.enums.ReviewerAction;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import com.prism.statistics.infrastructure.reviewer.persistence.JpaRequestedReviewerChangeHistoryRepository;
 import com.prism.statistics.infrastructure.reviewer.persistence.JpaRequestedReviewerRepository;
@@ -137,7 +137,7 @@ class ReviewerAddedServiceTest {
 
         // when & then
         assertThatThrownBy(() -> reviewerAddedService.addReviewer(invalidApiKey, request))
-                .isInstanceOf(ProjectNotFoundException.class);
+                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     @Sql("/sql/webhook/insert_project.sql")

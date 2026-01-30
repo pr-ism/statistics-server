@@ -9,7 +9,7 @@ import com.prism.statistics.domain.reviewer.RequestedReviewerChangeHistory;
 import com.prism.statistics.domain.reviewer.enums.ReviewerAction;
 import com.prism.statistics.domain.reviewer.repository.RequestedReviewerChangeHistoryRepository;
 import com.prism.statistics.domain.reviewer.repository.RequestedReviewerRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class ReviewerAddedService {
     @Transactional
     public void addReviewer(String apiKey, ReviewerAddedRequest request) {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new ProjectNotFoundException());
+                .orElseThrow(() -> new InvalidApiKeyException());
 
         PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.prNumber())
                 .orElseThrow(() -> new PullRequestNotFoundException());
