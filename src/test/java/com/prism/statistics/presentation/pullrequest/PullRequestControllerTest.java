@@ -35,7 +35,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
 
     @Test
     @WithOAuth2User(userId = 7L)
-    void PR_목록_조회_성공_테스트() throws Exception {
+    void Pull_Request_목록_조회_성공_테스트() throws Exception {
         // given
         PullRequestListResponse response = new PullRequestListResponse(
                 List.of(
@@ -62,10 +62,10 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                 .andExpect(jsonPath("$.pullRequests[1].prNumber").value(20))
                 .andExpect(jsonPath("$.pullRequests[2].prNumber").value(10));
 
-        PR_목록_조회_문서화(resultActions);
+        Pull_Request_목록_조회_문서화(resultActions);
     }
 
-    private void PR_목록_조회_문서화(ResultActions resultActions) throws Exception {
+    private void Pull_Request_목록_조회_문서화(ResultActions resultActions) throws Exception {
         resultActions.andDo(
                 restDocs.document(
                         requestHeaders(
@@ -91,7 +91,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
 
     @Test
     @WithOAuth2User(userId = 7L)
-    void PR_상세_조회_성공_테스트() throws Exception {
+    void Pull_Request_상세_조회_성공_테스트() throws Exception {
         // given
         PullRequestDetailResponse response = new PullRequestDetailResponse(
                 2L,
@@ -126,10 +126,10 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                 .andExpect(jsonPath("$.changeStats.deletionCount").value(30))
                 .andExpect(jsonPath("$.timing.mergedAt").exists());
 
-        PR_상세_조회_문서화(resultActions);
+        Pull_Request_상세_조회_문서화(resultActions);
     }
 
-    private void PR_상세_조회_문서화(ResultActions resultActions) throws Exception {
+    private void Pull_Request_상세_조회_문서화(ResultActions resultActions) throws Exception {
         resultActions.andDo(
                 restDocs.document(
                         requestHeaders(
@@ -161,7 +161,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
     }
 
     @Test
-    void 인증_정보가_없으면_PR_목록을_조회할_수_없다() throws Exception {
+    void 인증_정보가_없으면_Pull_Request_목록을_조회할_수_없다() throws Exception {
         // when & then
         mockMvc.perform(
                         get("/projects/{projectId}/pull-requests", 1L)
@@ -173,7 +173,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
 
     @Test
     @WithOAuth2User(userId = 7L)
-    void 존재하지_않는_프로젝트의_PR_목록을_조회하면_404를_반환한다() throws Exception {
+    void 존재하지_않는_프로젝트의_Pull_Request_목록을_조회하면_404를_반환한다() throws Exception {
         // given
         given(pullRequestQueryService.findAll(7L, 999L))
                 .willThrow(new ProjectNotFoundException());
@@ -189,7 +189,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
 
     @Test
     @WithOAuth2User(userId = 7L)
-    void 존재하지_않는_PR을_조회하면_404를_반환한다() throws Exception {
+    void 존재하지_않는_Pull_Request을_조회하면_404를_반환한다() throws Exception {
         // given
         given(pullRequestQueryService.find(7L, 1L, 999))
                 .willThrow(new PullRequestNotFoundException());

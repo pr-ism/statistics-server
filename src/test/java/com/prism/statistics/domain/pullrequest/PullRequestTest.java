@@ -91,7 +91,7 @@ class PullRequestTest {
     }
 
     @Test
-    void PR_번호가_0이면_예외가_발생한다() {
+    void Pull_Request_번호가_0이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 0, "title", PullRequestState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -99,7 +99,7 @@ class PullRequestTest {
     }
 
     @Test
-    void PR_번호가_음수이면_예외가_발생한다() {
+    void Pull_Request_번호가_음수이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", -1, "title", PullRequestState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -107,7 +107,7 @@ class PullRequestTest {
     }
 
     @Test
-    void PR_제목이_null이면_예외가_발생한다() {
+    void Pull_Request_제목이_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, null, PullRequestState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -115,7 +115,7 @@ class PullRequestTest {
     }
 
     @Test
-    void PR_제목이_빈_문자열이면_예외가_발생한다() {
+    void Pull_Request_제목이_빈_문자열이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "  ", PullRequestState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -123,7 +123,7 @@ class PullRequestTest {
     }
 
     @Test
-    void PR_상태가_null이면_예외가_발생한다() {
+    void Pull_Request_상태가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", null, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -131,7 +131,7 @@ class PullRequestTest {
     }
 
     @Test
-    void PR_링크가_null이면_예외가_발생한다() {
+    void Pull_Request_링크가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", PullRequestState.OPEN, null, 3))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -139,7 +139,7 @@ class PullRequestTest {
     }
 
     @Test
-    void PR_링크가_빈_문자열이면_예외가_발생한다() {
+    void Pull_Request_링크가_빈_문자열이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", PullRequestState.OPEN, "  ", 3))
                 .isInstanceOf(IllegalArgumentException.class)
