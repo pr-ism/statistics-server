@@ -25,7 +25,7 @@ class PullRequestQueryServiceTest {
 
     @Sql("/sql/pullrequest/insert_project_and_pull_requests.sql")
     @Test
-    void 프로젝트의_PR_목록을_조회한다() {
+    void 프로젝트의_PullRequest_목록을_조회한다() {
         // given
         Long userId = 7L;
         Long projectId = 1L;
@@ -41,7 +41,7 @@ class PullRequestQueryServiceTest {
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void PR이_없는_프로젝트의_목록을_조회하면_빈_목록을_반환한다() {
+    void PullRequest가_없는_프로젝트의_목록을_조회하면_빈_목록을_반환한다() {
         // given
         Long userId = 1L;
         Long projectId = 1L;
@@ -55,7 +55,7 @@ class PullRequestQueryServiceTest {
 
     @Sql("/sql/pullrequest/insert_project_and_pull_requests.sql")
     @Test
-    void 특정_PR의_상세_정보를_조회한다() {
+    void 특정_PullRequest의_상세_정보를_조회한다() {
         // given
         Long userId = 7L;
         Long projectId = 1L;
@@ -81,7 +81,7 @@ class PullRequestQueryServiceTest {
     }
 
     @Test
-    void 소유하지_않은_프로젝트의_PR_목록을_조회하면_예외가_발생한다() {
+    void 소유하지_않은_프로젝트의_PullRequest_목록을_조회하면_예외가_발생한다() {
         // given
         Long userId = 999L;
         Long projectId = 1L;
@@ -93,7 +93,7 @@ class PullRequestQueryServiceTest {
 
     @Sql("/sql/pullrequest/insert_project_and_pull_request_with_null_stats.sql")
     @Test
-    void changeStats가_null인_PR을_상세_조회하면_기본값이_반환된다() {
+    void changeStats가_null인_PullRequest를_상세_조회하면_기본값이_반환된다() {
         // given
         Long userId = 7L;
         Long projectId = 1L;
@@ -113,7 +113,7 @@ class PullRequestQueryServiceTest {
 
     @Sql("/sql/pullrequest/insert_project_and_pull_request_with_null_timing.sql")
     @Test
-    void timing이_null인_PR을_상세_조회하면_기본값이_반환된다() {
+    void timing이_null인_PullRequest를_상세_조회하면_기본값이_반환된다() {
         // given
         Long userId = 7L;
         Long projectId = 1L;
@@ -133,7 +133,7 @@ class PullRequestQueryServiceTest {
 
     @Sql("/sql/pullrequest/insert_project_and_pull_requests.sql")
     @Test
-    void 존재하지_않는_PR을_조회하면_예외가_발생한다() {
+    void 존재하지_않는_PullRequest를_조회하면_예외가_발생한다() {
         // given
         Long userId = 7L;
         Long projectId = 1L;

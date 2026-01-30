@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 class PullRequestLabelRemovedServiceTest {
 
     private static final String TEST_API_KEY = "test-api-key";
-    private static final int TEST_PR_NUMBER = 123;
+    private static final int TEST_PULL_REQUEST_NUMBER = 123;
 
     @Autowired
     private PullRequestLabelRemovedService pullRequestLabelRemovedService;
@@ -125,7 +125,7 @@ class PullRequestLabelRemovedServiceTest {
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void 존재하지_않는_PR이면_예외가_발생한다() {
+    void 존재하지_않는_PullRequest면_예외가_발생한다() {
         // given
         PullRequestLabelRemovedRequest request = createLabelRemovedRequest("bug");
 
@@ -179,7 +179,7 @@ class PullRequestLabelRemovedServiceTest {
 
     private PullRequestLabelRemovedRequest createLabelRemovedRequest(String labelName) {
         return new PullRequestLabelRemovedRequest(
-                TEST_PR_NUMBER,
+                TEST_PULL_REQUEST_NUMBER,
                 new LabelData(labelName),
                 Instant.parse("2024-01-15T10:00:00Z")
         );

@@ -105,7 +105,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
     }
 
     @Test
-    void 존재하지_않는_PR이면_404_반환한다() throws Exception {
+    void 존재하지_않는_PullRequest면_404_반환한다() throws Exception {
         // given
         String payload = """
                 {

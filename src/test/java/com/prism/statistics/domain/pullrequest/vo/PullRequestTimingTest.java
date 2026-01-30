@@ -210,7 +210,7 @@ class PullRequestTimingTest {
     }
 
     @Test
-    void calculateMergeTimeMinutes는_병합되지_않은_PR이면_예외가_발생한다() {
+    void calculateMergeTimeMinutes는_병합되지_않은_PullRequest면_예외가_발생한다() {
         // given
         PullRequestTiming pullRequestTiming = PullRequestTiming.createOpen(LocalDateTime.of(2024, 1, 15, 10, 0));
 

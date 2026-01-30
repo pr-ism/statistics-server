@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 class ReviewerRemovedServiceTest {
 
     private static final String TEST_API_KEY = "test-api-key";
-    private static final int TEST_PR_NUMBER = 123;
+    private static final int TEST_PULL_REQUEST_NUMBER = 123;
     private static final Instant TEST_REMOVED_AT = Instant.parse("2024-01-15T10:00:00Z");
     private static final LocalDateTime EXPECTED_REMOVED_AT = LocalDateTime.of(2024, 1, 15, 19, 0, 0);
 
@@ -134,7 +134,7 @@ class ReviewerRemovedServiceTest {
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void 존재하지_않는_PR이면_예외가_발생한다() {
+    void 존재하지_않는_PullRequest면_예외가_발생한다() {
         // given
         ReviewerRemovedRequest request = createReviewerRemovedRequest("reviewer1", 12345L);
 
@@ -189,7 +189,7 @@ class ReviewerRemovedServiceTest {
 
     private ReviewerRemovedRequest createReviewerRemovedRequest(String login, Long id) {
         return new ReviewerRemovedRequest(
-                TEST_PR_NUMBER,
+                TEST_PULL_REQUEST_NUMBER,
                 new ReviewerData(login, id),
                 TEST_REMOVED_AT
         );

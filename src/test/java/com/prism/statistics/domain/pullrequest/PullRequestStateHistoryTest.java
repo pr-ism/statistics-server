@@ -71,7 +71,7 @@ class PullRequestStateHistoryTest {
     }
 
     @Test
-    void 최초_상태_생성시_PR_ID가_null이면_예외가_발생한다() {
+    void 최초_상태_생성시_PullRequest_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> PullRequestStateHistory.createInitial(null, PullRequestState.OPEN, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)

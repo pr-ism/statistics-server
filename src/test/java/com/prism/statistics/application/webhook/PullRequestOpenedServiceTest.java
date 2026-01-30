@@ -136,7 +136,7 @@ class PullRequestOpenedServiceTest {
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void Draft_PR_생성_시_PullRequestDraftCreatedEvent가_발행된다() {
+    void Draft_PullRequest_생성_시_PullRequestDraftCreatedEvent가_발행된다() {
         // given
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(true);
 
