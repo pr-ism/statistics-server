@@ -39,7 +39,7 @@ class PullRequestTest {
         assertAll(
                 () -> assertThat(pullRequest.getProjectId()).isEqualTo(1L),
                 () -> assertThat(pullRequest.getAuthorGithubId()).isEqualTo("author123"),
-                () -> assertThat(pullRequest.getPrNumber()).isEqualTo(42),
+                () -> assertThat(pullRequest.getPullRequestNumber()).isEqualTo(42),
                 () -> assertThat(pullRequest.getTitle()).isEqualTo("feat: 새로운 기능 추가"),
                 () -> assertThat(pullRequest.getState()).isEqualTo(PullRequestState.OPEN),
                 () -> assertThat(pullRequest.getLink()).isEqualTo("https://github.com/org/repo/pull/42"),
@@ -238,7 +238,7 @@ class PullRequestTest {
         PullRequest pullRequest = createMergedPullRequest();
 
         // when
-        int mergeTimeMinutes = pullRequest.calculateMergeTimeMinutes();
+        long mergeTimeMinutes = pullRequest.calculateMergeTimeMinutes();
 
         // then
         assertThat(mergeTimeMinutes).isEqualTo(150);
@@ -256,11 +256,11 @@ class PullRequestTest {
     }
 
     private PullRequest createPullRequest(
-            Long projectId, String authorGithubId, int prNumber,
+            Long projectId, String authorGithubId, int pullRequestNumber,
             String title, PullRequestState state, String link, int commitCount
     ) {
         return PullRequest.create(
-                projectId, authorGithubId, prNumber, title, state, link,
+                projectId, authorGithubId, pullRequestNumber, title, state, link,
                 PullRequestChangeStats.create(5, 100, 50), commitCount, PullRequestTiming.createOpen(CREATED_AT)
         );
     }

@@ -32,7 +32,7 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "label": {
                         "name": "bug"
                     },
@@ -59,7 +59,7 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "label": {
                         "name": "bug"
                     },
@@ -81,7 +81,7 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "label": {
                         "name": "bug"
                     },
@@ -109,7 +109,7 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "label": {
                         "name": "bug"
                     },

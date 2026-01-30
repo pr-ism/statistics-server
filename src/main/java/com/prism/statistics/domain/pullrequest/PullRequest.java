@@ -23,7 +23,7 @@ public class PullRequest extends CreatedAtEntity {
 
     private String authorGithubId;
 
-    private int prNumber;
+    private int pullRequestNumber;
 
     private String title;
 
@@ -43,7 +43,7 @@ public class PullRequest extends CreatedAtEntity {
     public static PullRequest create(
             Long projectId,
             String authorGithubId,
-            int prNumber,
+            int pullRequestNumber,
             String title,
             PullRequestState state,
             String link,
@@ -53,27 +53,27 @@ public class PullRequest extends CreatedAtEntity {
     ) {
         validateProjectId(projectId);
         validateAuthorGithubId(authorGithubId);
-        validatePrNumber(prNumber);
+        validatePrNumber(pullRequestNumber);
         validateTitle(title);
         validateState(state);
         validateLink(link);
         validateChangeStats(changeStats);
         validateCommitCount(commitCount);
         validateTiming(pullRequestTiming);
-        return new PullRequest(projectId, authorGithubId, prNumber, title, state, link, changeStats, commitCount, pullRequestTiming);
+        return new PullRequest(projectId, authorGithubId, pullRequestNumber, title, state, link, changeStats, commitCount, pullRequestTiming);
     }
 
     public static PullRequest opened(
             Long projectId,
             String authorGithubId,
-            int prNumber,
+            int pullRequestNumber,
             String title,
             String link,
             PullRequestChangeStats changeStats,
             int commitCount,
             PullRequestTiming pullRequestTiming
     ) {
-        return create(projectId, authorGithubId, prNumber, title, PullRequestState.OPEN, link, changeStats, commitCount, pullRequestTiming);
+        return create(projectId, authorGithubId, pullRequestNumber, title, PullRequestState.OPEN, link, changeStats, commitCount, pullRequestTiming);
     }
 
     private static void validateProjectId(Long projectId) {
@@ -88,8 +88,8 @@ public class PullRequest extends CreatedAtEntity {
         }
     }
 
-    private static void validatePrNumber(int prNumber) {
-        if (prNumber <= 0) {
+    private static void validatePrNumber(int pullRequestNumber) {
+        if (pullRequestNumber <= 0) {
             throw new IllegalArgumentException("PullRequest 번호는 양수여야 합니다.");
         }
     }
@@ -133,7 +133,7 @@ public class PullRequest extends CreatedAtEntity {
     private PullRequest(
             Long projectId,
             String authorGithubId,
-            int prNumber,
+            int pullRequestNumber,
             String title,
             PullRequestState state,
             String link,
@@ -143,7 +143,7 @@ public class PullRequest extends CreatedAtEntity {
     ) {
         this.projectId = projectId;
         this.authorGithubId = authorGithubId;
-        this.prNumber = prNumber;
+        this.pullRequestNumber = pullRequestNumber;
         this.title = title;
         this.state = state;
         this.link = link;
@@ -168,7 +168,7 @@ public class PullRequest extends CreatedAtEntity {
         return this.state.isOpen();
     }
 
-    public int calculateMergeTimeMinutes() {
+    public long calculateMergeTimeMinutes() {
         if (!isMerged()) {
             throw new IllegalStateException("병합되지 않은 PR입니다.");
         }

@@ -33,7 +33,7 @@ public class PullRequestLabelRemovedService {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
                 .orElseThrow(() -> new InvalidApiKeyException());
 
-        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.prNumber())
+        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.pullRequestNumber())
                 .orElseThrow(() -> new PullRequestNotFoundException());
 
         Long pullRequestId = pullRequest.getId();

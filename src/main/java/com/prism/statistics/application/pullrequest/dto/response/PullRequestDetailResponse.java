@@ -9,7 +9,7 @@ import java.util.Objects;
 
 public record PullRequestDetailResponse(
         Long id,
-        int prNumber,
+        int pullRequestNumber,
         String title,
         String state,
         String authorGithubId,
@@ -33,13 +33,13 @@ public record PullRequestDetailResponse(
     }
 
     public record PullRequestTimingResponse(
-            LocalDateTime prCreatedAt,
+            LocalDateTime pullRequestCreatedAt,
             LocalDateTime mergedAt,
             LocalDateTime closedAt
     ) {
         public static PullRequestTimingResponse from(PullRequestTiming pullRequestTiming) {
             return new PullRequestTimingResponse(
-                    pullRequestTiming.getPrCreatedAt(),
+                    pullRequestTiming.getPullRequestCreatedAt(),
                     pullRequestTiming.getMergedAt(),
                     pullRequestTiming.getClosedAt()
             );
@@ -51,7 +51,7 @@ public record PullRequestDetailResponse(
 
         return new PullRequestDetailResponse(
             pullRequest.getId(),
-            pullRequest.getPrNumber(),
+            pullRequest.getPullRequestNumber(),
             pullRequest.getTitle(),
             pullRequest.getState().name(),
             pullRequest.getAuthorGithubId(),

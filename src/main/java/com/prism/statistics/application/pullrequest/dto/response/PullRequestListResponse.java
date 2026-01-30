@@ -8,7 +8,7 @@ public record PullRequestListResponse(
 ) {
     public record PullRequestSummary(
             Long id,
-            int prNumber,
+            int pullRequestNumber,
             String title,
             String state,
             String authorGithubId,
@@ -18,7 +18,7 @@ public record PullRequestListResponse(
         public static PullRequestSummary from(PullRequest pullRequest) {
             return new PullRequestSummary(
                     pullRequest.getId(),
-                    pullRequest.getPrNumber(),
+                    pullRequest.getPullRequestNumber(),
                     pullRequest.getTitle(),
                     pullRequest.getState().name(),
                     pullRequest.getAuthorGithubId(),

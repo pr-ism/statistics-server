@@ -30,7 +30,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "reviewer": {
                         "login": "reviewer1",
                         "id": 12345
@@ -54,7 +54,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "reviewer": {
                         "login": "reviewer1",
                         "id": 12345
@@ -77,7 +77,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "reviewer": {
                         "login": "reviewer1",
                         "id": 12345
@@ -106,7 +106,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "reviewer": {
                         "login": "reviewer1",
                         "id": 12345

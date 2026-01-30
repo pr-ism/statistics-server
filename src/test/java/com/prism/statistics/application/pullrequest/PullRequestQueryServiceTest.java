@@ -35,7 +35,7 @@ class PullRequestQueryServiceTest {
 
         // then
         assertThat(actual.pullRequests()).hasSize(3)
-                .extracting(pr -> pr.prNumber())
+                .extracting(pr -> pr.pullRequestNumber())
                 .containsExactly(30, 20, 10);
     }
 
@@ -59,16 +59,16 @@ class PullRequestQueryServiceTest {
         // given
         Long userId = 7L;
         Long projectId = 1L;
-        int prNumber = 20;
+        int pullRequestNumber = 20;
 
         // when
         PullRequestDetailResponse actual = pullRequestQueryService.find(
-                userId, projectId, prNumber
+                userId, projectId, pullRequestNumber
         );
 
         // then
         assertAll(
-                () -> assertThat(actual.prNumber()).isEqualTo(20),
+                () -> assertThat(actual.pullRequestNumber()).isEqualTo(20),
                 () -> assertThat(actual.title()).isEqualTo("두 번째 PR"),
                 () -> assertThat(actual.state()).isEqualTo("MERGED"),
                 () -> assertThat(actual.authorGithubId()).isEqualTo("author2"),
@@ -97,14 +97,14 @@ class PullRequestQueryServiceTest {
         // given
         Long userId = 7L;
         Long projectId = 1L;
-        int prNumber = 10;
+        int pullRequestNumber = 10;
 
         // when
-        PullRequestDetailResponse actual = pullRequestQueryService.find(userId, projectId, prNumber);
+        PullRequestDetailResponse actual = pullRequestQueryService.find(userId, projectId, pullRequestNumber);
 
         // then
         assertAll(
-                () -> assertThat(actual.prNumber()).isEqualTo(10),
+                () -> assertThat(actual.pullRequestNumber()).isEqualTo(10),
                 () -> assertThat(actual.changeStats().changedFileCount()).isZero(),
                 () -> assertThat(actual.changeStats().additionCount()).isZero(),
                 () -> assertThat(actual.changeStats().deletionCount()).isZero()
@@ -117,15 +117,15 @@ class PullRequestQueryServiceTest {
         // given
         Long userId = 7L;
         Long projectId = 1L;
-        int prNumber = 10;
+        int pullRequestNumber = 10;
 
         // when
-        PullRequestDetailResponse actual = pullRequestQueryService.find(userId, projectId, prNumber);
+        PullRequestDetailResponse actual = pullRequestQueryService.find(userId, projectId, pullRequestNumber);
 
         // then
         assertAll(
-                () -> assertThat(actual.prNumber()).isEqualTo(10),
-                () -> assertThat(actual.timing().prCreatedAt()).isNotNull(),
+                () -> assertThat(actual.pullRequestNumber()).isEqualTo(10),
+                () -> assertThat(actual.timing().pullRequestCreatedAt()).isNotNull(),
                 () -> assertThat(actual.timing().mergedAt()).isNull(),
                 () -> assertThat(actual.timing().closedAt()).isNull()
         );
@@ -137,10 +137,10 @@ class PullRequestQueryServiceTest {
         // given
         Long userId = 7L;
         Long projectId = 1L;
-        int prNumber = 999;
+        int pullRequestNumber = 999;
 
         // when & then
-        assertThatThrownBy(() -> pullRequestQueryService.find(userId, projectId, prNumber))
+        assertThatThrownBy(() -> pullRequestQueryService.find(userId, projectId, pullRequestNumber))
                 .isInstanceOf(PullRequestNotFoundException.class);
     }
 }

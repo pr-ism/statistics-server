@@ -9,9 +9,9 @@ public interface PullRequestRepository {
 
     PullRequest save(PullRequest pullRequest);
 
-    Optional<PullRequest> findPullRequest(Long projectId, int prNumber);
+    Optional<PullRequest> findPullRequest(Long projectId, int pullRequestNumber);
 
-    Optional<PullRequest> findWithLock(Long projectId, int prNumber);
+    Optional<PullRequest> findWithLock(Long projectId, int pullRequestNumber);
 
     List<PullRequest> findAllByProjectId(Long projectId);
 }

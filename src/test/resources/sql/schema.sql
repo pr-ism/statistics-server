@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS pull_requests (
     created_at TIMESTAMP NOT NULL,
     project_id BIGINT NOT NULL,
     author_github_id VARCHAR(255),
-    pr_number INT,
+    pull_request_number INT,
     title VARCHAR(255),
     state VARCHAR(50),
     link VARCHAR(500),
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS pull_requests (
     addition_count INT,
     deletion_count INT,
     commit_count INT,
-    pr_created_at TIMESTAMP,
+    pull_request_created_at TIMESTAMP,
     merged_at TIMESTAMP,
     closed_at TIMESTAMP
 );

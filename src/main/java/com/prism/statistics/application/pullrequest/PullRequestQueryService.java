@@ -32,10 +32,10 @@ public class PullRequestQueryService {
     }
 
     @Transactional(readOnly = true)
-    public PullRequestDetailResponse find(Long userId, Long projectId, int prNumber) {
+    public PullRequestDetailResponse find(Long userId, Long projectId, int pullRequestNumber) {
         validateProjectOwnership(projectId, userId);
 
-        PullRequest pullRequest = pullRequestRepository.findPullRequest(projectId, prNumber)
+        PullRequest pullRequest = pullRequestRepository.findPullRequest(projectId, pullRequestNumber)
                 .orElseThrow(() -> new PullRequestNotFoundException());
 
         return PullRequestDetailResponse.from(pullRequest);

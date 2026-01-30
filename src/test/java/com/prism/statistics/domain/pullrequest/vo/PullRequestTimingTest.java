@@ -24,7 +24,7 @@ class PullRequestTimingTest {
 
         // then
         assertAll(
-                () -> assertThat(pullRequestTiming.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getPullRequestCreatedAt()).isEqualTo(createdAt),
                 () -> assertThat(pullRequestTiming.getMergedAt()).isNull(),
                 () -> assertThat(pullRequestTiming.getClosedAt()).isNull()
         );
@@ -48,7 +48,7 @@ class PullRequestTimingTest {
 
         // then
         assertAll(
-                () -> assertThat(pullRequestTiming.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getPullRequestCreatedAt()).isEqualTo(createdAt),
                 () -> assertThat(pullRequestTiming.getMergedAt()).isNull(),
                 () -> assertThat(pullRequestTiming.getClosedAt()).isNull()
         );
@@ -74,7 +74,7 @@ class PullRequestTimingTest {
 
         // then
         assertAll(
-                () -> assertThat(pullRequestTiming.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getPullRequestCreatedAt()).isEqualTo(createdAt),
                 () -> assertThat(pullRequestTiming.getMergedAt()).isEqualTo(mergedAt),
                 () -> assertThat(pullRequestTiming.getClosedAt()).isEqualTo(closedAt)
         );
@@ -153,7 +153,7 @@ class PullRequestTimingTest {
 
         // then
         assertAll(
-                () -> assertThat(pullRequestTiming.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getPullRequestCreatedAt()).isEqualTo(createdAt),
                 () -> assertThat(pullRequestTiming.getMergedAt()).isNull(),
                 () -> assertThat(pullRequestTiming.getClosedAt()).isEqualTo(closedAt)
         );
@@ -203,7 +203,7 @@ class PullRequestTimingTest {
         PullRequestTiming pullRequestTiming = PullRequestTiming.createMerged(createdAt, mergedAt, closedAt);
 
         // when
-        int mergeTimeMinutes = pullRequestTiming.calculateMergeTimeMinutes();
+        long mergeTimeMinutes = pullRequestTiming.calculateMergeTimeMinutes();
 
         // then
         assertThat(mergeTimeMinutes).isEqualTo(150);

@@ -58,9 +58,9 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pullRequests").isArray())
                 .andExpect(jsonPath("$.pullRequests.length()").value(3))
-                .andExpect(jsonPath("$.pullRequests[0].prNumber").value(30))
-                .andExpect(jsonPath("$.pullRequests[1].prNumber").value(20))
-                .andExpect(jsonPath("$.pullRequests[2].prNumber").value(10));
+                .andExpect(jsonPath("$.pullRequests[0].pullRequestNumber").value(30))
+                .andExpect(jsonPath("$.pullRequests[1].pullRequestNumber").value(20))
+                .andExpect(jsonPath("$.pullRequests[2].pullRequestNumber").value(10));
 
         Pull_Request_목록_조회_문서화(resultActions);
     }
@@ -77,7 +77,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                         responseFields(
                                 fieldWithPath("pullRequests").description("PR 목록"),
                                 fieldWithPath("pullRequests[].id").description("PR 식별자"),
-                                fieldWithPath("pullRequests[].prNumber").description("GitHub PR 번호"),
+                                fieldWithPath("pullRequests[].pullRequestNumber").description("GitHub PR 번호"),
                                 fieldWithPath("pullRequests[].title").description("PR 제목"),
                                 fieldWithPath("pullRequests[].state").description(
                                         "PR 상태 (OPEN, MERGED, CLOSED, DRAFT)"),
@@ -113,11 +113,11 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         ResultActions resultActions = mockMvc.perform(
-                        get("/projects/{projectId}/pull-requests/{prNumber}", 1L, 20)
+                        get("/projects/{projectId}/pull-requests/{pullRequestNumber}", 1L, 20)
                                 .header("Authorization", "Bearer access-token")
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.prNumber").value(20))
+                .andExpect(jsonPath("$.pullRequestNumber").value(20))
                 .andExpect(jsonPath("$.title").value("두 번째 PR"))
                 .andExpect(jsonPath("$.state").value("MERGED"))
                 .andExpect(jsonPath("$.commitCount").value(4))
@@ -137,11 +137,11 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                         ),
                         pathParameters(
                                 parameterWithName("projectId").description("프로젝트 ID"),
-                                parameterWithName("prNumber").description("GitHub PR 번호")
+                                parameterWithName("pullRequestNumber").description("GitHub PR 번호")
                         ),
                         responseFields(
                                 fieldWithPath("id").description("PR 식별자"),
-                                fieldWithPath("prNumber").description("GitHub PR 번호"),
+                                fieldWithPath("pullRequestNumber").description("GitHub PR 번호"),
                                 fieldWithPath("title").description("PR 제목"),
                                 fieldWithPath("state").description("PR 상태 (OPEN, MERGED, CLOSED, DRAFT)"),
                                 fieldWithPath("authorGithubId").description("작성자 GitHub ID"),
@@ -152,7 +152,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                                 fieldWithPath("changeStats.additionCount").description("추가된 라인 수"),
                                 fieldWithPath("changeStats.deletionCount").description("삭제된 라인 수"),
                                 fieldWithPath("timing").description("시간 정보"),
-                                fieldWithPath("timing.prCreatedAt").description("PR 생성 시각"),
+                                fieldWithPath("timing.pullRequestCreatedAt").description("PR 생성 시각"),
                                 fieldWithPath("timing.mergedAt").description("병합 시각").optional(),
                                 fieldWithPath("timing.closedAt").description("종료 시각").optional()
                         )
@@ -196,7 +196,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                        get("/projects/{projectId}/pull-requests/{prNumber}", 1L, 999)
+                        get("/projects/{projectId}/pull-requests/{pullRequestNumber}", 1L, 999)
                                 .header("Authorization", "Bearer access-token")
                 )
                 .andExpect(status().isNotFound())
