@@ -11,7 +11,7 @@ import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.enums.PrState;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
-import com.prism.statistics.domain.pullrequest.vo.PrTiming;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestTiming;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -57,7 +57,7 @@ public class PrOpenedService {
                 prData.deletions()
         );
 
-        PrTiming timing = PrTiming.createOpen(prCreatedAt);
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createOpen(prCreatedAt);
 
         PullRequest pullRequest = PullRequest.opened(
                 projectId,
@@ -67,7 +67,7 @@ public class PrOpenedService {
                 prData.url(),
                 pullRequestChangeStats,
                 prData.commits().totalCount(),
-                timing
+                pullRequestTiming
         );
 
         return pullRequestRepository.save(pullRequest);

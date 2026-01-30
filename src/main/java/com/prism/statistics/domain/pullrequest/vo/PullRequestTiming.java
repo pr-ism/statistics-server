@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PrTiming {
+public class PullRequestTiming {
 
     private LocalDateTime prCreatedAt;
 
@@ -22,32 +22,32 @@ public class PrTiming {
 
     private LocalDateTime closedAt;
 
-    public static PrTiming createOpen(LocalDateTime prCreatedAt) {
+    public static PullRequestTiming createOpen(LocalDateTime prCreatedAt) {
         validateCreatedAt(prCreatedAt);
-        return new PrTiming(prCreatedAt, null, null);
+        return new PullRequestTiming(prCreatedAt, null, null);
     }
 
-    public static PrTiming createDraft(LocalDateTime prCreatedAt) {
+    public static PullRequestTiming createDraft(LocalDateTime prCreatedAt) {
         validateCreatedAt(prCreatedAt);
-        return new PrTiming(prCreatedAt, null, null);
+        return new PullRequestTiming(prCreatedAt, null, null);
     }
 
-    public static PrTiming createMerged(LocalDateTime prCreatedAt, LocalDateTime mergedAt, LocalDateTime closedAt) {
+    public static PullRequestTiming createMerged(LocalDateTime prCreatedAt, LocalDateTime mergedAt, LocalDateTime closedAt) {
         validateCreatedAt(prCreatedAt);
         validateMergedAt(prCreatedAt, mergedAt);
         validateClosedAt(prCreatedAt, closedAt);
-        return new PrTiming(prCreatedAt, mergedAt, closedAt);
+        return new PullRequestTiming(prCreatedAt, mergedAt, closedAt);
     }
 
-    public static PrTiming createClosed(LocalDateTime prCreatedAt, LocalDateTime closedAt) {
+    public static PullRequestTiming createClosed(LocalDateTime prCreatedAt, LocalDateTime closedAt) {
         validateCreatedAt(prCreatedAt);
         validateClosedAt(prCreatedAt, closedAt);
-        return new PrTiming(prCreatedAt, null, closedAt);
+        return new PullRequestTiming(prCreatedAt, null, closedAt);
     }
 
     private static void validateCreatedAt(LocalDateTime prCreatedAt) {
         if (prCreatedAt == null) {
-            throw new IllegalArgumentException("PR 생성 시각은 필수입니다.");
+            throw new IllegalArgumentException("PullRequest 생성 시각은 필수입니다.");
         }
     }
 
@@ -69,7 +69,7 @@ public class PrTiming {
         }
     }
 
-    private PrTiming(LocalDateTime prCreatedAt, LocalDateTime mergedAt, LocalDateTime closedAt) {
+    private PullRequestTiming(LocalDateTime prCreatedAt, LocalDateTime mergedAt, LocalDateTime closedAt) {
         this.prCreatedAt = prCreatedAt;
         this.mergedAt = mergedAt;
         this.closedAt = closedAt;

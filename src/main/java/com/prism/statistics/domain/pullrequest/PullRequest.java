@@ -3,7 +3,7 @@ package com.prism.statistics.domain.pullrequest;
 import com.prism.statistics.domain.common.CreatedAtEntity;
 import com.prism.statistics.domain.pullrequest.enums.PrState;
 import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
-import com.prism.statistics.domain.pullrequest.vo.PrTiming;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestTiming;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -38,7 +38,7 @@ public class PullRequest extends CreatedAtEntity {
     private int commitCount;
 
     @Embedded
-    private PrTiming timing;
+    private PullRequestTiming timing;
 
     public static PullRequest create(
             Long projectId,
@@ -49,7 +49,7 @@ public class PullRequest extends CreatedAtEntity {
             String link,
             PullRequestChangeStats changeStats,
             int commitCount,
-            PrTiming timing
+            PullRequestTiming pullRequestTiming
     ) {
         validateProjectId(projectId);
         validateAuthorGithubId(authorGithubId);
@@ -59,8 +59,8 @@ public class PullRequest extends CreatedAtEntity {
         validateLink(link);
         validateChangeStats(changeStats);
         validateCommitCount(commitCount);
-        validateTiming(timing);
-        return new PullRequest(projectId, authorGithubId, prNumber, title, state, link, changeStats, commitCount, timing);
+        validateTiming(pullRequestTiming);
+        return new PullRequest(projectId, authorGithubId, prNumber, title, state, link, changeStats, commitCount, pullRequestTiming);
     }
 
     public static PullRequest opened(
@@ -71,9 +71,9 @@ public class PullRequest extends CreatedAtEntity {
             String link,
             PullRequestChangeStats changeStats,
             int commitCount,
-            PrTiming timing
+            PullRequestTiming pullRequestTiming
     ) {
-        return create(projectId, authorGithubId, prNumber, title, PrState.OPEN, link, changeStats, commitCount, timing);
+        return create(projectId, authorGithubId, prNumber, title, PrState.OPEN, link, changeStats, commitCount, pullRequestTiming);
     }
 
     private static void validateProjectId(Long projectId) {
@@ -124,8 +124,8 @@ public class PullRequest extends CreatedAtEntity {
         }
     }
 
-    private static void validateTiming(PrTiming timing) {
-        if (timing == null) {
+    private static void validateTiming(PullRequestTiming pullRequestTiming) {
+        if (pullRequestTiming == null) {
             throw new IllegalArgumentException("시간 정보는 필수입니다.");
         }
     }
@@ -139,7 +139,7 @@ public class PullRequest extends CreatedAtEntity {
             String link,
             PullRequestChangeStats changeStats,
             int commitCount,
-            PrTiming timing
+            PullRequestTiming pullRequestTiming
     ) {
         this.projectId = projectId;
         this.authorGithubId = authorGithubId;
@@ -149,7 +149,7 @@ public class PullRequest extends CreatedAtEntity {
         this.link = link;
         this.changeStats = changeStats;
         this.commitCount = commitCount;
-        this.timing = timing;
+        this.timing = pullRequestTiming;
     }
 
     public boolean isMerged() {
@@ -175,7 +175,7 @@ public class PullRequest extends CreatedAtEntity {
         return timing.calculateMergeTimeMinutes();
     }
 
-    public PrTiming getTimingOrDefault() {
-        return this.timing != null ? this.timing : PrTiming.createOpen(this.getCreatedAt());
+    public PullRequestTiming getTimingOrDefault() {
+        return this.timing != null ? this.timing : PullRequestTiming.createOpen(this.getCreatedAt());
     }
 }

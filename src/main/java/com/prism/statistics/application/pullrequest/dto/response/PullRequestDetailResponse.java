@@ -2,7 +2,7 @@ package com.prism.statistics.application.pullrequest.dto.response;
 
 import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
-import com.prism.statistics.domain.pullrequest.vo.PrTiming;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestTiming;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -16,7 +16,7 @@ public record PullRequestDetailResponse(
         String link,
         int commitCount,
         PullRequestChangeStatsResponse changeStats,
-        TimingResponse timing
+        PullRequestTimingResponse timing
 ) {
     public record PullRequestChangeStatsResponse(
             int changedFileCount,
@@ -32,16 +32,16 @@ public record PullRequestDetailResponse(
         }
     }
 
-    public record TimingResponse(
+    public record PullRequestTimingResponse(
             LocalDateTime prCreatedAt,
             LocalDateTime mergedAt,
             LocalDateTime closedAt
     ) {
-        public static TimingResponse from(PrTiming timing) {
-            return new TimingResponse(
-                    timing.getPrCreatedAt(),
-                    timing.getMergedAt(),
-                    timing.getClosedAt()
+        public static PullRequestTimingResponse from(PullRequestTiming pullRequestTiming) {
+            return new PullRequestTimingResponse(
+                    pullRequestTiming.getPrCreatedAt(),
+                    pullRequestTiming.getMergedAt(),
+                    pullRequestTiming.getClosedAt()
             );
         }
     }
@@ -58,7 +58,7 @@ public record PullRequestDetailResponse(
             pullRequest.getLink(),
             pullRequest.getCommitCount(),
             PullRequestChangeStatsResponse.from(Objects.requireNonNullElse(pullRequestChangeStats, PullRequestChangeStats.EMPTY)),
-            TimingResponse.from(pullRequest.getTimingOrDefault())
+            PullRequestTimingResponse.from(pullRequest.getTimingOrDefault())
         );
     }
 }

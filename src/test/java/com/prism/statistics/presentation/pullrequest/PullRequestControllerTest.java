@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.prism.statistics.application.pullrequest.PullRequestQueryService;
 import com.prism.statistics.application.pullrequest.dto.response.PullRequestDetailResponse;
 import com.prism.statistics.application.pullrequest.dto.response.PullRequestDetailResponse.PullRequestChangeStatsResponse;
-import com.prism.statistics.application.pullrequest.dto.response.PullRequestDetailResponse.TimingResponse;
+import com.prism.statistics.application.pullrequest.dto.response.PullRequestDetailResponse.PullRequestTimingResponse;
 import com.prism.statistics.application.pullrequest.dto.response.PullRequestListResponse;
 import com.prism.statistics.application.pullrequest.dto.response.PullRequestListResponse.PullRequestSummary;
 import com.prism.statistics.context.security.WithOAuth2User;
@@ -102,7 +102,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                 "https://github.com/test/repo/pull/20",
                 4,
                 new PullRequestChangeStatsResponse(5, 100, 30),
-                new TimingResponse(
+                new PullRequestTimingResponse(
                         LocalDateTime.of(2024, 1, 10, 9, 0, 0),
                         LocalDateTime.of(2024, 1, 12, 15, 0, 0),
                         LocalDateTime.of(2024, 1, 12, 15, 0, 0)

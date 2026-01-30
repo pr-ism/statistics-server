@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class PrTimingTest {
+class PullRequestTimingTest {
 
     @Test
     void createOpen으로_OPEN_상태의_시간_정보를_생성한다() {
@@ -20,22 +20,22 @@ class PrTimingTest {
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
 
         // when
-        PrTiming timing = PrTiming.createOpen(createdAt);
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createOpen(createdAt);
 
         // then
         assertAll(
-                () -> assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt),
-                () -> assertThat(timing.getMergedAt()).isNull(),
-                () -> assertThat(timing.getClosedAt()).isNull()
+                () -> assertThat(pullRequestTiming.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getMergedAt()).isNull(),
+                () -> assertThat(pullRequestTiming.getClosedAt()).isNull()
         );
     }
 
     @Test
     void createOpen에서_생성_시각이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PrTiming.createOpen(null))
+        assertThatThrownBy(() -> PullRequestTiming.createOpen(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 생성 시각은 필수입니다.");
+                .hasMessage("PullRequest 생성 시각은 필수입니다.");
     }
 
     @Test
@@ -44,20 +44,20 @@ class PrTimingTest {
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
 
         // when
-        PrTiming timing = PrTiming.createDraft(createdAt);
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createDraft(createdAt);
 
         // then
         assertAll(
-                () -> assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt),
-                () -> assertThat(timing.getMergedAt()).isNull(),
-                () -> assertThat(timing.getClosedAt()).isNull()
+                () -> assertThat(pullRequestTiming.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getMergedAt()).isNull(),
+                () -> assertThat(pullRequestTiming.getClosedAt()).isNull()
         );
     }
 
     @Test
     void createDraft에서_생성_시각이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PrTiming.createDraft(null))
+        assertThatThrownBy(() -> PullRequestTiming.createDraft(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PR 생성 시각은 필수입니다.");
     }
@@ -70,13 +70,13 @@ class PrTimingTest {
         LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
 
         // when
-        PrTiming timing = PrTiming.createMerged(createdAt, mergedAt, closedAt);
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createMerged(createdAt, mergedAt, closedAt);
 
         // then
         assertAll(
-                () -> assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt),
-                () -> assertThat(timing.getMergedAt()).isEqualTo(mergedAt),
-                () -> assertThat(timing.getClosedAt()).isEqualTo(closedAt)
+                () -> assertThat(pullRequestTiming.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getMergedAt()).isEqualTo(mergedAt),
+                () -> assertThat(pullRequestTiming.getClosedAt()).isEqualTo(closedAt)
         );
     }
 
@@ -87,9 +87,9 @@ class PrTimingTest {
         LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
 
         // when & then
-        assertThatThrownBy(() -> PrTiming.createMerged(null, mergedAt, closedAt))
+        assertThatThrownBy(() -> PullRequestTiming.createMerged(null, mergedAt, closedAt))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 생성 시각은 필수입니다.");
+                .hasMessage("PullRequest 생성 시각은 필수입니다.");
     }
 
     @Test
@@ -99,7 +99,7 @@ class PrTimingTest {
         LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
 
         // when & then
-        assertThatThrownBy(() -> PrTiming.createMerged(createdAt, null, closedAt))
+        assertThatThrownBy(() -> PullRequestTiming.createMerged(createdAt, null, closedAt))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("병합 시각은 필수입니다.");
     }
@@ -111,7 +111,7 @@ class PrTimingTest {
         LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
 
         // when & then
-        assertThatThrownBy(() -> PrTiming.createMerged(createdAt, mergedAt, null))
+        assertThatThrownBy(() -> PullRequestTiming.createMerged(createdAt, mergedAt, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("종료 시각은 필수입니다.");
     }
@@ -124,7 +124,7 @@ class PrTimingTest {
         LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 14, 0);
 
         // when & then
-        assertThatThrownBy(() -> PrTiming.createMerged(createdAt, mergedAt, closedAt))
+        assertThatThrownBy(() -> PullRequestTiming.createMerged(createdAt, mergedAt, closedAt))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("병합 시각은 생성 시각 이후여야 합니다.");
     }
@@ -137,7 +137,7 @@ class PrTimingTest {
         LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
 
         // when & then
-        assertThatThrownBy(() -> PrTiming.createMerged(createdAt, mergedAt, closedAt))
+        assertThatThrownBy(() -> PullRequestTiming.createMerged(createdAt, mergedAt, closedAt))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("종료 시각은 생성 시각 이후여야 합니다.");
     }
@@ -149,13 +149,13 @@ class PrTimingTest {
         LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 14, 0);
 
         // when
-        PrTiming timing = PrTiming.createClosed(createdAt, closedAt);
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createClosed(createdAt, closedAt);
 
         // then
         assertAll(
-                () -> assertThat(timing.getPrCreatedAt()).isEqualTo(createdAt),
-                () -> assertThat(timing.getMergedAt()).isNull(),
-                () -> assertThat(timing.getClosedAt()).isEqualTo(closedAt)
+                () -> assertThat(pullRequestTiming.getPrCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getMergedAt()).isNull(),
+                () -> assertThat(pullRequestTiming.getClosedAt()).isEqualTo(closedAt)
         );
     }
 
@@ -165,7 +165,7 @@ class PrTimingTest {
         LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 14, 0);
 
         // when & then
-        assertThatThrownBy(() -> PrTiming.createClosed(null, closedAt))
+        assertThatThrownBy(() -> PullRequestTiming.createClosed(null, closedAt))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PR 생성 시각은 필수입니다.");
     }
@@ -176,7 +176,7 @@ class PrTimingTest {
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
 
         // when & then
-        assertThatThrownBy(() -> PrTiming.createClosed(createdAt, null))
+        assertThatThrownBy(() -> PullRequestTiming.createClosed(createdAt, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("종료 시각은 필수입니다.");
     }
@@ -188,7 +188,7 @@ class PrTimingTest {
         LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 14, 0);
 
         // when & then
-        assertThatThrownBy(() -> PrTiming.createClosed(createdAt, closedAt))
+        assertThatThrownBy(() -> PullRequestTiming.createClosed(createdAt, closedAt))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("종료 시각은 생성 시각 이후여야 합니다.");
     }
@@ -200,10 +200,10 @@ class PrTimingTest {
         LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 12, 30);
         LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 30);
 
-        PrTiming timing = PrTiming.createMerged(createdAt, mergedAt, closedAt);
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createMerged(createdAt, mergedAt, closedAt);
 
         // when
-        int mergeTimeMinutes = timing.calculateMergeTimeMinutes();
+        int mergeTimeMinutes = pullRequestTiming.calculateMergeTimeMinutes();
 
         // then
         assertThat(mergeTimeMinutes).isEqualTo(150);
@@ -212,10 +212,10 @@ class PrTimingTest {
     @Test
     void calculateMergeTimeMinutes는_병합되지_않은_PR이면_예외가_발생한다() {
         // given
-        PrTiming timing = PrTiming.createOpen(LocalDateTime.of(2024, 1, 15, 10, 0));
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createOpen(LocalDateTime.of(2024, 1, 15, 10, 0));
 
         // when & then
-        assertThatThrownBy(timing::calculateMergeTimeMinutes)
+        assertThatThrownBy(pullRequestTiming::calculateMergeTimeMinutes)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("병합되지 않은 PR입니다.");
     }
@@ -227,10 +227,10 @@ class PrTimingTest {
         LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
         LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
 
-        PrTiming timing1 = PrTiming.createMerged(createdAt, mergedAt, closedAt);
-        PrTiming timing2 = PrTiming.createMerged(createdAt, mergedAt, closedAt);
+        PullRequestTiming pullRequestTiming1 = PullRequestTiming.createMerged(createdAt, mergedAt, closedAt);
+        PullRequestTiming pullRequestTiming2 = PullRequestTiming.createMerged(createdAt, mergedAt, closedAt);
 
         // then
-        assertThat(timing1).isEqualTo(timing2);
+        assertThat(pullRequestTiming1).isEqualTo(pullRequestTiming2);
     }
 }
