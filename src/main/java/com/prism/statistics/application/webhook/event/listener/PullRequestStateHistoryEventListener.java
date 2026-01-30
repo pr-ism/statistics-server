@@ -16,12 +16,12 @@ public class PullRequestStateHistoryEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(PrOpenCreatedEvent event) {
-        PullRequestStateHistory history = PullRequestStateHistory.createInitial(
+        PullRequestStateHistory pullRequestStateHistoryhistory = PullRequestStateHistory.createInitial(
                 event.pullRequestId(),
                 event.initialState(),
                 event.prCreatedAt()
         );
 
-        pullRequestStateHistoryRepository.save(history);
+        pullRequestStateHistoryRepository.save(pullRequestStateHistoryhistory);
     }
 }
