@@ -38,13 +38,15 @@ public class ReviewerRemovedService {
 
         Long pullRequestId = pullRequest.getId();
         Long githubUid = request.reviewer().id();
-        String githubMention = request.reviewer().login();
-        LocalDateTime removedAt = toLocalDateTime(request.removedAt());
 
         long deleted = requestedReviewerRepository.delete(pullRequestId, githubUid);
-        if (deleted == 0) {
+
+        if (deleted == 0L) {
             return;
         }
+
+        String githubMention = request.reviewer().login();
+        LocalDateTime removedAt = toLocalDateTime(request.removedAt());
 
         RequestedReviewerChangeHistory history = RequestedReviewerChangeHistory.create(
                 pullRequestId,
@@ -53,6 +55,7 @@ public class ReviewerRemovedService {
                 ReviewerAction.REMOVED,
                 removedAt
         );
+
         requestedReviewerChangeHistoryRepository.save(history);
     }
 

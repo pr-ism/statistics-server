@@ -21,7 +21,12 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
@@ -135,6 +140,50 @@ class ReviewerRemovedServiceTest {
         // when & then
         assertThatThrownBy(() -> reviewerRemovedService.removeReviewer(TEST_API_KEY, request))
                 .isInstanceOf(PullRequestNotFoundException.class);
+    }
+
+    @Sql("/sql/webhook/insert_project_pr_and_reviewer.sql")
+    @Test
+    void 동일_리뷰어를_동시에_삭제해도_한번만_삭제되고_단일_History만_저장된다() throws Exception {
+        // given
+        String githubMention = "reviewer1";
+        Long githubUid = 12345L;
+        ReviewerRemovedRequest request = createReviewerRemovedRequest(githubMention, githubUid);
+        int requestCount = 10;
+
+        CountDownLatch readyLatch = new CountDownLatch(requestCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<Future<Void>> futures = new ArrayList<>();
+
+        try (ExecutorService executorService = Executors.newFixedThreadPool(requestCount)) {
+            for (int i = 0; i < requestCount; i++) {
+                futures.add(executorService.submit(() -> {
+                    readyLatch.countDown();
+                    try {
+                        startLatch.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("시작 대기 중 인터럽트 발생", e);
+                    }
+                    // when
+                    reviewerRemovedService.removeReviewer(TEST_API_KEY, request);
+                    return null;
+                }));
+            }
+
+            readyLatch.await();
+            startLatch.countDown();
+
+            for (Future<Void> future : futures) {
+                future.get();
+            }
+        }
+
+        // then
+        assertAll(
+                () -> assertThat(jpaRequestedReviewerRepository.count()).isEqualTo(0),
+                () -> assertThat(jpaRequestedReviewerChangeHistoryRepository.count()).isEqualTo(1)
+        );
     }
 
     private ReviewerRemovedRequest createReviewerRemovedRequest(String login, Long id) {
