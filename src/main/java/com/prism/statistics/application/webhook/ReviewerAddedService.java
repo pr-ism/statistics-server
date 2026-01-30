@@ -12,7 +12,6 @@ import com.prism.statistics.domain.reviewer.repository.RequestedReviewerReposito
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,12 +39,12 @@ public class ReviewerAddedService {
 
         Long pullRequestId = pullRequest.getId();
         Long githubUid = request.reviewer().id();
-        String githubMention = request.reviewer().login();
 
         if (requestedReviewerRepository.exists(pullRequestId, githubUid)) {
             return;
         }
 
+        String githubMention = request.reviewer().login();
         LocalDateTime requestedAt = toLocalDateTime(request.requestedAt());
 
         RequestedReviewer requestedReviewer = RequestedReviewer.create(
@@ -55,11 +54,7 @@ public class ReviewerAddedService {
                 requestedAt
         );
 
-        try {
-            requestedReviewerRepository.save(requestedReviewer);
-        } catch (DataIntegrityViolationException e) {
-            return;
-        }
+        requestedReviewerRepository.save(requestedReviewer);
 
         RequestedReviewerChangeHistory history = RequestedReviewerChangeHistory.create(
                 pullRequestId,
