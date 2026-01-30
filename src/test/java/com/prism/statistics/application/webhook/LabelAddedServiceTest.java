@@ -21,6 +21,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
@@ -128,9 +135,51 @@ class LabelAddedServiceTest {
                 .isInstanceOf(PullRequestNotFoundException.class);
     }
 
+    @Sql("/sql/webhook/insert_project_and_pull_request.sql")
+    @Test
+    void 동일_Label을_동시에_추가해도_한번만_저장되고_단일_History만_저장된다() throws Exception {
+        // given
+        String labelName = "concurrent-label";
+        LabelAddedRequest request = createLabelAddedRequest(labelName);
+        int requestCount = 10;
+
+        CountDownLatch readyLatch = new CountDownLatch(requestCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<Future<Void>> futures = new ArrayList<>();
+
+        try (ExecutorService executorService = Executors.newFixedThreadPool(requestCount)) {
+            for (int i = 0; i < requestCount; i++) {
+                futures.add(executorService.submit(() -> {
+                    readyLatch.countDown();
+                    try {
+                        startLatch.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("시작 대기 중 인터럽트 발생", e);
+                    }
+                    // when
+                    labelAddedService.addLabel(TEST_API_KEY, request);
+                    return null;
+                }));
+            }
+
+            assertThat(readyLatch.await(5, TimeUnit.SECONDS)).isTrue();
+            startLatch.countDown();
+
+            for (Future<Void> future : futures) {
+                future.get(5, TimeUnit.SECONDS);
+            }
+        }
+
+        // then
+        assertAll(
+                () -> assertThat(jpaPrLabelRepository.count()).isEqualTo(1),
+                () -> assertThat(jpaPrLabelHistoryRepository.count()).isEqualTo(1)
+        );
+    }
+
     private LabelAddedRequest createLabelAddedRequest(String labelName) {
         return new LabelAddedRequest(
-                "owner/repo",
                 TEST_PR_NUMBER,
                 new LabelData(labelName),
                 Instant.parse("2024-01-15T10:00:00Z")

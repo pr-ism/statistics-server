@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
@@ -179,11 +180,11 @@ class ReviewerAddedServiceTest {
                 }));
             }
 
-            readyLatch.await();
+            assertThat(readyLatch.await(5, TimeUnit.SECONDS)).isTrue();
             startLatch.countDown();
 
             for (Future<Void> future : futures) {
-                future.get();
+                future.get(5, TimeUnit.SECONDS);
             }
         }
 

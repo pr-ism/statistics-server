@@ -4,9 +4,6 @@ import java.time.Instant;
 import java.util.List;
 
 public record PrOpenedRequest(
-        String eventType,
-        String action,
-        String repositoryFullName,
         boolean isDraft,
         PullRequestData pullRequest,
         List<FileData> files
