@@ -129,6 +129,6 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
         )
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.errorCode").value("PR00"))
-        .andExpect(jsonPath("$.message").value("PR을 찾을 수 없습니다."));
+        .andExpect(jsonPath("$.message").value("PullRequest를 찾을 수 없습니다."));
     }
 }

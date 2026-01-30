@@ -52,7 +52,7 @@ class PullRequestLabelHistoryTest {
         // when & then
         assertThatThrownBy(() -> PullRequestLabelHistory.create(null, "bug", PullRequestLabelAction.ADDED, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR ID는 필수입니다.");
+                .hasMessage("PullRequest ID는 필수입니다.");
     }
 
     @ParameterizedTest

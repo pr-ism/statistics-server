@@ -36,7 +36,7 @@ class CommitTest {
         // when & then
         assertThatThrownBy(() -> Commit.create(null, "abc123", COMMITTED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR ID는 필수입니다.");
+                .hasMessage("PullRequest ID는 필수입니다.");
     }
 
     @ParameterizedTest

@@ -53,7 +53,7 @@ public class PullRequest extends CreatedAtEntity {
     ) {
         validateProjectId(projectId);
         validateAuthorGithubId(authorGithubId);
-        validatePrNumber(pullRequestNumber);
+        validatePullRequestNumber(pullRequestNumber);
         validateTitle(title);
         validateState(state);
         validateLink(link);
@@ -88,7 +88,7 @@ public class PullRequest extends CreatedAtEntity {
         }
     }
 
-    private static void validatePrNumber(int pullRequestNumber) {
+    private static void validatePullRequestNumber(int pullRequestNumber) {
         if (pullRequestNumber <= 0) {
             throw new IllegalArgumentException("PullRequest 번호는 양수여야 합니다.");
         }

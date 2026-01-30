@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum PullRequestErrorCode implements ErrorCode {
 
-    PULL_REQUEST_NOT_FOUND("PR00", "PR을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    PULL_REQUEST_NOT_FOUND("PR00", "PullRequest를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
 
     private final String errorCode;
     private final String message;
