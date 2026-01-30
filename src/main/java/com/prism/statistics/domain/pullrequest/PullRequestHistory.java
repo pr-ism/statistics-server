@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "pr_change_histories")
+@Table(name = "pull_request_histories")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PrChangeHistory extends CreatedAtEntity {
+public class PullRequestHistory extends CreatedAtEntity {
 
     private Long pullRequestId;
 
@@ -26,7 +26,7 @@ public class PrChangeHistory extends CreatedAtEntity {
 
     private LocalDateTime changedAt;
 
-    public static PrChangeHistory create(
+    public static PullRequestHistory create(
             Long pullRequestId,
             PrChangeStats changeStats,
             int commitCount,
@@ -36,7 +36,7 @@ public class PrChangeHistory extends CreatedAtEntity {
         validateChangeStats(changeStats);
         validateCommitCount(commitCount);
         validateChangedAt(changedAt);
-        return new PrChangeHistory(pullRequestId, changeStats, commitCount, changedAt);
+        return new PullRequestHistory(pullRequestId, changeStats, commitCount, changedAt);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
@@ -63,7 +63,7 @@ public class PrChangeHistory extends CreatedAtEntity {
         }
     }
 
-    private PrChangeHistory(
+    private PullRequestHistory(
             Long pullRequestId,
             PrChangeStats changeStats,
             int commitCount,
