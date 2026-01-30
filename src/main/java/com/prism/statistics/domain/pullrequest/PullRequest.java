@@ -1,7 +1,7 @@
 package com.prism.statistics.domain.pullrequest;
 
 import com.prism.statistics.domain.common.CreatedAtEntity;
-import com.prism.statistics.domain.pullrequest.enums.PrState;
+import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.pullrequest.vo.PullRequestTiming;
 import jakarta.persistence.Embedded;
@@ -28,7 +28,7 @@ public class PullRequest extends CreatedAtEntity {
     private String title;
 
     @Enumerated(EnumType.STRING)
-    private PrState state;
+    private PullRequestState state;
 
     private String link;
 
@@ -45,7 +45,7 @@ public class PullRequest extends CreatedAtEntity {
             String authorGithubId,
             int prNumber,
             String title,
-            PrState state,
+            PullRequestState state,
             String link,
             PullRequestChangeStats changeStats,
             int commitCount,
@@ -73,7 +73,7 @@ public class PullRequest extends CreatedAtEntity {
             int commitCount,
             PullRequestTiming pullRequestTiming
     ) {
-        return create(projectId, authorGithubId, prNumber, title, PrState.OPEN, link, changeStats, commitCount, pullRequestTiming);
+        return create(projectId, authorGithubId, prNumber, title, PullRequestState.OPEN, link, changeStats, commitCount, pullRequestTiming);
     }
 
     private static void validateProjectId(Long projectId) {
@@ -100,7 +100,7 @@ public class PullRequest extends CreatedAtEntity {
         }
     }
 
-    private static void validateState(PrState state) {
+    private static void validateState(PullRequestState state) {
         if (state == null) {
             throw new IllegalArgumentException("PullRequest 상태는 필수입니다.");
         }
@@ -135,7 +135,7 @@ public class PullRequest extends CreatedAtEntity {
             String authorGithubId,
             int prNumber,
             String title,
-            PrState state,
+            PullRequestState state,
             String link,
             PullRequestChangeStats changeStats,
             int commitCount,

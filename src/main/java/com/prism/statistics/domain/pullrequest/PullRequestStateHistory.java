@@ -1,7 +1,7 @@
 package com.prism.statistics.domain.pullrequest;
 
 import com.prism.statistics.domain.common.CreatedAtEntity;
-import com.prism.statistics.domain.pullrequest.enums.PrState;
+import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -21,17 +21,17 @@ public class PullRequestStateHistory extends CreatedAtEntity {
     private Long pullRequestId;
 
     @Enumerated(EnumType.STRING)
-    private PrState previousState;
+    private PullRequestState previousState;
 
     @Enumerated(EnumType.STRING)
-    private PrState newState;
+    private PullRequestState newState;
 
     private LocalDateTime changedAt;
 
     public static PullRequestStateHistory create(
             Long pullRequestId,
-            PrState previousState,
-            PrState newState,
+            PullRequestState previousState,
+            PullRequestState newState,
             LocalDateTime changedAt
     ) {
         validatePullRequestId(pullRequestId);
@@ -40,7 +40,7 @@ public class PullRequestStateHistory extends CreatedAtEntity {
         return new PullRequestStateHistory(pullRequestId, previousState, newState, changedAt);
     }
 
-    public static PullRequestStateHistory createInitial(Long pullRequestId, PrState initialState, LocalDateTime changedAt) {
+    public static PullRequestStateHistory createInitial(Long pullRequestId, PullRequestState initialState, LocalDateTime changedAt) {
         validatePullRequestId(pullRequestId);
         validateNewState(initialState);
         validateChangedAt(changedAt);
@@ -53,7 +53,7 @@ public class PullRequestStateHistory extends CreatedAtEntity {
         }
     }
 
-    private static void validateNewState(PrState newState) {
+    private static void validateNewState(PullRequestState newState) {
         if (newState == null) {
             throw new IllegalArgumentException("새로운 상태는 필수입니다.");
         }
@@ -67,8 +67,8 @@ public class PullRequestStateHistory extends CreatedAtEntity {
 
     private PullRequestStateHistory(
             Long pullRequestId,
-            PrState previousState,
-            PrState newState,
+            PullRequestState previousState,
+            PullRequestState newState,
             LocalDateTime changedAt
     ) {
         this.pullRequestId = pullRequestId;

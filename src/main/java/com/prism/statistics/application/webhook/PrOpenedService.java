@@ -8,7 +8,7 @@ import com.prism.statistics.application.webhook.event.PrOpenCreatedEvent;
 import com.prism.statistics.application.webhook.event.PrOpenCreatedEvent.CommitData;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.pullrequest.PullRequest;
-import com.prism.statistics.domain.pullrequest.enums.PrState;
+import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.pullrequest.vo.PullRequestTiming;
@@ -93,7 +93,7 @@ public class PrOpenedService {
         PrOpenCreatedEvent event = new PrOpenCreatedEvent(
                 savedPullRequest.getId(),
                 projectId,
-                PrState.OPEN,
+                PullRequestState.OPEN,
                 pullRequestChangeStats,
                 prData.commits().totalCount(),
                 prCreatedAt,

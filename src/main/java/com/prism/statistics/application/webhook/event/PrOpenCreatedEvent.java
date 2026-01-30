@@ -1,7 +1,7 @@
 package com.prism.statistics.application.webhook.event;
 
 import com.prism.statistics.application.webhook.dto.request.PrOpenedRequest.FileData;
-import com.prism.statistics.domain.pullrequest.enums.PrState;
+import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 
 import java.time.LocalDateTime;
@@ -10,7 +10,7 @@ import java.util.List;
 public record PrOpenCreatedEvent(
         Long pullRequestId,
         Long projectId,
-        PrState initialState,
+        PullRequestState initialState,
         PullRequestChangeStats changeStats,
         int commitCount,
         LocalDateTime prCreatedAt,
