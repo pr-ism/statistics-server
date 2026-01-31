@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.metric.dto.response.AuthorStatisticsResponse;
 import com.prism.statistics.application.metric.dto.response.AuthorStatisticsResponse.AuthorStatistics;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -85,7 +85,7 @@ class AuthorStatisticsQueryServiceTest {
 
         // when & then
         assertThatThrownBy(() -> authorStatisticsQueryService.findAuthorStatistics(userId, projectId))
-                .isInstanceOf(ProjectNotFoundException.class)
+                .isInstanceOf(ProjectOwnershipException.class)
                 .hasMessage("프로젝트를 찾을 수 없습니다.");
     }
 }
