@@ -1,9 +1,9 @@
 package com.prism.statistics.domain.pullrequest;
 
 import com.prism.statistics.domain.common.CreatedAtEntity;
-import com.prism.statistics.domain.pullrequest.enums.PrState;
-import com.prism.statistics.domain.pullrequest.vo.PrChangeStats;
-import com.prism.statistics.domain.pullrequest.vo.PrTiming;
+import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestTiming;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,57 +23,57 @@ public class PullRequest extends CreatedAtEntity {
 
     private String authorGithubId;
 
-    private int prNumber;
+    private int pullRequestNumber;
 
     private String title;
 
     @Enumerated(EnumType.STRING)
-    private PrState state;
+    private PullRequestState state;
 
     private String link;
 
     @Embedded
-    private PrChangeStats changeStats;
+    private PullRequestChangeStats changeStats;
 
     private int commitCount;
 
     @Embedded
-    private PrTiming timing;
+    private PullRequestTiming timing;
 
     public static PullRequest create(
             Long projectId,
             String authorGithubId,
-            int prNumber,
+            int pullRequestNumber,
             String title,
-            PrState state,
+            PullRequestState state,
             String link,
-            PrChangeStats changeStats,
+            PullRequestChangeStats changeStats,
             int commitCount,
-            PrTiming timing
+            PullRequestTiming pullRequestTiming
     ) {
         validateProjectId(projectId);
         validateAuthorGithubId(authorGithubId);
-        validatePrNumber(prNumber);
+        validatePullRequestNumber(pullRequestNumber);
         validateTitle(title);
         validateState(state);
         validateLink(link);
         validateChangeStats(changeStats);
         validateCommitCount(commitCount);
-        validateTiming(timing);
-        return new PullRequest(projectId, authorGithubId, prNumber, title, state, link, changeStats, commitCount, timing);
+        validateTiming(pullRequestTiming);
+        return new PullRequest(projectId, authorGithubId, pullRequestNumber, title, state, link, changeStats, commitCount, pullRequestTiming);
     }
 
     public static PullRequest opened(
             Long projectId,
             String authorGithubId,
-            int prNumber,
+            int pullRequestNumber,
             String title,
             String link,
-            PrChangeStats changeStats,
+            PullRequestChangeStats changeStats,
             int commitCount,
-            PrTiming timing
+            PullRequestTiming pullRequestTiming
     ) {
-        return create(projectId, authorGithubId, prNumber, title, PrState.OPEN, link, changeStats, commitCount, timing);
+        return create(projectId, authorGithubId, pullRequestNumber, title, PullRequestState.OPEN, link, changeStats, commitCount, pullRequestTiming);
     }
 
     private static void validateProjectId(Long projectId) {
@@ -88,31 +88,31 @@ public class PullRequest extends CreatedAtEntity {
         }
     }
 
-    private static void validatePrNumber(int prNumber) {
-        if (prNumber <= 0) {
-            throw new IllegalArgumentException("PR 번호는 양수여야 합니다.");
+    private static void validatePullRequestNumber(int pullRequestNumber) {
+        if (pullRequestNumber <= 0) {
+            throw new IllegalArgumentException("PullRequest 번호는 양수여야 합니다.");
         }
     }
 
     private static void validateTitle(String title) {
         if (title == null || title.isBlank()) {
-            throw new IllegalArgumentException("PR 제목은 필수입니다.");
+            throw new IllegalArgumentException("PullRequest 제목은 필수입니다.");
         }
     }
 
-    private static void validateState(PrState state) {
+    private static void validateState(PullRequestState state) {
         if (state == null) {
-            throw new IllegalArgumentException("PR 상태는 필수입니다.");
+            throw new IllegalArgumentException("PullRequest 상태는 필수입니다.");
         }
     }
 
     private static void validateLink(String link) {
         if (link == null || link.isBlank()) {
-            throw new IllegalArgumentException("PR 링크는 필수입니다.");
+            throw new IllegalArgumentException("PullRequest 링크는 필수입니다.");
         }
     }
 
-    private static void validateChangeStats(PrChangeStats changeStats) {
+    private static void validateChangeStats(PullRequestChangeStats changeStats) {
         if (changeStats == null) {
             throw new IllegalArgumentException("변경 통계는 필수입니다.");
         }
@@ -124,8 +124,8 @@ public class PullRequest extends CreatedAtEntity {
         }
     }
 
-    private static void validateTiming(PrTiming timing) {
-        if (timing == null) {
+    private static void validateTiming(PullRequestTiming pullRequestTiming) {
+        if (pullRequestTiming == null) {
             throw new IllegalArgumentException("시간 정보는 필수입니다.");
         }
     }
@@ -133,23 +133,23 @@ public class PullRequest extends CreatedAtEntity {
     private PullRequest(
             Long projectId,
             String authorGithubId,
-            int prNumber,
+            int pullRequestNumber,
             String title,
-            PrState state,
+            PullRequestState state,
             String link,
-            PrChangeStats changeStats,
+            PullRequestChangeStats changeStats,
             int commitCount,
-            PrTiming timing
+            PullRequestTiming pullRequestTiming
     ) {
         this.projectId = projectId;
         this.authorGithubId = authorGithubId;
-        this.prNumber = prNumber;
+        this.pullRequestNumber = pullRequestNumber;
         this.title = title;
         this.state = state;
         this.link = link;
         this.changeStats = changeStats;
         this.commitCount = commitCount;
-        this.timing = timing;
+        this.timing = pullRequestTiming;
     }
 
     public boolean isMerged() {
@@ -168,14 +168,14 @@ public class PullRequest extends CreatedAtEntity {
         return this.state.isOpen();
     }
 
-    public int calculateMergeTimeMinutes() {
+    public long calculateMergeTimeMinutes() {
         if (!isMerged()) {
-            throw new IllegalStateException("병합되지 않은 PR입니다.");
+            throw new IllegalStateException("병합되지 않은 PullRequest 입니다.");
         }
         return timing.calculateMergeTimeMinutes();
     }
 
-    public PrTiming getTimingOrDefault() {
-        return this.timing != null ? this.timing : PrTiming.createOpen(this.getCreatedAt());
+    public PullRequestTiming getTimingOrDefault() {
+        return this.timing != null ? this.timing : PullRequestTiming.createOpen(this.getCreatedAt());
     }
 }

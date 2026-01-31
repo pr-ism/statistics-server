@@ -36,13 +36,13 @@ class RequestedReviewerTest {
     }
 
     @Test
-    void PR_ID가_null이면_예외가_발생한다() {
+    void Pull_Request_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> RequestedReviewer.create(
                 null, "reviewer1", 12345L, REQUESTED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR ID는 필수입니다.");
+                .hasMessage("PullRequest ID는 필수입니다.");
     }
 
     @ParameterizedTest

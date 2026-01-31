@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.prism.statistics.application.webhook.ReviewerRemovedService;
 import com.prism.statistics.application.webhook.dto.request.ReviewerRemovedRequest;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "reviewer": {
                         "login": "reviewer1",
                         "id": 12345
@@ -54,7 +54,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "reviewer": {
                         "login": "reviewer1",
                         "id": 12345
@@ -73,11 +73,11 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
     }
 
     @Test
-    void 존재하지_않는_프로젝트면_404_반환한다() throws Exception {
+    void 유효하지_않은_API_Key면_404_반환한다() throws Exception {
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "reviewer": {
                         "login": "reviewer1",
                         "id": 12345
@@ -86,7 +86,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
                 }
                 """;
 
-        willThrow(new ProjectNotFoundException())
+        willThrow(new InvalidApiKeyException())
                 .given(reviewerRemovedService).removeReviewer(eq(TEST_API_KEY), any(ReviewerRemovedRequest.class));
 
         // when & then
@@ -97,16 +97,16 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
                         .content(payload)
         )
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.errorCode").value("P00"))
-        .andExpect(jsonPath("$.message").value("프로젝트를 찾을 수 없습니다."));
+        .andExpect(jsonPath("$.errorCode").value("P01"))
+        .andExpect(jsonPath("$.message").value("유효하지 않은 API Key입니다."));
     }
 
     @Test
-    void 존재하지_않는_PR이면_404_반환한다() throws Exception {
+    void 존재하지_않는_PullRequest면_404_반환한다() throws Exception {
         // given
         String payload = """
                 {
-                    "prNumber": 42,
+                    "pullRequestNumber": 42,
                     "reviewer": {
                         "login": "reviewer1",
                         "id": 12345
@@ -127,6 +127,6 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
         )
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.errorCode").value("PR00"))
-        .andExpect(jsonPath("$.message").value("PR을 찾을 수 없습니다."));
+        .andExpect(jsonPath("$.message").value("PullRequest를 찾을 수 없습니다."));
     }
 }

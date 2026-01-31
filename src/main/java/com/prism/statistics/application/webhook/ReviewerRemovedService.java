@@ -4,11 +4,11 @@ import com.prism.statistics.application.webhook.dto.request.ReviewerRemovedReque
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestRepository;
-import com.prism.statistics.domain.reviewer.RequestedReviewerChangeHistory;
+import com.prism.statistics.domain.reviewer.RequestedReviewerHistory;
 import com.prism.statistics.domain.reviewer.enums.ReviewerAction;
-import com.prism.statistics.domain.reviewer.repository.RequestedReviewerChangeHistoryRepository;
+import com.prism.statistics.domain.reviewer.repository.RequestedReviewerHistoryRepository;
 import com.prism.statistics.domain.reviewer.repository.RequestedReviewerRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,14 +26,14 @@ public class ReviewerRemovedService {
     private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final RequestedReviewerRepository requestedReviewerRepository;
-    private final RequestedReviewerChangeHistoryRepository requestedReviewerChangeHistoryRepository;
+    private final RequestedReviewerHistoryRepository requestedReviewerHistoryRepository;
 
     @Transactional
     public void removeReviewer(String apiKey, ReviewerRemovedRequest request) {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new ProjectNotFoundException());
+                .orElseThrow(() -> new InvalidApiKeyException());
 
-        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.prNumber())
+        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.pullRequestNumber())
                 .orElseThrow(() -> new PullRequestNotFoundException());
 
         Long pullRequestId = pullRequest.getId();
@@ -48,7 +48,7 @@ public class ReviewerRemovedService {
         String githubMention = request.reviewer().login();
         LocalDateTime removedAt = toLocalDateTime(request.removedAt());
 
-        RequestedReviewerChangeHistory history = RequestedReviewerChangeHistory.create(
+        RequestedReviewerHistory requestedReviewerHistory = RequestedReviewerHistory.create(
                 pullRequestId,
                 githubMention,
                 githubUid,
@@ -56,7 +56,7 @@ public class ReviewerRemovedService {
                 removedAt
         );
 
-        requestedReviewerChangeHistoryRepository.save(history);
+        requestedReviewerHistoryRepository.save(requestedReviewerHistory);
     }
 
     private LocalDateTime toLocalDateTime(Instant instant) {

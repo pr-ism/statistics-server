@@ -1,7 +1,7 @@
 package com.prism.statistics.application.webhook.event.listener;
 
-import com.prism.statistics.application.webhook.event.PrOpenCreatedEvent;
-import com.prism.statistics.application.webhook.event.PrOpenCreatedEvent.CommitData;
+import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent;
+import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent.CommitData;
 import com.prism.statistics.domain.pullrequest.Commit;
 import com.prism.statistics.domain.pullrequest.repository.CommitRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class CommitEventListener {
     private final CommitRepository commitRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void handle(PrOpenCreatedEvent event) {
+    public void handle(PullRequestOpenCreatedEvent event) {
         List<Commit> commits = event.commits().stream()
                 .map(commitData -> toCommit(event.pullRequestId(), commitData))
                 .toList();

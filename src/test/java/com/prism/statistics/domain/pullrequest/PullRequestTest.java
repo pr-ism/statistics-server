@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.time.LocalDateTime;
 
+import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestTiming;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
-import com.prism.statistics.domain.pullrequest.enums.PrState;
-import com.prism.statistics.domain.pullrequest.vo.PrChangeStats;
-import com.prism.statistics.domain.pullrequest.vo.PrTiming;
+import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -25,51 +25,51 @@ class PullRequestTest {
     @Test
     void PullRequest를_생성한다() {
         // given
-        PrChangeStats changeStats = PrChangeStats.create(5, 100, 50);
-        PrTiming timing = PrTiming.createOpen(CREATED_AT);
+        PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createOpen(CREATED_AT);
 
         // when
         PullRequest pullRequest = PullRequest.create(
                 1L, "author123", 42, "feat: 새로운 기능 추가",
-                PrState.OPEN, "https://github.com/org/repo/pull/42",
-                changeStats, 3, timing
+                PullRequestState.OPEN, "https://github.com/org/repo/pull/42",
+                pullRequestChangeStats, 3, pullRequestTiming
         );
 
         // then
         assertAll(
                 () -> assertThat(pullRequest.getProjectId()).isEqualTo(1L),
                 () -> assertThat(pullRequest.getAuthorGithubId()).isEqualTo("author123"),
-                () -> assertThat(pullRequest.getPrNumber()).isEqualTo(42),
+                () -> assertThat(pullRequest.getPullRequestNumber()).isEqualTo(42),
                 () -> assertThat(pullRequest.getTitle()).isEqualTo("feat: 새로운 기능 추가"),
-                () -> assertThat(pullRequest.getState()).isEqualTo(PrState.OPEN),
+                () -> assertThat(pullRequest.getState()).isEqualTo(PullRequestState.OPEN),
                 () -> assertThat(pullRequest.getLink()).isEqualTo("https://github.com/org/repo/pull/42"),
-                () -> assertThat(pullRequest.getChangeStats()).isEqualTo(changeStats),
+                () -> assertThat(pullRequest.getChangeStats()).isEqualTo(pullRequestChangeStats),
                 () -> assertThat(pullRequest.getCommitCount()).isEqualTo(3),
-                () -> assertThat(pullRequest.getTiming()).isEqualTo(timing)
+                () -> assertThat(pullRequest.getTiming()).isEqualTo(pullRequestTiming)
         );
     }
 
     @Test
     void opened로_생성하면_OPEN_상태가_된다() {
         // given
-        PrChangeStats changeStats = PrChangeStats.create(5, 100, 50);
-        PrTiming timing = PrTiming.createOpen(CREATED_AT);
+        PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createOpen(CREATED_AT);
 
         // when
         PullRequest pullRequest = PullRequest.opened(
                 1L, "author123", 42, "feat: 새로운 기능 추가",
                 "https://github.com/org/repo/pull/42",
-                changeStats, 3, timing
+                pullRequestChangeStats, 3, pullRequestTiming
         );
 
         // then
-        assertThat(pullRequest.getState()).isEqualTo(PrState.OPEN);
+        assertThat(pullRequest.getState()).isEqualTo(PullRequestState.OPEN);
     }
 
     @Test
     void 프로젝트_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> createPullRequest(null, "author123", 42, "title", PrState.OPEN, "link", 3))
+        assertThatThrownBy(() -> createPullRequest(null, "author123", 42, "title", PullRequestState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("프로젝트 ID는 필수입니다.");
     }
@@ -77,7 +77,7 @@ class PullRequestTest {
     @Test
     void 작성자_GitHub_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> createPullRequest(1L, null, 42, "title", PrState.OPEN, "link", 3))
+        assertThatThrownBy(() -> createPullRequest(1L, null, 42, "title", PullRequestState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("작성자 GitHub ID는 필수입니다.");
     }
@@ -85,71 +85,71 @@ class PullRequestTest {
     @Test
     void 작성자_GitHub_ID가_빈_문자열이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> createPullRequest(1L, "  ", 42, "title", PrState.OPEN, "link", 3))
+        assertThatThrownBy(() -> createPullRequest(1L, "  ", 42, "title", PullRequestState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("작성자 GitHub ID는 필수입니다.");
     }
 
     @Test
-    void PR_번호가_0이면_예외가_발생한다() {
+    void Pull_Request_번호가_0이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> createPullRequest(1L, "author123", 0, "title", PrState.OPEN, "link", 3))
+        assertThatThrownBy(() -> createPullRequest(1L, "author123", 0, "title", PullRequestState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 번호는 양수여야 합니다.");
+                .hasMessage("PullRequest 번호는 양수여야 합니다.");
     }
 
     @Test
-    void PR_번호가_음수이면_예외가_발생한다() {
+    void Pull_Request_번호가_음수이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> createPullRequest(1L, "author123", -1, "title", PrState.OPEN, "link", 3))
+        assertThatThrownBy(() -> createPullRequest(1L, "author123", -1, "title", PullRequestState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 번호는 양수여야 합니다.");
+                .hasMessage("PullRequest 번호는 양수여야 합니다.");
     }
 
     @Test
-    void PR_제목이_null이면_예외가_발생한다() {
+    void Pull_Request_제목이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, null, PrState.OPEN, "link", 3))
+        assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, null, PullRequestState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 제목은 필수입니다.");
+                .hasMessage("PullRequest 제목은 필수입니다.");
     }
 
     @Test
-    void PR_제목이_빈_문자열이면_예외가_발생한다() {
+    void Pull_Request_제목이_빈_문자열이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "  ", PrState.OPEN, "link", 3))
+        assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "  ", PullRequestState.OPEN, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 제목은 필수입니다.");
+                .hasMessage("PullRequest 제목은 필수입니다.");
     }
 
     @Test
-    void PR_상태가_null이면_예외가_발생한다() {
+    void Pull_Request_상태가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", null, "link", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 상태는 필수입니다.");
+                .hasMessage("PullRequest 상태는 필수입니다.");
     }
 
     @Test
-    void PR_링크가_null이면_예외가_발생한다() {
+    void Pull_Request_링크가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", PrState.OPEN, null, 3))
+        assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", PullRequestState.OPEN, null, 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 링크는 필수입니다.");
+                .hasMessage("PullRequest 링크는 필수입니다.");
     }
 
     @Test
-    void PR_링크가_빈_문자열이면_예외가_발생한다() {
+    void Pull_Request_링크가_빈_문자열이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", PrState.OPEN, "  ", 3))
+        assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", PullRequestState.OPEN, "  ", 3))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PR 링크는 필수입니다.");
+                .hasMessage("PullRequest 링크는 필수입니다.");
     }
 
     @Test
     void 커밋_수가_음수이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", PrState.OPEN, "link", -1))
+        assertThatThrownBy(() -> createPullRequest(1L, "author123", 42, "title", PullRequestState.OPEN, "link", -1))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("커밋 수는 0보다 작을 수 없습니다.");
     }
@@ -158,8 +158,8 @@ class PullRequestTest {
     void 변경_통계가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> PullRequest.create(
-                1L, "author123", 42, "title", PrState.OPEN, "link",
-                null, 3, PrTiming.createOpen(CREATED_AT)
+                1L, "author123", 42, "title", PullRequestState.OPEN, "link",
+                null, 3, PullRequestTiming.createOpen(CREATED_AT)
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 통계는 필수입니다.");
@@ -169,8 +169,8 @@ class PullRequestTest {
     void 시간_정보가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> PullRequest.create(
-                1L, "author123", 42, "title", PrState.OPEN, "link",
-                PrChangeStats.create(5, 100, 50), 3, null
+                1L, "author123", 42, "title", PullRequestState.OPEN, "link",
+                PullRequestChangeStats.create(5, 100, 50), 3, null
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("시간 정보는 필수입니다.");
@@ -238,7 +238,7 @@ class PullRequestTest {
         PullRequest pullRequest = createMergedPullRequest();
 
         // when
-        int mergeTimeMinutes = pullRequest.calculateMergeTimeMinutes();
+        long mergeTimeMinutes = pullRequest.calculateMergeTimeMinutes();
 
         // then
         assertThat(mergeTimeMinutes).isEqualTo(150);
@@ -250,46 +250,46 @@ class PullRequestTest {
         PullRequest pullRequest = createOpenPullRequest();
 
         // when & then
-        assertThatThrownBy(pullRequest::calculateMergeTimeMinutes)
+        assertThatThrownBy(() -> pullRequest.calculateMergeTimeMinutes())
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("병합되지 않은 PR입니다.");
+                .hasMessage("병합되지 않은 PullRequest 입니다.");
     }
 
     private PullRequest createPullRequest(
-            Long projectId, String authorGithubId, int prNumber,
-            String title, PrState state, String link, int commitCount
+            Long projectId, String authorGithubId, int pullRequestNumber,
+            String title, PullRequestState state, String link, int commitCount
     ) {
         return PullRequest.create(
-                projectId, authorGithubId, prNumber, title, state, link,
-                PrChangeStats.create(5, 100, 50), commitCount, PrTiming.createOpen(CREATED_AT)
+                projectId, authorGithubId, pullRequestNumber, title, state, link,
+                PullRequestChangeStats.create(5, 100, 50), commitCount, PullRequestTiming.createOpen(CREATED_AT)
         );
     }
 
     private PullRequest createOpenPullRequest() {
         return PullRequest.create(
-                1L, "author123", 42, "title", PrState.OPEN, "link",
-                PrChangeStats.create(5, 100, 50), 3, PrTiming.createOpen(CREATED_AT)
+                1L, "author123", 42, "title", PullRequestState.OPEN, "link",
+                PullRequestChangeStats.create(5, 100, 50), 3, PullRequestTiming.createOpen(CREATED_AT)
         );
     }
 
     private PullRequest createDraftPullRequest() {
         return PullRequest.create(
-                1L, "author123", 42, "title", PrState.DRAFT, "link",
-                PrChangeStats.create(5, 100, 50), 3, PrTiming.createDraft(CREATED_AT)
+                1L, "author123", 42, "title", PullRequestState.DRAFT, "link",
+                PullRequestChangeStats.create(5, 100, 50), 3, PullRequestTiming.createDraft(CREATED_AT)
         );
     }
 
     private PullRequest createClosedPullRequest() {
         return PullRequest.create(
-                1L, "author123", 42, "title", PrState.CLOSED, "link",
-                PrChangeStats.create(5, 100, 50), 3, PrTiming.createClosed(CREATED_AT, CLOSED_AT)
+                1L, "author123", 42, "title", PullRequestState.CLOSED, "link",
+                PullRequestChangeStats.create(5, 100, 50), 3, PullRequestTiming.createClosed(CREATED_AT, CLOSED_AT)
         );
     }
 
     private PullRequest createMergedPullRequest() {
         return PullRequest.create(
-                1L, "author123", 42, "title", PrState.MERGED, "link",
-                PrChangeStats.create(5, 100, 50), 3, PrTiming.createMerged(CREATED_AT, MERGED_AT, CLOSED_AT)
+                1L, "author123", 42, "title", PullRequestState.MERGED, "link",
+                PullRequestChangeStats.create(5, 100, 50), 3, PullRequestTiming.createMerged(CREATED_AT, MERGED_AT)
         );
     }
 }

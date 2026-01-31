@@ -1,14 +1,14 @@
 SET REFERENTIAL_INTEGRITY FALSE;
 
-TRUNCATE TABLE requested_reviewer_change_histories;
+TRUNCATE TABLE requested_reviewer_histories;
 TRUNCATE TABLE requested_reviewers;
-TRUNCATE TABLE pr_label_histories;
-TRUNCATE TABLE pr_labels;
-TRUNCATE TABLE pr_file_histories;
-TRUNCATE TABLE pr_change_histories;
-TRUNCATE TABLE pr_state_change_histories;
+TRUNCATE TABLE pull_request_label_histories;
+TRUNCATE TABLE pull_request_labels;
+TRUNCATE TABLE pull_request_file_histories;
+TRUNCATE TABLE pull_request_content_histories;
+TRUNCATE TABLE pull_request_state_histories;
 TRUNCATE TABLE commits;
-TRUNCATE TABLE pr_files;
+TRUNCATE TABLE pull_request_files;
 TRUNCATE TABLE pull_requests;
 TRUNCATE TABLE user_identities;
 TRUNCATE TABLE users;

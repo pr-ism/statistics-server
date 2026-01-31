@@ -28,13 +28,13 @@ public class PullRequestRepositoryAdapter implements PullRequestRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<PullRequest> findPullRequest(Long projectId, int prNumber) {
+    public Optional<PullRequest> findPullRequest(Long projectId, int pullRequestNumber) {
         return Optional.ofNullable(
                 queryFactory
                         .selectFrom(pullRequest)
                         .where(
                                 pullRequest.projectId.eq(projectId),
-                                pullRequest.prNumber.eq(prNumber)
+                                pullRequest.pullRequestNumber.eq(pullRequestNumber)
                         )
                         .fetchOne()
         );
@@ -42,13 +42,13 @@ public class PullRequestRepositoryAdapter implements PullRequestRepository {
 
     @Override
     @Transactional
-    public Optional<PullRequest> findWithLock(Long projectId, int prNumber) {
+    public Optional<PullRequest> findWithLock(Long projectId, int pullRequestNumber) {
         return Optional.ofNullable(
                 queryFactory
                         .selectFrom(pullRequest)
                         .where(
                                 pullRequest.projectId.eq(projectId),
-                                pullRequest.prNumber.eq(prNumber)
+                                pullRequest.pullRequestNumber.eq(pullRequestNumber)
                         )
                         .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                         .fetchOne()
@@ -61,7 +61,7 @@ public class PullRequestRepositoryAdapter implements PullRequestRepository {
         return queryFactory
                 .selectFrom(pullRequest)
                 .where(pullRequest.projectId.eq(projectId))
-                .orderBy(pullRequest.prNumber.desc())
+                .orderBy(pullRequest.pullRequestNumber.desc())
                 .fetch();
     }
 }

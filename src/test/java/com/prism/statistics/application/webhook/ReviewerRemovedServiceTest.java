@@ -7,11 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.webhook.dto.request.ReviewerRemovedRequest;
 import com.prism.statistics.application.webhook.dto.request.ReviewerRemovedRequest.ReviewerData;
-import com.prism.statistics.domain.reviewer.RequestedReviewerChangeHistory;
+import com.prism.statistics.domain.reviewer.RequestedReviewerHistory;
 import com.prism.statistics.domain.reviewer.enums.ReviewerAction;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
-import com.prism.statistics.infrastructure.reviewer.persistence.JpaRequestedReviewerChangeHistoryRepository;
+import com.prism.statistics.infrastructure.reviewer.persistence.JpaRequestedReviewerHistoryRepository;
 import com.prism.statistics.infrastructure.reviewer.persistence.JpaRequestedReviewerRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 class ReviewerRemovedServiceTest {
 
     private static final String TEST_API_KEY = "test-api-key";
-    private static final int TEST_PR_NUMBER = 123;
+    private static final int TEST_PULL_REQUEST_NUMBER = 123;
     private static final Instant TEST_REMOVED_AT = Instant.parse("2024-01-15T10:00:00Z");
     private static final LocalDateTime EXPECTED_REMOVED_AT = LocalDateTime.of(2024, 1, 15, 19, 0, 0);
 
@@ -46,7 +46,7 @@ class ReviewerRemovedServiceTest {
     private JpaRequestedReviewerRepository jpaRequestedReviewerRepository;
 
     @Autowired
-    private JpaRequestedReviewerChangeHistoryRepository jpaRequestedReviewerChangeHistoryRepository;
+    private JpaRequestedReviewerHistoryRepository jpaRequestedReviewerHistoryRepository;
 
     @Sql("/sql/webhook/insert_project_pr_and_reviewer.sql")
     @Test
@@ -60,7 +60,7 @@ class ReviewerRemovedServiceTest {
         // then
         assertAll(
                 () -> assertThat(jpaRequestedReviewerRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaRequestedReviewerChangeHistoryRepository.count()).isEqualTo(1)
+                () -> assertThat(jpaRequestedReviewerHistoryRepository.count()).isEqualTo(1)
         );
     }
 
@@ -76,10 +76,10 @@ class ReviewerRemovedServiceTest {
         reviewerRemovedService.removeReviewer(TEST_API_KEY, request);
 
         // then
-        List<RequestedReviewerChangeHistory> histories = jpaRequestedReviewerChangeHistoryRepository.findAll();
+        List<RequestedReviewerHistory> histories = jpaRequestedReviewerHistoryRepository.findAll();
         assertThat(histories).hasSize(1);
 
-        RequestedReviewerChangeHistory history = histories.get(0);
+        RequestedReviewerHistory history = histories.get(0);
         assertAll(
                 () -> assertThat(history.getGithubMention()).isEqualTo(githubMention),
                 () -> assertThat(history.getGithubUid()).isEqualTo(githubUid),
@@ -100,7 +100,7 @@ class ReviewerRemovedServiceTest {
         // then
         assertAll(
                 () -> assertThat(jpaRequestedReviewerRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaRequestedReviewerChangeHistoryRepository.count()).isEqualTo(0)
+                () -> assertThat(jpaRequestedReviewerHistoryRepository.count()).isEqualTo(0)
         );
     }
 
@@ -117,7 +117,7 @@ class ReviewerRemovedServiceTest {
         // then
         assertAll(
                 () -> assertThat(jpaRequestedReviewerRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaRequestedReviewerChangeHistoryRepository.count()).isEqualTo(1)
+                () -> assertThat(jpaRequestedReviewerHistoryRepository.count()).isEqualTo(1)
         );
     }
 
@@ -129,12 +129,12 @@ class ReviewerRemovedServiceTest {
 
         // when & then
         assertThatThrownBy(() -> reviewerRemovedService.removeReviewer(invalidApiKey, request))
-                .isInstanceOf(ProjectNotFoundException.class);
+                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void 존재하지_않는_PR이면_예외가_발생한다() {
+    void 존재하지_않는_PullRequest면_예외가_발생한다() {
         // given
         ReviewerRemovedRequest request = createReviewerRemovedRequest("reviewer1", 12345L);
 
@@ -183,13 +183,13 @@ class ReviewerRemovedServiceTest {
         // then
         assertAll(
                 () -> assertThat(jpaRequestedReviewerRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaRequestedReviewerChangeHistoryRepository.count()).isEqualTo(1)
+                () -> assertThat(jpaRequestedReviewerHistoryRepository.count()).isEqualTo(1)
         );
     }
 
     private ReviewerRemovedRequest createReviewerRemovedRequest(String login, Long id) {
         return new ReviewerRemovedRequest(
-                TEST_PR_NUMBER,
+                TEST_PULL_REQUEST_NUMBER,
                 new ReviewerData(login, id),
                 TEST_REMOVED_AT
         );

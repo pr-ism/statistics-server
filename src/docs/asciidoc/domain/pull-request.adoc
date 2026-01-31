@@ -2,11 +2,11 @@
 == PullRequest API
 
 [[Get-PullRequests]]
-=== PR 목록 조회 API
+=== PullRequest 목록 조회 API
 
-operation::pull-request-controller-test/pr_목록_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,http-response,response-fields']
+operation::pull-request-controller-test/pull_request_목록_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,http-response,response-fields']
 
 [[Get-PullRequest-Detail]]
-=== PR 상세 조회 API
+=== PullRequest 상세 조회 API
 
-operation::pull-request-controller-test/pr_상세_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,http-response,response-fields']
+operation::pull-request-controller-test/pull_-request_상세_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,http-response,response-fields']

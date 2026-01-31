@@ -29,14 +29,14 @@ public class PullRequestController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{prNumber}")
+    @GetMapping("/{pullRequestNumber}")
     public ResponseEntity<PullRequestDetailResponse> getPullRequest(
             AuthUserId authUserId,
             @PathVariable Long projectId,
-            @PathVariable int prNumber
+            @PathVariable int pullRequestNumber
     ) {
         PullRequestDetailResponse response = pullRequestQueryService.find(
-                authUserId.userId(), projectId, prNumber
+                authUserId.userId(), projectId, pullRequestNumber
         );
         return ResponseEntity.ok(response);
     }
