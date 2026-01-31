@@ -8,6 +8,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,6 +47,8 @@ class LabelStatisticsControllerTest extends CommonControllerSliceTestSupport {
         ResultActions resultActions = mockMvc.perform(
                         get("/projects/{projectId}/statistics/labels", 1L)
                                 .header("Authorization", "Bearer access-token")
+                                .queryParam("startDate", "2026-01-31")
+                                .queryParam("endDate", "2026-02-01")
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.labelStatistics").isArray())
@@ -70,6 +73,10 @@ class LabelStatisticsControllerTest extends CommonControllerSliceTestSupport {
                         ),
                         pathParameters(
                                 parameterWithName("projectId").description("프로젝트 ID")
+                        ),
+                        queryParameters(
+                                parameterWithName("startDate").description("조회 시작 날짜 (YYYY-MM-DD)").optional(),
+                                parameterWithName("endDate").description("조회 종료 날짜 (YYYY-MM-DD)").optional()
                         ),
                         responseFields(
                                 fieldWithPath("labelStatistics").description("라벨별 통계 목록"),
@@ -111,5 +118,20 @@ class LabelStatisticsControllerTest extends CommonControllerSliceTestSupport {
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.errorCode").value("P00"));
+    }
+
+    @Test
+    @WithOAuth2User(userId = 7L)
+    void 시작일이_종료일보다_늦으면_400을_반환한다() throws Exception {
+        // when & then
+        mockMvc.perform(
+                       get("/projects/{projectId}/statistics/labels", 1L)
+                               .header("Authorization", "Bearer access-token")
+                               .queryParam("startDate", "2024-02-01")
+                               .queryParam("endDate", "2024-01-01")
+               )
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.errorCode").value("D03"))
+               .andExpect(jsonPath("$.message").value("종료일은 시작일보다 빠를 수 없습니다."));
     }
 }
