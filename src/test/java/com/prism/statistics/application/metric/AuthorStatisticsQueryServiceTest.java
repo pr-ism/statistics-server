@@ -33,7 +33,6 @@ class AuthorStatisticsQueryServiceTest {
         AuthorStatisticsResponse actual = authorStatisticsQueryService.findAuthorStatistics(userId, projectId);
 
         // then
-        assertThat(actual.authorStatistics()).hasSize(2);
 
         AuthorStatistics author1 = actual.authorStatistics().stream()
                 .filter(a -> a.authorGithubId().equals("author1"))
@@ -46,6 +45,7 @@ class AuthorStatisticsQueryServiceTest {
                 .orElseThrow();
 
         assertAll(
+                () -> assertThat(actual.authorStatistics()).hasSize(2),
                 () -> assertThat(author1.pullRequestCount()).isEqualTo(2),
                 () -> assertThat(author1.totalAdditions()).isEqualTo(300),
                 () -> assertThat(author1.totalDeletions()).isEqualTo(100),
@@ -85,6 +85,7 @@ class AuthorStatisticsQueryServiceTest {
 
         // when & then
         assertThatThrownBy(() -> authorStatisticsQueryService.findAuthorStatistics(userId, projectId))
-                .isInstanceOf(ProjectNotFoundException.class);
+                .isInstanceOf(ProjectNotFoundException.class)
+                .hasMessage("프로젝트를 찾을 수 없습니다.");
     }
 }
