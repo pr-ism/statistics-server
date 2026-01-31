@@ -63,6 +63,30 @@ class PullRequestTimingTest {
     }
 
     @Test
+    void createReopened로_REOPENED_상태의_시간_정보를_생성한다() {
+        // given
+        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
+
+        // when
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createReopened(createdAt);
+
+        // then
+        assertAll(
+                () -> assertThat(pullRequestTiming.getPullRequestCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getMergedAt()).isNull(),
+                () -> assertThat(pullRequestTiming.getClosedAt()).isNull()
+        );
+    }
+
+    @Test
+    void createReopened에서_생성_시각이_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestTiming.createReopened(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("PullRequest 생성 시각은 필수입니다.");
+    }
+
+    @Test
     void createMerged로_MERGED_상태의_시간_정보를_생성한다() {
         // given
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);

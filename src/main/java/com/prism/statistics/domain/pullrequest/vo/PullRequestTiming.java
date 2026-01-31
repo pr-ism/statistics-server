@@ -32,7 +32,12 @@ public class PullRequestTiming {
         return new PullRequestTiming(pullRequestCreatedAt, null, null);
     }
 
-    public static PullRequestTiming createMerged(LocalDateTime pullRequestCreatedAt, LocalDateTime mergedAt, LocalDateTime closedAt) {
+    public static PullRequestTiming createReopened(LocalDateTime pullRequestCreatedAt) {
+        validateCreatedAt(pullRequestCreatedAt);
+        return new PullRequestTiming(pullRequestCreatedAt, null, null);
+    }
+
+    public static PullRequestTiming createMerged(LocalDateTime pullRequestCreatedAt, LocalDateTime mergedAt) {
         validateCreatedAt(pullRequestCreatedAt);
         validateMergedAt(pullRequestCreatedAt, mergedAt);
         return new PullRequestTiming(pullRequestCreatedAt, mergedAt, mergedAt);
@@ -76,7 +81,7 @@ public class PullRequestTiming {
 
     public long calculateMergeTimeMinutes() {
         if (mergedAt == null) {
-            throw new IllegalStateException("병합되지 않은 PR입니다.");
+            throw new IllegalStateException("병합되지 않은 PullRequest입니다.");
         }
         return Duration.between(pullRequestCreatedAt, mergedAt).toMinutes();
     }
