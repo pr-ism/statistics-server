@@ -5,7 +5,7 @@ TRUNCATE TABLE requested_reviewers;
 TRUNCATE TABLE pull_request_label_histories;
 TRUNCATE TABLE pull_request_labels;
 TRUNCATE TABLE pull_request_file_histories;
-TRUNCATE TABLE pull_request_count_histories;
+TRUNCATE TABLE pull_request_content_histories;
 TRUNCATE TABLE pull_request_state_histories;
 TRUNCATE TABLE commits;
 TRUNCATE TABLE pull_request_files;
