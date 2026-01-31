@@ -4,7 +4,7 @@ import com.prism.statistics.application.metric.dto.response.ReviewerStatisticsRe
 import com.prism.statistics.application.metric.dto.response.ReviewerStatisticsResponse.ReviewerStatistics;
 import com.prism.statistics.domain.metric.repository.ReviewerStatisticsRepository;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class ReviewerStatisticsQueryService {
 
     private void validateProjectOwnership(Long projectId, Long userId) {
         if (!projectRepository.existsByIdAndUserId(projectId, userId)) {
-            throw new ProjectNotFoundException();
+            throw new ProjectOwnershipException();
         }
     }
 }

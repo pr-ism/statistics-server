@@ -1,8 +1,8 @@
 package com.prism.statistics.application.metric;
 
-import com.prism.statistics.application.metric.dto.response.AuthorStatisticsResponse;
-import com.prism.statistics.application.metric.dto.response.AuthorStatisticsResponse.AuthorStatistics;
-import com.prism.statistics.domain.metric.repository.AuthorStatisticsRepository;
+import com.prism.statistics.application.metric.dto.response.LabelStatisticsResponse;
+import com.prism.statistics.application.metric.dto.response.LabelStatisticsResponse.LabelStatistics;
+import com.prism.statistics.domain.metric.repository.LabelStatisticsRepository;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import java.util.List;
@@ -12,21 +12,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class AuthorStatisticsQueryService {
+public class LabelStatisticsQueryService {
 
-    private final AuthorStatisticsRepository authorStatisticsRepository;
+    private final LabelStatisticsRepository labelStatisticsRepository;
     private final ProjectRepository projectRepository;
 
     @Transactional(readOnly = true)
-    public AuthorStatisticsResponse findAuthorStatistics(Long userId, Long projectId) {
+    public LabelStatisticsResponse findLabelStatistics(Long userId, Long projectId) {
         validateProjectOwnership(projectId, userId);
 
-        List<AuthorStatistics> authorStatistics = authorStatisticsRepository
-                .findAuthorStatisticsByProjectId(projectId).stream()
-                .map(authorStat -> AuthorStatistics.from(authorStat))
+        List<LabelStatistics> labelStatistics = labelStatisticsRepository
+                .findLabelStatisticsByProjectId(projectId).stream()
+                .map(labelStat -> LabelStatistics.from(labelStat))
                 .toList();
 
-        return new AuthorStatisticsResponse(authorStatistics);
+        return new LabelStatisticsResponse(labelStatistics);
     }
 
     private void validateProjectOwnership(Long projectId, Long userId) {

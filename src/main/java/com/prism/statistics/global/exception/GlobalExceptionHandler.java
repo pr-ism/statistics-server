@@ -11,6 +11,7 @@ import com.prism.statistics.global.exception.dto.response.ProjectErrorCode;
 import com.prism.statistics.global.exception.dto.response.PullRequestErrorCode;
 import com.prism.statistics.global.exception.dto.response.UserErrorCode;
 import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUserIdentityException;
+import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
@@ -90,6 +91,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ProjectNotFoundException.class)
     public ResponseEntity<Object> handleProjectNotFoundException(ProjectNotFoundException ex) {
         log.info("ProjectNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(ProjectErrorCode.PROJECT_NOT_FOUND);
+    }
+
+    @ExceptionHandler(ProjectOwnershipException.class)
+    public ResponseEntity<Object> handleProjectOwnershipException(ProjectOwnershipException ex) {
+        log.info("ProjectOwnershipException : {}", ex.getMessage());
 
         return createResponseEntity(ProjectErrorCode.PROJECT_NOT_FOUND);
     }
