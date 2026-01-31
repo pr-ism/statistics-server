@@ -35,8 +35,7 @@ public class PullRequestTiming {
     public static PullRequestTiming createMerged(LocalDateTime pullRequestCreatedAt, LocalDateTime mergedAt, LocalDateTime closedAt) {
         validateCreatedAt(pullRequestCreatedAt);
         validateMergedAt(pullRequestCreatedAt, mergedAt);
-        validateClosedAt(pullRequestCreatedAt, closedAt);
-        return new PullRequestTiming(pullRequestCreatedAt, mergedAt, closedAt);
+        return new PullRequestTiming(pullRequestCreatedAt, mergedAt, mergedAt);
     }
 
     public static PullRequestTiming createClosed(LocalDateTime pullRequestCreatedAt, LocalDateTime closedAt) {

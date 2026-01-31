@@ -289,7 +289,7 @@ class PullRequestTest {
     private PullRequest createMergedPullRequest() {
         return PullRequest.create(
                 1L, "author123", 42, "title", PullRequestState.MERGED, "link",
-                PullRequestChangeStats.create(5, 100, 50), 3, PullRequestTiming.createMerged(CREATED_AT, MERGED_AT, CLOSED_AT)
+                PullRequestChangeStats.create(5, 100, 50), 3, PullRequestTiming.createMerged(CREATED_AT, MERGED_AT)
         );
     }
 }

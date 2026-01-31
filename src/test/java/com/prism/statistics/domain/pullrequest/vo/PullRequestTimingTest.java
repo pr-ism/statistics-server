@@ -67,16 +67,15 @@ class PullRequestTimingTest {
         // given
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
         LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
-        LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
 
         // when
-        PullRequestTiming pullRequestTiming = PullRequestTiming.createMerged(createdAt, mergedAt, closedAt);
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createMerged(createdAt, mergedAt);
 
         // then
         assertAll(
                 () -> assertThat(pullRequestTiming.getPullRequestCreatedAt()).isEqualTo(createdAt),
                 () -> assertThat(pullRequestTiming.getMergedAt()).isEqualTo(mergedAt),
-                () -> assertThat(pullRequestTiming.getClosedAt()).isEqualTo(closedAt)
+                () -> assertThat(pullRequestTiming.getClosedAt()).isEqualTo(mergedAt)
         );
     }
 
@@ -84,10 +83,9 @@ class PullRequestTimingTest {
     void createMerged에서_생성_시각이_null이면_예외가_발생한다() {
         // given
         LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
-        LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestTiming.createMerged(null, mergedAt, closedAt))
+        assertThatThrownBy(() -> PullRequestTiming.createMerged(null, mergedAt))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PullRequest 생성 시각은 필수입니다.");
     }
@@ -96,24 +94,11 @@ class PullRequestTimingTest {
     void createMerged에서_병합_시각이_null이면_예외가_발생한다() {
         // given
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
-        LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestTiming.createMerged(createdAt, null, closedAt))
+        assertThatThrownBy(() -> PullRequestTiming.createMerged(createdAt, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("병합 시각은 필수입니다.");
-    }
-
-    @Test
-    void createMerged에서_종료_시각이_null이면_예외가_발생한다() {
-        // given
-        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
-        LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
-
-        // when & then
-        assertThatThrownBy(() -> PullRequestTiming.createMerged(createdAt, mergedAt, null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("종료 시각은 필수입니다.");
     }
 
     @Test
@@ -121,25 +106,11 @@ class PullRequestTimingTest {
         // given
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 14, 0);
         LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
-        LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 14, 0);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestTiming.createMerged(createdAt, mergedAt, closedAt))
+        assertThatThrownBy(() -> PullRequestTiming.createMerged(createdAt, mergedAt))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("병합 시각은 생성 시각 이후여야 합니다.");
-    }
-
-    @Test
-    void createMerged에서_생성_시각이_종료_시각보다_이후면_예외가_발생한다() {
-        // given
-        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 14, 0);
-        LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 15, 0);
-        LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
-
-        // when & then
-        assertThatThrownBy(() -> PullRequestTiming.createMerged(createdAt, mergedAt, closedAt))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("종료 시각은 생성 시각 이후여야 합니다.");
     }
 
     @Test
@@ -198,9 +169,8 @@ class PullRequestTimingTest {
         // given
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
         LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 12, 30);
-        LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 30);
 
-        PullRequestTiming pullRequestTiming = PullRequestTiming.createMerged(createdAt, mergedAt, closedAt);
+        PullRequestTiming pullRequestTiming = PullRequestTiming.createMerged(createdAt, mergedAt);
 
         // when
         long mergeTimeMinutes = pullRequestTiming.calculateMergeTimeMinutes();
@@ -225,10 +195,9 @@ class PullRequestTimingTest {
         // given
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
         LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
-        LocalDateTime closedAt = LocalDateTime.of(2024, 1, 15, 12, 0);
 
-        PullRequestTiming pullRequestTiming1 = PullRequestTiming.createMerged(createdAt, mergedAt, closedAt);
-        PullRequestTiming pullRequestTiming2 = PullRequestTiming.createMerged(createdAt, mergedAt, closedAt);
+        PullRequestTiming pullRequestTiming1 = PullRequestTiming.createMerged(createdAt, mergedAt);
+        PullRequestTiming pullRequestTiming2 = PullRequestTiming.createMerged(createdAt, mergedAt);
 
         // then
         assertThat(pullRequestTiming1).isEqualTo(pullRequestTiming2);
