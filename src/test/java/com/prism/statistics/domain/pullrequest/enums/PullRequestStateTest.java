@@ -73,7 +73,7 @@ class PullRequestStateTest {
         // when & then
         assertThatThrownBy(() -> PullRequestState.create("unknown", false, false))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("알 수 없는 PR 상태입니다: unknown");
+                .hasMessage("알 수 없는 PullRequest 상태입니다: unknown");
     }
 
     @Test

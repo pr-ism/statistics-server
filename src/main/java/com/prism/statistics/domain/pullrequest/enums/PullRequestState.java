@@ -19,7 +19,7 @@ public enum PullRequestState {
         return Arrays.stream(values())
                 .filter(pullRequestState -> pullRequestState.matcher.match(githubState, isMerged, isDraft))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("알 수 없는 PR 상태입니다: " + githubState));
+                .orElseThrow(() -> new IllegalArgumentException("알 수 없는 PullRequest 상태입니다: " + githubState));
     }
 
     @FunctionalInterface
