@@ -4,4 +4,4 @@
 [[Get-LabelStatistics]]
 === 라벨별 통계 조회 API
 
-operation::label-statistics-controller-test/라벨별_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,http-response,response-fields']
+operation::label-statistics-controller-test/라벨별_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']

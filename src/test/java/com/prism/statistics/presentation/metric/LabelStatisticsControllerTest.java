@@ -1,5 +1,6 @@
 package com.prism.statistics.presentation.metric;
 
+import static com.prism.statistics.docs.RestDocsConfiguration.field;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -79,8 +80,10 @@ class LabelStatisticsControllerTest extends CommonControllerSliceTestSupport {
                                 parameterWithName("projectId").description("프로젝트 ID")
                         ),
                         queryParameters(
-                                parameterWithName("startDate").description("조회 시작 날짜 (YYYY-MM-DD)").optional(),
-                                parameterWithName("endDate").description("조회 종료 날짜 (YYYY-MM-DD)").optional()
+                                parameterWithName("startDate").description("조회 시작 날짜")
+                                        .attributes(field("constraints", "YYYY-MM-DD 포맷")).optional(),
+                                parameterWithName("endDate").description("조회 종료 날짜")
+                                        .attributes(field("constraints", "YYYY-MM-DD 포맷")).optional().optional()
                         ),
                         responseFields(
                                 fieldWithPath("labelStatistics").description("라벨별 통계 목록"),

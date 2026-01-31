@@ -485,7 +485,7 @@ Content-Type: application/x-www-form-urlencoded</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
-Set-Cookie: refreshToken=new-refresh-token; Path=/; Max-Age=259200; Expires=Tue, 3 Feb 2026 06:48:20 GMT; Secure; HttpOnly; SameSite=None
+Set-Cookie: refreshToken=new-refresh-token; Path=/; Max-Age=259200; Expires=Tue, 3 Feb 2026 16:40:19 GMT; Secure; HttpOnly; SameSite=None
 Cache-Control: no-store
 Pragma: no-cache
 Content-Type: application/json;charset=UTF-8
@@ -753,33 +753,153 @@ Content-Type: application/json;charset=UTF-8
 <h3 id="Get-PullRequests"><a class="link" href="#Get-PullRequests">PullRequest 목록 조회 API</a></h3>
 <div class="sect3">
 <h4 id="Get-PullRequests_http_request"><a class="link" href="#Get-PullRequests_http_request">HTTP request</a></h4>
-<div class="paragraph">
-<p>Snippet http-request not found for operation::pull-request-controller-test/pull_request_목록_조회_성공_테스트</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">GET /projects/1/pull-requests HTTP/1.1
+Authorization: Bearer access-token</code></pre>
+</div>
 </div>
 </div>
 <div class="sect3">
 <h4 id="Get-PullRequests_request_headers"><a class="link" href="#Get-PullRequests_request_headers">Request headers</a></h4>
-<div class="paragraph">
-<p>Snippet request-headers not found for operation::pull-request-controller-test/pull_request_목록_조회_성공_테스트</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">이름</th>
+<th class="tableblock halign-left valign-top">필수여부</th>
+<th class="tableblock halign-left valign-top">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Access Token 값</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="Get-PullRequests_path_parameters"><a class="link" href="#Get-PullRequests_path_parameters">Path parameters</a></h4>
-<div class="paragraph">
-<p>Snippet path-parameters not found for operation::pull-request-controller-test/pull_request_목록_조회_성공_테스트</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">이름</th>
+<th class="tableblock halign-left valign-top">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>projectId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">프로젝트 ID</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="Get-PullRequests_http_response"><a class="link" href="#Get-PullRequests_http_response">HTTP response</a></h4>
-<div class="paragraph">
-<p>Snippet http-response not found for operation::pull-request-controller-test/pull_request_목록_조회_성공_테스트</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+
+{
+  "pullRequests" : [ {
+    "id" : 1,
+    "pullRequestNumber" : 30,
+    "title" : "세 번째 PR",
+    "state" : "CLOSED",
+    "authorGithubId" : "author1",
+    "link" : "https://github.com/test/repo/pull/30",
+    "commitCount" : 1
+  }, {
+    "id" : 2,
+    "pullRequestNumber" : 20,
+    "title" : "두 번째 PR",
+    "state" : "MERGED",
+    "authorGithubId" : "author2",
+    "link" : "https://github.com/test/repo/pull/20",
+    "commitCount" : 4
+  }, {
+    "id" : 3,
+    "pullRequestNumber" : 10,
+    "title" : "첫 번째 PR",
+    "state" : "OPEN",
+    "authorGithubId" : "author1",
+    "link" : "https://github.com/test/repo/pull/10",
+    "commitCount" : 2
+  } ]
+}</code></pre>
+</div>
 </div>
 </div>
 <div class="sect3">
 <h4 id="Get-PullRequests_response_fields"><a class="link" href="#Get-PullRequests_response_fields">Response fields</a></h4>
-<div class="paragraph">
-<p>Snippet response-fields not found for operation::pull-request-controller-test/pull_request_목록_조회_성공_테스트</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">필드명</th>
+<th class="tableblock halign-left valign-top">타입</th>
+<th class="tableblock halign-left valign-top">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pullRequests</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PR 목록</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pullRequests[].id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PR 식별자</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pullRequests[].pullRequestNumber</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GitHub PR 번호</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pullRequests[].title</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PR 제목</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pullRequests[].state</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PR 상태 (OPEN, MERGED, CLOSED, DRAFT)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pullRequests[].authorGithubId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">작성자 GitHub ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pullRequests[].link</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PR 링크</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pullRequests[].commitCount</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">커밋 수</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -1291,7 +1411,7 @@ Content-Type: application/json;charset=UTF-8
 <h4 id="Get-LabelStatistics_http_request"><a class="link" href="#Get-LabelStatistics_http_request">HTTP request</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight nowrap"><code class="language-http" data-lang="http">GET /projects/1/statistics/labels HTTP/1.1
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">GET /projects/1/statistics/labels?startDate=2026-01-31&amp;endDate=2026-02-01 HTTP/1.1
 Authorization: Bearer access-token</code></pre>
 </div>
 </div>
@@ -1337,6 +1457,39 @@ Authorization: Bearer access-token</code></pre>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>projectId</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">프로젝트 ID</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="Get-LabelStatistics_query_parameters"><a class="link" href="#Get-LabelStatistics_query_parameters">Query parameters</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">파라미터</th>
+<th class="tableblock halign-left valign-top">필수여부</th>
+<th class="tableblock halign-left valign-top">제약조건</th>
+<th class="tableblock halign-left valign-top">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>startDate</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">YYYY-MM-DD 포맷</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">조회 시작 날짜</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>endDate</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">YYYY-MM-DD 포맷</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">조회 종료 날짜</p></td>
 </tr>
 </tbody>
 </table>
@@ -1451,7 +1604,7 @@ Content-Type: application/json;charset=UTF-8
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-01-31 15:48:09 +0900
+Last updated 2026-01-31 19:54:27 +0900
 </div>
 </div>
 </body>
