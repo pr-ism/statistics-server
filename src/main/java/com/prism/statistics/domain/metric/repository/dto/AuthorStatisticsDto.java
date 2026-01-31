@@ -1,4 +1,4 @@
-package com.prism.statistics.domain.metric.dto;
+package com.prism.statistics.domain.metric.repository.dto;
 
 public record AuthorStatisticsDto(
         String authorGithubId,

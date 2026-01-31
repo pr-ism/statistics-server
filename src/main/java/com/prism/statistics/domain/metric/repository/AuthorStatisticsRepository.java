@@ -1,6 +1,6 @@
 package com.prism.statistics.domain.metric.repository;
 
-import com.prism.statistics.domain.metric.dto.AuthorStatisticsDto;
+import com.prism.statistics.domain.metric.repository.dto.AuthorStatisticsDto;
 import java.util.List;
 
 public interface AuthorStatisticsRepository {

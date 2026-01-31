@@ -2,7 +2,7 @@ package com.prism.statistics.infrastructure.metric.persistence;
 
 import static com.prism.statistics.domain.pullrequest.QPullRequest.pullRequest;
 
-import com.prism.statistics.domain.metric.dto.AuthorStatisticsDto;
+import com.prism.statistics.domain.metric.repository.dto.AuthorStatisticsDto;
 import com.prism.statistics.domain.metric.repository.AuthorStatisticsRepository;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
