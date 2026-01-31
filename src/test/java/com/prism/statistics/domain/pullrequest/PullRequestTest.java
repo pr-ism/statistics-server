@@ -250,9 +250,9 @@ class PullRequestTest {
         PullRequest pullRequest = createOpenPullRequest();
 
         // when & then
-        assertThatThrownBy(pullRequest::calculateMergeTimeMinutes)
+        assertThatThrownBy(() -> pullRequest.calculateMergeTimeMinutes())
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("병합되지 않은 PR입니다.");
+                .hasMessage("병합되지 않은 PullRequest입니다.");
     }
 
     private PullRequest createPullRequest(

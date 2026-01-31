@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "pull_request_count_histories")
+@Table(name = "pull_request_content_histories")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PullRequestContentHistory extends CreatedAtEntity {
 

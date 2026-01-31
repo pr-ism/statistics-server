@@ -215,9 +215,9 @@ class PullRequestTimingTest {
         PullRequestTiming pullRequestTiming = PullRequestTiming.createOpen(LocalDateTime.of(2024, 1, 15, 10, 0));
 
         // when & then
-        assertThatThrownBy(pullRequestTiming::calculateMergeTimeMinutes)
+        assertThatThrownBy(() -> pullRequestTiming.calculateMergeTimeMinutes())
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("병합되지 않은 PR입니다.");
+                .hasMessage("병합되지 않은 PullRequest입니다.");
     }
 
     @Test
