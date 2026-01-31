@@ -23,7 +23,7 @@ public class LabelStatisticsQueryService {
         validateProjectOwnership(projectId, userId);
 
         List<LabelStatistics> labelStatistics = labelStatisticsRepository
-                .findLabelStatisticsByProjectId(projectId)
+                .findLabelStatisticsByProjectId(projectId, request.startDate(), request.endDate())
                 .stream()
                 .map(labelStat -> LabelStatistics.from(labelStat))
                 .toList();

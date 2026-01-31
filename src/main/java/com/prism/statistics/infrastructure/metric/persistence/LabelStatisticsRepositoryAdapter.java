@@ -6,7 +6,9 @@ import static com.prism.statistics.domain.pullrequest.QPullRequest.pullRequest;
 import com.prism.statistics.domain.metric.repository.LabelStatisticsRepository;
 import com.prism.statistics.domain.metric.repository.dto.LabelStatisticsDto;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -20,7 +22,11 @@ public class LabelStatisticsRepositoryAdapter implements LabelStatisticsReposito
 
     @Override
     @Transactional(readOnly = true)
-    public List<LabelStatisticsDto> findLabelStatisticsByProjectId(Long projectId) {
+    public List<LabelStatisticsDto> findLabelStatisticsByProjectId(
+            Long projectId,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
         return queryFactory
                 .select(
                         Projections.constructor(
@@ -37,9 +43,29 @@ public class LabelStatisticsRepositoryAdapter implements LabelStatisticsReposito
                 )
                 .from(pullRequestLabel)
                 .join(pullRequest).on(pullRequestLabel.pullRequestId.eq(pullRequest.id))
-                .where(pullRequest.projectId.eq(projectId))
+                .where(
+                        pullRequest.projectId.eq(projectId),
+                        goeStartDate(startDate),
+                        ltEndDate(endDate)
+                )
                 .groupBy(pullRequestLabel.labelName)
                 .orderBy(pullRequestLabel.count().desc())
                 .fetch();
+    }
+
+    private BooleanExpression goeStartDate(LocalDate startDate) {
+        if (startDate == null) {
+            return null;
+        }
+
+        return pullRequest.timing.pullRequestCreatedAt.goe(startDate.atStartOfDay());
+    }
+
+    private BooleanExpression ltEndDate(LocalDate endDate) {
+        if (endDate == null) {
+            return null;
+        }
+
+        return pullRequest.timing.pullRequestCreatedAt.lt(endDate.plusDays(1).atStartOfDay());
     }
 }
