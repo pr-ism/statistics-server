@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.metric.dto.request.LabelStatisticsRequest;
 import com.prism.statistics.application.metric.dto.response.LabelStatisticsResponse;
 import com.prism.statistics.application.metric.dto.response.LabelStatisticsResponse.LabelStatistics;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
@@ -28,12 +29,12 @@ class LabelStatisticsQueryServiceTest {
         // given
         Long userId = 7L;
         Long projectId = 1L;
+        LabelStatisticsRequest request = new LabelStatisticsRequest(null, null);
 
         // when
-        LabelStatisticsResponse actual = labelStatisticsQueryService.findLabelStatistics(userId, projectId);
+        LabelStatisticsResponse actual = labelStatisticsQueryService.findLabelStatistics(userId, projectId, request);
 
         // then
-
         LabelStatistics bug = actual.labelStatistics().stream()
                 .filter(l -> l.labelName().equals("bug"))
                 .findFirst()
@@ -87,9 +88,10 @@ class LabelStatisticsQueryServiceTest {
         // given
         Long userId = 1L;
         Long projectId = 1L;
+        LabelStatisticsRequest request = new LabelStatisticsRequest(null, null);
 
         // when
-        LabelStatisticsResponse actual = labelStatisticsQueryService.findLabelStatistics(userId, projectId);
+        LabelStatisticsResponse actual = labelStatisticsQueryService.findLabelStatistics(userId, projectId, request);
 
         // then
         assertThat(actual.labelStatistics()).isEmpty();
@@ -100,9 +102,10 @@ class LabelStatisticsQueryServiceTest {
         // given
         Long userId = 999L;
         Long projectId = 1L;
+        LabelStatisticsRequest request = new LabelStatisticsRequest(null, null);
 
         // when & then
-        assertThatThrownBy(() -> labelStatisticsQueryService.findLabelStatistics(userId, projectId))
+        assertThatThrownBy(() -> labelStatisticsQueryService.findLabelStatistics(userId, projectId, request))
                 .isInstanceOf(ProjectOwnershipException.class)
                 .hasMessage("프로젝트를 찾을 수 없습니다.");
     }

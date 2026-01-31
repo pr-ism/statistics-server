@@ -1,6 +1,8 @@
 package com.prism.statistics.presentation.metric;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -13,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.prism.statistics.application.metric.LabelStatisticsQueryService;
+import com.prism.statistics.application.metric.dto.request.LabelStatisticsRequest;
 import com.prism.statistics.application.metric.dto.response.LabelStatisticsResponse;
 import com.prism.statistics.application.metric.dto.response.LabelStatisticsResponse.LabelStatistics;
 import com.prism.statistics.context.security.WithOAuth2User;
@@ -41,7 +44,8 @@ class LabelStatisticsControllerTest extends CommonControllerSliceTestSupport {
                 )
         );
 
-        given(labelStatisticsQueryService.findLabelStatistics(7L, 1L)).willReturn(response);
+        given(labelStatisticsQueryService.findLabelStatistics(eq(7L), eq(1L), any(LabelStatisticsRequest.class)))
+                .willReturn(response);
 
         // when & then
         ResultActions resultActions = mockMvc.perform(
@@ -108,7 +112,7 @@ class LabelStatisticsControllerTest extends CommonControllerSliceTestSupport {
     @WithOAuth2User(userId = 7L)
     void 존재하지_않는_프로젝트의_라벨별_통계를_조회하면_404를_반환한다() throws Exception {
         // given
-        given(labelStatisticsQueryService.findLabelStatistics(7L, 999L))
+        given(labelStatisticsQueryService.findLabelStatistics(eq(7L), eq(999L), any(LabelStatisticsRequest.class)))
                 .willThrow(new ProjectNotFoundException());
 
         // when & then

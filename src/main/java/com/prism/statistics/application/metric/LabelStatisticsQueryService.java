@@ -1,5 +1,6 @@
 package com.prism.statistics.application.metric;
 
+import com.prism.statistics.application.metric.dto.request.LabelStatisticsRequest;
 import com.prism.statistics.application.metric.dto.response.LabelStatisticsResponse;
 import com.prism.statistics.application.metric.dto.response.LabelStatisticsResponse.LabelStatistics;
 import com.prism.statistics.domain.metric.repository.LabelStatisticsRepository;
@@ -18,11 +19,12 @@ public class LabelStatisticsQueryService {
     private final ProjectRepository projectRepository;
 
     @Transactional(readOnly = true)
-    public LabelStatisticsResponse findLabelStatistics(Long userId, Long projectId) {
+    public LabelStatisticsResponse findLabelStatistics(Long userId, Long projectId, LabelStatisticsRequest request) {
         validateProjectOwnership(projectId, userId);
 
         List<LabelStatistics> labelStatistics = labelStatisticsRepository
-                .findLabelStatisticsByProjectId(projectId).stream()
+                .findLabelStatisticsByProjectId(projectId)
+                .stream()
                 .map(labelStat -> LabelStatistics.from(labelStat))
                 .toList();
 

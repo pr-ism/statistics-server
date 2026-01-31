@@ -28,7 +28,8 @@ public class LabelStatisticsController {
     ) {
         LabelStatisticsResponse response = labelStatisticsQueryService.findLabelStatistics(
                 authUserId.userId(),
-                projectId
+                projectId,
+                request
         );
 
         return ResponseEntity.ok(response);
