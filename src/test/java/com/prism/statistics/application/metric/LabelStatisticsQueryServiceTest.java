@@ -56,9 +56,8 @@ class LabelStatisticsQueryServiceTest {
 
         assertAll(
                 () -> assertThat(actual.labelStatistics())
-                        .extracting(LabelStatistics::labelName)
+                        .extracting(singelLabelStatistics -> singelLabelStatistics.labelName())
                         .containsExactlyInAnyOrder("bug", "feature", "refactor", "enhancement"),
-                () -> assertThat(actual.labelStatistics().get(0).labelName()).isEqualTo("bug"),
                 () -> assertThat(bug.pullRequestCount()).isEqualTo(2),
                 () -> assertThat(bug.totalAdditions()).isEqualTo(200),
                 () -> assertThat(bug.totalDeletions()).isEqualTo(80),
