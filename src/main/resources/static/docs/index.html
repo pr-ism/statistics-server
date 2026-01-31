@@ -485,7 +485,7 @@ Content-Type: application/x-www-form-urlencoded</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
-Set-Cookie: refreshToken=new-refresh-token; Path=/; Max-Age=259200; Expires=Tue, 3 Feb 2026 04:40:49 GMT; Secure; HttpOnly; SameSite=None
+Set-Cookie: refreshToken=new-refresh-token; Path=/; Max-Age=259200; Expires=Tue, 3 Feb 2026 05:58:06 GMT; Secure; HttpOnly; SameSite=None
 Cache-Control: no-store
 Pragma: no-cache
 Content-Type: application/json;charset=UTF-8
@@ -1125,10 +1125,167 @@ Content-Type: application/json;charset=UTF-8
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="ReviewerStatistics-API"><a class="link" href="#ReviewerStatistics-API">ReviewerStatistics API</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="Get-ReviewerStatistics"><a class="link" href="#Get-ReviewerStatistics">리뷰어별 통계 조회 API</a></h3>
+<div class="sect3">
+<h4 id="Get-ReviewerStatistics_http_request"><a class="link" href="#Get-ReviewerStatistics_http_request">HTTP request</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">GET /projects/1/statistics/reviewers HTTP/1.1
+Authorization: Bearer access-token</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="Get-ReviewerStatistics_request_headers"><a class="link" href="#Get-ReviewerStatistics_request_headers">Request headers</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">이름</th>
+<th class="tableblock halign-left valign-top">필수여부</th>
+<th class="tableblock halign-left valign-top">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Access Token 값</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="Get-ReviewerStatistics_path_parameters"><a class="link" href="#Get-ReviewerStatistics_path_parameters">Path parameters</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">이름</th>
+<th class="tableblock halign-left valign-top">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>projectId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">프로젝트 ID</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="Get-ReviewerStatistics_http_response"><a class="link" href="#Get-ReviewerStatistics_http_response">HTTP response</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+
+{
+  "reviewerStatistics" : [ {
+    "reviewerGithubMention" : "reviewer1",
+    "reviewCount" : 5,
+    "totalAdditions" : 500,
+    "totalDeletions" : 200,
+    "averageAdditions" : 100.0,
+    "averageDeletions" : 40.0,
+    "averageCommitCount" : 3.0,
+    "averageChangedFileCount" : 4.0
+  }, {
+    "reviewerGithubMention" : "reviewer2",
+    "reviewCount" : 3,
+    "totalAdditions" : 300,
+    "totalDeletions" : 100,
+    "averageAdditions" : 100.0,
+    "averageDeletions" : 33.3,
+    "averageCommitCount" : 2.0,
+    "averageChangedFileCount" : 5.0
+  } ]
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="Get-ReviewerStatistics_response_fields"><a class="link" href="#Get-ReviewerStatistics_response_fields">Response fields</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">필드명</th>
+<th class="tableblock halign-left valign-top">타입</th>
+<th class="tableblock halign-left valign-top">설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reviewerStatistics</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">리뷰어별 통계 목록</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reviewerStatistics[].reviewerGithubMention</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">리뷰어 GitHub 멘션</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reviewerStatistics[].reviewCount</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">리뷰 요청 수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reviewerStatistics[].totalAdditions</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">총 추가 라인 수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reviewerStatistics[].totalDeletions</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">총 삭제 라인 수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reviewerStatistics[].averageAdditions</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">평균 추가 라인 수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reviewerStatistics[].averageDeletions</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">평균 삭제 라인 수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reviewerStatistics[].averageCommitCount</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">평균 커밋 수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reviewerStatistics[].averageChangedFileCount</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">평균 변경 파일 수</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-01-31 14:12:02 +0900
+Last updated 2026-01-31 14:57:55 +0900
 </div>
 </div>
 </body>
