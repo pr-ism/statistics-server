@@ -23,7 +23,7 @@ public class AuthorStatisticsQueryService {
 
         List<AuthorStatistics> authorStatistics = authorStatisticsRepository
                 .findAuthorStatisticsByProjectId(projectId).stream()
-                .map(AuthorStatistics::from)
+                .map(authorStat -> AuthorStatistics.from(authorStat))
                 .toList();
 
         return new AuthorStatisticsResponse(authorStatistics);
