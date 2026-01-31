@@ -1,0 +1,7 @@
+[[AuthorStatistics-API]]
+== AuthorStatistics API
+
+[[Get-AuthorStatistics]]
+=== 작성자별 통계 조회 API
+
+operation::author-statistics-controller-test/작성자별_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,http-response,response-fields']
