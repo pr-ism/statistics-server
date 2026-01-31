@@ -108,7 +108,6 @@ class PullRequestStateTest {
 
     static Stream<Arguments> 상태별_확인_메서드_테스트_데이터() {
         return Stream.of(
-                //          state,         isDraft, isOpen, isMerged, isClosed
                 Arguments.of(PullRequestState.DRAFT,  true,   false,  false,    false),
                 Arguments.of(PullRequestState.OPEN,   false,  true,   false,    false),
                 Arguments.of(PullRequestState.MERGED, false,  false,  true,     false),
