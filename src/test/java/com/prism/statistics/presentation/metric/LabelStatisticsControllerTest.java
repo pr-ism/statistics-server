@@ -83,7 +83,7 @@ class LabelStatisticsControllerTest extends CommonControllerSliceTestSupport {
                                 parameterWithName("startDate").description("조회 시작 날짜")
                                         .attributes(field("constraints", "YYYY-MM-DD 포맷")).optional(),
                                 parameterWithName("endDate").description("조회 종료 날짜")
-                                        .attributes(field("constraints", "YYYY-MM-DD 포맷")).optional().optional()
+                                        .attributes(field("constraints", "YYYY-MM-DD 포맷")).optional()
                         ),
                         responseFields(
                                 fieldWithPath("labelStatistics").description("라벨별 통계 목록"),
