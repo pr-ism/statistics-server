@@ -203,4 +203,16 @@ class ReviewTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("커밋 SHA는 필수입니다.");
     }
+
+    @Test
+    void 댓글_수가_음수이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> Review.create(
+                1L, 100L, "reviewer1", 12345L,
+                ReviewState.APPROVED,
+                "abc123", "LGTM", -1, SUBMITTED_AT
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("댓글 수는 0 이상이어야 합니다.");
+    }
 }

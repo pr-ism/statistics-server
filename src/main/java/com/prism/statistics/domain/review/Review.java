@@ -84,7 +84,7 @@ public class Review extends CreatedAtEntity {
             int commentCount,
             LocalDateTime submittedAt
     ) {
-        validateFields(githubPullRequestId, githubReviewId, githubMention, githubUid, reviewState, commitSha, submittedAt);
+        validateFields(githubPullRequestId, githubReviewId, githubMention, githubUid, reviewState, commitSha, commentCount, submittedAt);
 
         this.githubPullRequestId = githubPullRequestId;
         this.githubReviewId = githubReviewId;
@@ -104,6 +104,7 @@ public class Review extends CreatedAtEntity {
             Long githubUid,
             ReviewState reviewState,
             String commitSha,
+            int commentCount,
             LocalDateTime submittedAt
     ) {
         validateGithubPullRequestId(githubPullRequestId);
@@ -112,6 +113,7 @@ public class Review extends CreatedAtEntity {
         validateGithubUid(githubUid);
         validateReviewState(reviewState);
         validateCommitSha(commitSha);
+        validateCommentCount(commentCount);
         validateSubmittedAt(submittedAt);
     }
 
@@ -148,6 +150,12 @@ public class Review extends CreatedAtEntity {
     private void validateCommitSha(String commitSha) {
         if (commitSha == null || commitSha.isBlank()) {
             throw new IllegalArgumentException("커밋 SHA는 필수입니다.");
+        }
+    }
+
+    private void validateCommentCount(int commentCount) {
+        if (commentCount < 0) {
+            throw new IllegalArgumentException("댓글 수는 0 이상이어야 합니다.");
         }
     }
 
