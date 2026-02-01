@@ -31,10 +31,10 @@ public class SizeStatisticsQueryService {
                 .findSizeStatisticsByProjectId(projectId, request.startDate(), request.endDate());
 
         Map<String, SizeStatisticsDto> dtoMap = dtos.stream()
-                .collect(Collectors.toMap(SizeStatisticsDto::sizeCategory, dto -> dto));
+                .collect(Collectors.toMap(dto -> dto.sizeCategory(), dto -> dto));
 
         long totalCount = dtos.stream()
-                .mapToLong(SizeStatisticsDto::count)
+                .mapToLong(dto -> dto.count())
                 .sum();
 
         List<SizeStatistics> sizeStatistics = Arrays.stream(PullRequestSizeCategory.values())
@@ -55,9 +55,7 @@ public class SizeStatisticsQueryService {
             return SizeStatistics.empty(category.name());
         }
 
-        double percentage = totalCount > 0
-                ? Math.round(dto.count() * 10000.0 / totalCount) / 100.0
-                : 0.0;
+        double percentage = calculatePercentage(dto.count(), totalCount);
 
         return SizeStatistics.of(
                 category.name(),
@@ -72,5 +70,13 @@ public class SizeStatisticsQueryService {
         if (!projectRepository.existsByIdAndUserId(projectId, userId)) {
             throw new ProjectOwnershipException();
         }
+    }
+
+    private double calculatePercentage(long count, long totalCount) {
+        if (totalCount == 0) {
+            return 0.0;
+        }
+
+        return Math.round(count * 10000.0 / totalCount) / 100.0;
     }
 }
