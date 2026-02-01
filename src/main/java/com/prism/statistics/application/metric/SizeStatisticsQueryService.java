@@ -73,10 +73,6 @@ public class SizeStatisticsQueryService {
     }
 
     private double calculatePercentage(long count, long totalCount) {
-        if (totalCount == 0) {
-            return 0.0;
-        }
-
         return Math.round(count * 10000.0 / totalCount) / 100.0;
     }
 }
