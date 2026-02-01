@@ -22,10 +22,11 @@ class ReviewTest {
     private static final LocalDateTime SUBMITTED_AT = LocalDateTime.of(2024, 1, 15, 10, 0);
 
     @Test
-    void createApproved로_승인_리뷰를_생성한다() {
+    void APPROVED_상태로_리뷰를_생성한다() {
         // when
-        Review review = Review.createApproved(
+        Review review = Review.create(
                 1L, 100L, "reviewer1", 12345L,
+                ReviewState.APPROVED,
                 "abc123", "LGTM", 3, SUBMITTED_AT
         );
 
@@ -44,10 +45,11 @@ class ReviewTest {
     }
 
     @Test
-    void createChangesRequested로_변경_요청_리뷰를_생성한다() {
+    void CHANGES_REQUESTED_상태로_리뷰를_생성한다() {
         // when
-        Review review = Review.createChangesRequested(
+        Review review = Review.create(
                 1L, 100L, "reviewer1", 12345L,
+                ReviewState.CHANGES_REQUESTED,
                 "abc123", "수정이 필요합니다.", 2, SUBMITTED_AT
         );
 
@@ -59,10 +61,11 @@ class ReviewTest {
     }
 
     @Test
-    void createCommented로_코멘트_리뷰를_생성한다() {
+    void COMMENTED_상태로_리뷰를_생성한다() {
         // when
-        Review review = Review.createCommented(
+        Review review = Review.create(
                 1L, 100L, "reviewer1", 12345L,
+                ReviewState.COMMENTED,
                 "abc123", "질문이 있습니다.", 1, SUBMITTED_AT
         );
 
@@ -76,8 +79,9 @@ class ReviewTest {
     @Test
     void GitHub_PullRequest_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> Review.createApproved(
+        assertThatThrownBy(() -> Review.create(
                 null, 100L, "reviewer1", 12345L,
+                ReviewState.APPROVED,
                 "abc123", "LGTM", 3, SUBMITTED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -87,8 +91,9 @@ class ReviewTest {
     @Test
     void GitHub_Review_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> Review.createApproved(
+        assertThatThrownBy(() -> Review.create(
                 1L, null, "reviewer1", 12345L,
+                ReviewState.APPROVED,
                 "abc123", "LGTM", 3, SUBMITTED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -100,8 +105,9 @@ class ReviewTest {
     @ValueSource(strings = {" "})
     void GitHub_멘션이_null이거나_빈_문자열이면_예외가_발생한다(String githubMention) {
         // when & then
-        assertThatThrownBy(() -> Review.createApproved(
+        assertThatThrownBy(() -> Review.create(
                 1L, 100L, githubMention, 12345L,
+                ReviewState.APPROVED,
                 "abc123", "LGTM", 3, SUBMITTED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -111,8 +117,9 @@ class ReviewTest {
     @Test
     void GitHub_UID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> Review.createApproved(
+        assertThatThrownBy(() -> Review.create(
                 1L, 100L, "reviewer1", null,
+                ReviewState.APPROVED,
                 "abc123", "LGTM", 3, SUBMITTED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -122,8 +129,9 @@ class ReviewTest {
     @Test
     void 리뷰_제출_시각이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> Review.createApproved(
+        assertThatThrownBy(() -> Review.create(
                 1L, 100L, "reviewer1", 12345L,
+                ReviewState.APPROVED,
                 "abc123", "LGTM", 3, null
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -131,10 +139,11 @@ class ReviewTest {
     }
 
     @Test
-    void createApproved에서_body가_null이어도_리뷰를_생성할_수_있다() {
+    void APPROVED_상태에서_body가_null이어도_리뷰를_생성할_수_있다() {
         // when
-        Review review = Review.createApproved(
+        Review review = Review.create(
                 1L, 100L, "reviewer1", 12345L,
+                ReviewState.APPROVED,
                 "abc123", null, 0, SUBMITTED_AT
         );
 
@@ -143,10 +152,11 @@ class ReviewTest {
     }
 
     @Test
-    void createChangesRequested에서_body가_null이어도_리뷰를_생성할_수_있다() {
+    void CHANGES_REQUESTED_상태에서_body가_null이어도_리뷰를_생성할_수_있다() {
         // when
-        Review review = Review.createChangesRequested(
+        Review review = Review.create(
                 1L, 100L, "reviewer1", 12345L,
+                ReviewState.CHANGES_REQUESTED,
                 "abc123", null, 0, SUBMITTED_AT
         );
 
@@ -157,10 +167,11 @@ class ReviewTest {
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {" "})
-    void createCommented에서_body가_null이거나_빈_문자열이면_예외가_발생한다(String body) {
+    void COMMENTED_상태에서_body가_null이거나_빈_문자열이면_예외가_발생한다(String body) {
         // when & then
-        assertThatThrownBy(() -> Review.createCommented(
+        assertThatThrownBy(() -> Review.create(
                 1L, 100L, "reviewer1", 12345L,
+                ReviewState.COMMENTED,
                 "abc123", body, 0, SUBMITTED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -172,8 +183,9 @@ class ReviewTest {
     @ValueSource(strings = {" "})
     void commitSha가_null이거나_빈_문자열이면_예외가_발생한다(String commitSha) {
         // when & then
-        assertThatThrownBy(() -> Review.createApproved(
+        assertThatThrownBy(() -> Review.create(
                 1L, 100L, "reviewer1", 12345L,
+                ReviewState.APPROVED,
                 commitSha, "LGTM", 0, SUBMITTED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)

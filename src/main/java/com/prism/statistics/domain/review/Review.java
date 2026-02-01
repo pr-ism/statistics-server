@@ -41,11 +41,12 @@ public class Review extends CreatedAtEntity {
 
     private LocalDateTime submittedAt;
 
-    public static Review createApproved(
+    public static Review create(
             Long githubPullRequestId,
             Long githubReviewId,
             String githubMention,
             Long githubUid,
+            ReviewState reviewState,
             String commitSha,
             String body,
             int commentCount,
@@ -56,58 +57,19 @@ public class Review extends CreatedAtEntity {
                 .githubReviewId(githubReviewId)
                 .githubMention(githubMention)
                 .githubUid(githubUid)
-                .reviewState(ReviewState.APPROVED)
+                .reviewState(reviewState)
                 .commitSha(commitSha)
-                .body(ReviewBody.create(body))
+                .body(createReviewBody(reviewState, body))
                 .commentCount(commentCount)
                 .submittedAt(submittedAt)
                 .build();
     }
 
-    public static Review createChangesRequested(
-            Long githubPullRequestId,
-            Long githubReviewId,
-            String githubMention,
-            Long githubUid,
-            String commitSha,
-            String body,
-            int commentCount,
-            LocalDateTime submittedAt
-    ) {
-        return Review.builder()
-                .githubPullRequestId(githubPullRequestId)
-                .githubReviewId(githubReviewId)
-                .githubMention(githubMention)
-                .githubUid(githubUid)
-                .reviewState(ReviewState.CHANGES_REQUESTED)
-                .commitSha(commitSha)
-                .body(ReviewBody.create(body))
-                .commentCount(commentCount)
-                .submittedAt(submittedAt)
-                .build();
-    }
-
-    public static Review createCommented(
-            Long githubPullRequestId,
-            Long githubReviewId,
-            String githubMention,
-            Long githubUid,
-            String commitSha,
-            String body,
-            int commentCount,
-            LocalDateTime submittedAt
-    ) {
-        return Review.builder()
-                .githubPullRequestId(githubPullRequestId)
-                .githubReviewId(githubReviewId)
-                .githubMention(githubMention)
-                .githubUid(githubUid)
-                .reviewState(ReviewState.COMMENTED)
-                .commitSha(commitSha)
-                .body(ReviewBody.createRequired(body))
-                .commentCount(commentCount)
-                .submittedAt(submittedAt)
-                .build();
+    private static ReviewBody createReviewBody(ReviewState reviewState, String body) {
+        if (reviewState == ReviewState.COMMENTED) {
+            return ReviewBody.createRequired(body);
+        }
+        return ReviewBody.create(body);
     }
 
     @Builder
@@ -122,7 +84,7 @@ public class Review extends CreatedAtEntity {
             int commentCount,
             LocalDateTime submittedAt
     ) {
-        validateRequiredFields(githubPullRequestId, githubReviewId, githubMention, githubUid, reviewState, commitSha, submittedAt);
+        validateFields(githubPullRequestId, githubReviewId, githubMention, githubUid, reviewState, commitSha, submittedAt);
 
         this.githubPullRequestId = githubPullRequestId;
         this.githubReviewId = githubReviewId;
@@ -135,7 +97,7 @@ public class Review extends CreatedAtEntity {
         this.submittedAt = submittedAt;
     }
 
-    private static void validateRequiredFields(
+    private void validateFields(
             Long githubPullRequestId,
             Long githubReviewId,
             String githubMention,
@@ -144,24 +106,52 @@ public class Review extends CreatedAtEntity {
             String commitSha,
             LocalDateTime submittedAt
     ) {
+        validateGithubPullRequestId(githubPullRequestId);
+        validateGithubReviewId(githubReviewId);
+        validateGithubMention(githubMention);
+        validateGithubUid(githubUid);
+        validateReviewState(reviewState);
+        validateCommitSha(commitSha);
+        validateSubmittedAt(submittedAt);
+    }
+
+    private void validateGithubPullRequestId(Long githubPullRequestId) {
         if (githubPullRequestId == null) {
             throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
         }
+    }
+
+    private void validateGithubReviewId(Long githubReviewId) {
         if (githubReviewId == null) {
             throw new IllegalArgumentException("GitHub Review ID는 필수입니다.");
         }
+    }
+
+    private void validateGithubMention(String githubMention) {
         if (githubMention == null || githubMention.isBlank()) {
             throw new IllegalArgumentException("GitHub 멘션은 필수입니다.");
         }
+    }
+
+    private void validateGithubUid(Long githubUid) {
         if (githubUid == null) {
             throw new IllegalArgumentException("GitHub UID는 필수입니다.");
         }
+    }
+
+    private void validateReviewState(ReviewState reviewState) {
         if (reviewState == null) {
             throw new IllegalArgumentException("리뷰 상태는 필수입니다.");
         }
+    }
+
+    private void validateCommitSha(String commitSha) {
         if (commitSha == null || commitSha.isBlank()) {
             throw new IllegalArgumentException("커밋 SHA는 필수입니다.");
         }
+    }
+
+    private void validateSubmittedAt(LocalDateTime submittedAt) {
         if (submittedAt == null) {
             throw new IllegalArgumentException("리뷰 제출 시각은 필수입니다.");
         }
