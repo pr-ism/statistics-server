@@ -1,0 +1,7 @@
+[[SizeStatistics-API]]
+== SizeStatistics API
+
+[[Get-SizeStatistics]]
+=== PR 크기 분포 통계 조회 API
+
+operation::size-statistics-controller-test/PR_크기_분포_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']
