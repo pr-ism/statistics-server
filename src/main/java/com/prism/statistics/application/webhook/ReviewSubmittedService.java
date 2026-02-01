@@ -8,7 +8,6 @@ import com.prism.statistics.domain.review.repository.ReviewRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -22,12 +21,11 @@ public class ReviewSubmittedService {
     private final ProjectRepository projectRepository;
     private final ReviewRepository reviewRepository;
 
-    @Transactional
     public void submitReview(String apiKey, ReviewSubmittedRequest request) {
         validateApiKey(apiKey);
 
         Review review = createReview(request);
-        reviewRepository.save(review);
+        reviewRepository.saveOrFind(review);
     }
 
     private void validateApiKey(String apiKey) {
