@@ -36,7 +36,7 @@ class ReviewRepositoryAdapterTest {
         Review review = createReview(1L);
 
         // when
-        Review saved = reviewRepositoryAdapter.save(review);
+        Review saved = reviewRepositoryAdapter.saveOrFind(review);
 
         // then
         assertAll(
@@ -46,26 +46,27 @@ class ReviewRepositoryAdapterTest {
     }
 
     @Test
-    void 중복된_github_review_id로_저장하면_null을_반환한다() {
+    void 중복된_github_review_id로_저장하면_기존_Review를_반환한다() {
         // given
         Long sameGithubReviewId = 100L;
         Review firstReview = createReview(sameGithubReviewId);
         Review duplicateReview = createReview(sameGithubReviewId);
 
         // when
-        Review firstSaved = reviewRepositoryAdapter.save(firstReview);
-        Review duplicateSaved = reviewRepositoryAdapter.save(duplicateReview);
+        Review firstSaved = reviewRepositoryAdapter.saveOrFind(firstReview);
+        Review duplicateSaved = reviewRepositoryAdapter.saveOrFind(duplicateReview);
 
         // then
         assertAll(
                 () -> assertThat(firstSaved).isNotNull(),
-                () -> assertThat(duplicateSaved).isNull(),
+                () -> assertThat(duplicateSaved).isNotNull(),
+                () -> assertThat(duplicateSaved.getId()).isEqualTo(firstSaved.getId()),
                 () -> assertThat(jpaReviewRepository.count()).isEqualTo(1)
         );
     }
 
     @Test
-    void 동시에_같은_github_review_id로_저장하면_하나만_저장된다() throws Exception {
+    void 동시에_같은_github_review_id로_저장하면_모두_같은_Review를_반환한다() throws Exception {
         // given
         Long sameGithubReviewId = 200L;
         int requestCount = 10;
@@ -86,7 +87,7 @@ class ReviewRepositoryAdapterTest {
                     }
                     // when
                     Review review = createReview(sameGithubReviewId);
-                    return reviewRepositoryAdapter.save(review);
+                    return reviewRepositoryAdapter.saveOrFind(review);
                 }));
             }
 
@@ -96,14 +97,14 @@ class ReviewRepositoryAdapterTest {
             List<Review> results = new ArrayList<>();
             for (Future<Review> future : futures) {
                 Review result = future.get(5, TimeUnit.SECONDS);
-                if (result != null) {
-                    results.add(result);
-                }
+                results.add(result);
             }
 
             // then
+            Long savedReviewId = results.get(0).getId();
             assertAll(
-                    () -> assertThat(results).hasSize(1),
+                    () -> assertThat(results).hasSize(requestCount),
+                    () -> assertThat(results).allMatch(r -> r.getId().equals(savedReviewId)),
                     () -> assertThat(jpaReviewRepository.count()).isEqualTo(1)
             );
         }
@@ -117,9 +118,9 @@ class ReviewRepositoryAdapterTest {
         Review review3 = createReview(303L);
 
         // when
-        Review saved1 = reviewRepositoryAdapter.save(review1);
-        Review saved2 = reviewRepositoryAdapter.save(review2);
-        Review saved3 = reviewRepositoryAdapter.save(review3);
+        Review saved1 = reviewRepositoryAdapter.saveOrFind(review1);
+        Review saved2 = reviewRepositoryAdapter.saveOrFind(review2);
+        Review saved3 = reviewRepositoryAdapter.saveOrFind(review3);
 
         // then
         assertAll(
