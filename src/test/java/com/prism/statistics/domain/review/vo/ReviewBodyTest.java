@@ -15,15 +15,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 class ReviewBodyTest {
 
     @Test
-    void empty로_빈_리뷰_본문을_생성한다() {
-        // when
-        ReviewBody reviewBody = ReviewBody.empty();
-
-        // then
-        assertThat(reviewBody.getValue()).isEmpty();
-    }
-
-    @Test
     void create로_리뷰_본문을_생성한다() {
         // given
         String value = "LGTM";
@@ -38,7 +29,7 @@ class ReviewBodyTest {
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {" "})
-    void create에서_null이거나_빈_문자열이면_empty를_반환한다(String value) {
+    void create에서_null이거나_빈_문자열이면_빈_본문을_반환한다(String value) {
         // when
         ReviewBody reviewBody = ReviewBody.create(value);
 
@@ -71,7 +62,7 @@ class ReviewBodyTest {
     @Test
     void isEmpty는_빈_본문이면_true를_반환한다() {
         // given
-        ReviewBody reviewBody = ReviewBody.empty();
+        ReviewBody reviewBody = ReviewBody.create(null);
 
         // when & then
         assertThat(reviewBody.isEmpty()).isTrue();

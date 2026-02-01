@@ -16,10 +16,6 @@ public class ReviewBody {
     @Column(name = "body")
     private String value;
 
-    public static ReviewBody empty() {
-        return new ReviewBody("");
-    }
-
     public static ReviewBody create(String value) {
         if (value == null || value.isBlank()) {
             return empty();
@@ -32,6 +28,10 @@ public class ReviewBody {
             throw new IllegalArgumentException("리뷰 본문은 필수입니다.");
         }
         return new ReviewBody(value);
+    }
+
+    private static ReviewBody empty() {
+        return new ReviewBody("");
     }
 
     private ReviewBody(String value) {
