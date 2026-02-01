@@ -20,7 +20,7 @@ import com.prism.statistics.application.metric.dto.request.TrendStatisticsReques
 import com.prism.statistics.application.metric.dto.response.TrendStatisticsResponse;
 import com.prism.statistics.application.metric.dto.response.TrendStatisticsResponse.TrendDataPoint;
 import com.prism.statistics.context.security.WithOAuth2User;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import java.time.LocalDate;
 import java.util.List;
@@ -119,7 +119,7 @@ class TrendStatisticsControllerTest extends CommonControllerSliceTestSupport {
     void 존재하지_않는_프로젝트의_트렌드_통계를_조회하면_404를_반환한다() throws Exception {
         // given
         given(trendStatisticsQueryService.findTrendStatistics(eq(7L), eq(999L), any(TrendStatisticsRequest.class)))
-                .willThrow(new ProjectNotFoundException());
+                .willThrow(new ProjectOwnershipException());
 
         // when & then
         mockMvc.perform(
