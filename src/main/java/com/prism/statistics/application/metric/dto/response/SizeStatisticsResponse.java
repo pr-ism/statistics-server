@@ -13,7 +13,7 @@ public record SizeStatisticsResponse(
             double averageCommitCount
     ) {
         public static SizeStatistics empty(String sizeCategory) {
-            return new SizeStatistics(sizeCategory, 0, 0.0, 0.0, 0.0);
+            return new SizeStatistics(sizeCategory, 0L, 0.0, 0.0, 0.0);
         }
 
         public static SizeStatistics of(
