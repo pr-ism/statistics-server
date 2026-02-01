@@ -52,18 +52,18 @@ public class TrendStatisticsQueryService {
     }
 
     private TrendDataPoint toDataPoint(LocalDate periodStart, Map<LocalDate, List<TrendStatisticsDto>> grouped) {
-        List<TrendStatisticsDto> prs = grouped.getOrDefault(periodStart, List.of());
+        List<TrendStatisticsDto> pullRequests = grouped.getOrDefault(periodStart, List.of());
 
-        if (prs.isEmpty()) {
+        if (pullRequests.isEmpty()) {
             return TrendDataPoint.empty(periodStart);
         }
 
-        double avgChange = prs.stream()
+        double avgChange = pullRequests.stream()
                 .mapToInt(dto -> dto.additionCount() + dto.deletionCount())
                 .average()
                 .orElse(0.0);
 
-        return new TrendDataPoint(periodStart, prs.size(), avgChange);
+        return new TrendDataPoint(periodStart, pullRequests.size(), avgChange);
     }
 
     private void validateProjectOwnership(Long projectId, Long userId) {
