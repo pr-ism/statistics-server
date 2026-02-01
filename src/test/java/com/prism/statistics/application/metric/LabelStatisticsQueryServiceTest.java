@@ -9,6 +9,7 @@ import com.prism.statistics.application.metric.dto.request.LabelStatisticsReques
 import com.prism.statistics.application.metric.dto.response.LabelStatisticsResponse;
 import com.prism.statistics.application.metric.dto.response.LabelStatisticsResponse.LabelStatistics;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
+import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -95,6 +96,98 @@ class LabelStatisticsQueryServiceTest {
 
         // then
         assertThat(actual.labelStatistics()).isEmpty();
+    }
+
+    @Sql("/sql/statistics/insert_project_and_pull_requests_for_label_statistics_date_range.sql")
+    @Test
+    void 시작일과_종료일을_지정하면_해당_범위의_라벨_통계만_조회한다() {
+        // given
+        Long userId = 7L;
+        Long projectId = 1L;
+        LocalDate startDate = LocalDate.of(2024, 1, 15);
+        LocalDate endDate = LocalDate.of(2024, 2, 1);
+        LabelStatisticsRequest request = new LabelStatisticsRequest(startDate, endDate);
+
+        // when
+        LabelStatisticsResponse actual = labelStatisticsQueryService.findLabelStatistics(userId, projectId, request);
+
+        // then
+        // PR2(Jan 15, bug) + PR3(Feb 1, bug) 포함, PR1(Jan 10) 및 PR4(Mar 1) 제외
+        assertAll(
+                () -> assertThat(actual.labelStatistics()).hasSize(1),
+                () -> assertThat(actual.labelStatistics())
+                        .extracting(LabelStatistics::labelName)
+                        .containsExactly("bug"),
+                () -> assertThat(actual.labelStatistics().get(0).pullRequestCount()).isEqualTo(2),
+                () -> assertThat(actual.labelStatistics().get(0).totalAdditions()).isEqualTo(200),
+                () -> assertThat(actual.labelStatistics().get(0).totalDeletions()).isEqualTo(80),
+                () -> assertThat(actual.labelStatistics().get(0).averageAdditions()).isEqualTo(100.0),
+                () -> assertThat(actual.labelStatistics().get(0).averageDeletions()).isEqualTo(40.0),
+                () -> assertThat(actual.labelStatistics().get(0).averageCommitCount()).isEqualTo(2.0),
+                () -> assertThat(actual.labelStatistics().get(0).averageChangedFileCount()).isEqualTo(3.0)
+        );
+    }
+
+    @Sql("/sql/statistics/insert_project_and_pull_requests_for_label_statistics_date_range.sql")
+    @Test
+    void 시작일만_지정하면_시작일_이후의_라벨_통계를_조회한다() {
+        // given
+        Long userId = 7L;
+        Long projectId = 1L;
+        LocalDate startDate = LocalDate.of(2024, 2, 1);
+        LabelStatisticsRequest request = new LabelStatisticsRequest(startDate, null);
+
+        // when
+        LabelStatisticsResponse actual = labelStatisticsQueryService.findLabelStatistics(userId, projectId, request);
+
+        // then
+        // PR3(Feb 1, bug) + PR4(Mar 1, refactor) 포함, PR1(Jan 10) 및 PR2(Jan 15) 제외
+        assertAll(
+                () -> assertThat(actual.labelStatistics()).hasSize(2),
+                () -> assertThat(actual.labelStatistics())
+                        .extracting(LabelStatistics::labelName)
+                        .containsExactlyInAnyOrder("bug", "refactor"),
+                () -> {
+                    LabelStatistics bug = actual.labelStatistics().stream()
+                            .filter(l -> l.labelName().equals("bug"))
+                            .findFirst()
+                            .orElseThrow();
+                    assertThat(bug.pullRequestCount()).isEqualTo(1);
+                    assertThat(bug.totalAdditions()).isEqualTo(150);
+                    assertThat(bug.totalDeletions()).isEqualTo(60);
+                },
+                () -> {
+                    LabelStatistics refactor = actual.labelStatistics().stream()
+                            .filter(l -> l.labelName().equals("refactor"))
+                            .findFirst()
+                            .orElseThrow();
+                    assertThat(refactor.pullRequestCount()).isEqualTo(1);
+                    assertThat(refactor.totalAdditions()).isEqualTo(200);
+                    assertThat(refactor.totalDeletions()).isEqualTo(180);
+                }
+        );
+    }
+
+    @Sql("/sql/statistics/insert_project_and_pull_requests_for_label_statistics_date_range.sql")
+    @Test
+    void 종료일만_지정하면_종료일_이전의_라벨_통계를_조회한다() {
+        // given
+        Long userId = 7L;
+        Long projectId = 1L;
+        LocalDate endDate = LocalDate.of(2024, 1, 15);
+        LabelStatisticsRequest request = new LabelStatisticsRequest(null, endDate);
+
+        // when
+        LabelStatisticsResponse actual = labelStatisticsQueryService.findLabelStatistics(userId, projectId, request);
+
+        // then
+        // PR1(Jan 10, feature+enhancement) + PR2(Jan 15, bug) 포함, PR3(Feb 1) 및 PR4(Mar 1) 제외
+        assertAll(
+                () -> assertThat(actual.labelStatistics()).hasSize(3),
+                () -> assertThat(actual.labelStatistics())
+                        .extracting(LabelStatistics::labelName)
+                        .containsExactlyInAnyOrder("bug", "feature", "enhancement")
+        );
     }
 
     @Test
