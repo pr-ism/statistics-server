@@ -9,4 +9,4 @@ operation::pull-request-controller-test/pull_request_목록_조회_성공_테스
 [[Get-PullRequest-Detail]]
 === PullRequest 상세 조회 API
 
-operation::pull-request-controller-test/pull_-request_상세_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,http-response,response-fields']
+operation::pull-request-controller-test/pull_request_상세_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,http-response,response-fields']
