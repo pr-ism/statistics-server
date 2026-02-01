@@ -127,6 +127,18 @@ class ReviewTest {
     }
 
     @Test
+    void 리뷰_상태가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> Review.create(
+                1L, 100L, "reviewer1", 12345L,
+                null,
+                "abc123", "LGTM", 3, SUBMITTED_AT
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("리뷰 상태는 필수입니다.");
+    }
+
+    @Test
     void 리뷰_제출_시각이_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> Review.create(
