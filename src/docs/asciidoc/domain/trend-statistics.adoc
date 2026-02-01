@@ -1,0 +1,7 @@
+[[TrendStatistics-API]]
+== TrendStatistics API
+
+[[Get-TrendStatistics]]
+=== PR 생성 트렌드 조회 API
+
+operation::trend-statistics-controller-test/PR_생성_트렌드_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']
