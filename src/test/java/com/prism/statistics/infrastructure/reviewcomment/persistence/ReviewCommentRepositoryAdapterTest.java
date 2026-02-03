@@ -131,6 +131,7 @@ class ReviewCommentRepositoryAdapterTest {
     }
 
     private ReviewComment createReviewComment(Long githubCommentId) {
+        LocalDateTime githubCreatedAt = LocalDateTime.of(2024, 1, 15, 10, 0);
         return ReviewComment.create(
                 githubCommentId,
                 100L,
@@ -143,8 +144,8 @@ class ReviewCommentRepositoryAdapterTest {
                 null,
                 "reviewer",
                 12345L,
-                LocalDateTime.now(),
-                LocalDateTime.now()
+                githubCreatedAt,
+                githubCreatedAt
         );
     }
 }
