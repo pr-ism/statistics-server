@@ -1,5 +1,6 @@
 SET REFERENTIAL_INTEGRITY FALSE;
 
+TRUNCATE TABLE review_comments;
 TRUNCATE TABLE reviews;
 TRUNCATE TABLE requested_reviewer_histories;
 TRUNCATE TABLE requested_reviewers;
