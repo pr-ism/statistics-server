@@ -52,4 +52,14 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
                 )
                 .fetchFirst() != null;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByApiKey(String apiKey) {
+        return queryFactory
+                .selectOne()
+                .from(project)
+                .where(project.apiKey.eq(apiKey))
+                .fetchFirst() != null;
+    }
 }

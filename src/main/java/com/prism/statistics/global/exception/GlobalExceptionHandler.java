@@ -9,12 +9,16 @@ import com.prism.statistics.global.exception.dto.response.ErrorCode;
 import com.prism.statistics.global.exception.dto.response.ExceptionResponse;
 import com.prism.statistics.global.exception.dto.response.ProjectErrorCode;
 import com.prism.statistics.global.exception.dto.response.PullRequestErrorCode;
+import com.prism.statistics.global.exception.dto.response.ReviewCommentErrorCode;
+import com.prism.statistics.global.exception.dto.response.ReviewErrorCode;
 import com.prism.statistics.global.exception.dto.response.UserErrorCode;
 import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUserIdentityException;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
 import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
+import com.prism.statistics.infrastructure.review.persistence.exception.ReviewNotFoundException;
+import com.prism.statistics.infrastructure.reviewcomment.persistence.exception.ReviewCommentNotFoundException;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -114,6 +118,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.info("PullRequestNotFoundException : {}", ex.getMessage());
 
         return createResponseEntity(PullRequestErrorCode.PULL_REQUEST_NOT_FOUND);
+    }
+
+    @ExceptionHandler(ReviewCommentNotFoundException.class)
+    public ResponseEntity<Object> handleReviewCommentNotFoundException(ReviewCommentNotFoundException ex) {
+        log.info("ReviewCommentNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(ReviewCommentErrorCode.REVIEW_COMMENT_NOT_FOUND);
+    }
+
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<Object> handleReviewNotFoundException(ReviewNotFoundException ex) {
+        log.info("ReviewNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(ReviewErrorCode.REVIEW_NOT_FOUND);
     }
 
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)

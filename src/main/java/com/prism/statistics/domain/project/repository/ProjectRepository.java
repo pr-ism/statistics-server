@@ -13,4 +13,6 @@ public interface ProjectRepository {
     List<Project> findAllProjectsByUserId(Long userId);
 
     boolean existsByIdAndUserId(Long projectId, Long userId);
+
+    boolean existsByApiKey(String apiKey);
 }
