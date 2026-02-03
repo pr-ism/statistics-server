@@ -26,7 +26,7 @@ public class ParentCommentId {
         return new ParentCommentId(value);
     }
 
-    private static ParentCommentId empty() {
+    public static ParentCommentId empty() {
         return new ParentCommentId(null);
     }
 
