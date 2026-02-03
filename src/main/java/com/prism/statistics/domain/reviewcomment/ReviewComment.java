@@ -222,4 +222,11 @@ public class ReviewComment extends CreatedAtEntity {
     public boolean isDeleted() {
         return this.deleted;
     }
+
+    public ParentCommentId getParentCommentId() {
+        if (parentCommentId == null) {
+            return ParentCommentId.empty();
+        }
+        return parentCommentId;
+    }
 }
