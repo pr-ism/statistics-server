@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.prism.statistics.domain.reviewcomment.enums.CommentSide;
+import com.prism.statistics.domain.reviewcomment.vo.CommentLineRange;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -29,8 +30,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 "코드 수정이 필요합니다.",
                 "src/main/java/Example.java",
-                5, 10,
-                "right",
+                CommentLineRange.create(5, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -61,8 +62,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 "코드 리뷰입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -83,8 +84,8 @@ class ReviewCommentTest {
                 2L, 100L,
                 "답글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 1L,
                 "reviewer2", 67890L,
@@ -105,8 +106,8 @@ class ReviewCommentTest {
                 1L, null,
                 "댓글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -123,8 +124,8 @@ class ReviewCommentTest {
                 null, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -144,8 +145,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 body,
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -164,8 +165,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 "댓글입니다.",
                 path,
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -176,13 +177,31 @@ class ReviewCommentTest {
     }
 
     @Test
+    void lineRange가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> ReviewComment.create(
+                1L, 100L,
+                "댓글입니다.",
+                "src/main/java/Example.java",
+                null,
+                CommentSide.RIGHT,
+                "abc123",
+                null,
+                "reviewer1", 12345L,
+                GITHUB_CREATED_AT, GITHUB_UPDATED_AT
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("라인 범위는 필수입니다.");
+    }
+
+    @Test
     void side가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> ReviewComment.create(
                 1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
+                CommentLineRange.create(null, 10),
                 null,
                 "abc123",
                 null,
@@ -190,7 +209,7 @@ class ReviewCommentTest {
                 GITHUB_CREATED_AT, GITHUB_UPDATED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("알 수 없는 CommentSide입니다: null");
+                .hasMessage("CommentSide는 필수입니다.");
     }
 
     @ParameterizedTest
@@ -202,8 +221,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 commitSha,
                 null,
                 "reviewer1", 12345L,
@@ -222,8 +241,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 authorMention, 12345L,
@@ -240,8 +259,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", null,
@@ -258,8 +277,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -276,8 +295,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -298,8 +317,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -316,8 +335,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -336,8 +355,8 @@ class ReviewCommentTest {
                 1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
-                null, 10,
-                "right",
+                CommentLineRange.create(null, 10),
+                CommentSide.RIGHT,
                 "abc123",
                 null,
                 "reviewer1", 12345L,

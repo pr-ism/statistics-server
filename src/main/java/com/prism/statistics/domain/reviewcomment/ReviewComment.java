@@ -56,9 +56,8 @@ public class ReviewComment extends CreatedAtEntity {
             Long githubReviewId,
             String body,
             String path,
-            Integer startLine,
-            int endLine,
-            String side,
+            CommentLineRange lineRange,
+            CommentSide side,
             String commitSha,
             Long inReplyToId,
             String authorMention,
@@ -71,8 +70,8 @@ public class ReviewComment extends CreatedAtEntity {
                 .githubReviewId(githubReviewId)
                 .body(body)
                 .path(path)
-                .lineRange(CommentLineRange.create(startLine, endLine))
-                .side(CommentSide.from(side))
+                .lineRange(lineRange)
+                .side(side)
                 .commitSha(commitSha)
                 .parentCommentId(ParentCommentId.create(inReplyToId))
                 .authorMention(authorMention)
