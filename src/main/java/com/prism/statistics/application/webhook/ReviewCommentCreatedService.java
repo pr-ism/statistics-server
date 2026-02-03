@@ -30,8 +30,9 @@ public class ReviewCommentCreatedService {
     }
 
     private void validateApiKey(String apiKey) {
-        projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new InvalidApiKeyException());
+        if (!projectRepository.existsByApiKey(apiKey)) {
+            throw new InvalidApiKeyException();
+        }
     }
 
     private ReviewComment createReviewComment(ReviewCommentCreatedRequest request) {
