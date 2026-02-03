@@ -288,6 +288,28 @@ class ReviewCommentTest {
     }
 
     @Test
+    void GitHub_생성_시각과_수정_시각이_다르면_예외가_발생한다() {
+        // given
+        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
+        LocalDateTime updatedAt = LocalDateTime.of(2024, 1, 15, 11, 0);
+
+        // when & then
+        assertThatThrownBy(() -> ReviewComment.create(
+                1L, 100L,
+                "댓글입니다.",
+                "src/main/java/Example.java",
+                null, 10,
+                "right",
+                "abc123",
+                null,
+                "reviewer1", 12345L,
+                createdAt, updatedAt
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("생성 시 GitHub 생성 시각과 수정 시각은 동일해야 합니다.");
+    }
+
+    @Test
     void isOlderThan은_현재_수정_시각보다_이후_시간이면_true를_반환한다() {
         // given
         ReviewComment comment = ReviewComment.create(

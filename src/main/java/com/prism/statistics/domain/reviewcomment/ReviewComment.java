@@ -140,6 +140,7 @@ public class ReviewComment extends CreatedAtEntity {
         validateAuthorGithubUid(authorGithubUid);
         validateGithubCreatedAt(githubCreatedAt);
         validateGithubUpdatedAt(githubUpdatedAt);
+        validateCreatedAtEqualsUpdatedAt(githubCreatedAt, githubUpdatedAt);
     }
 
     private void validateGithubCommentId(Long githubCommentId) {
@@ -205,6 +206,12 @@ public class ReviewComment extends CreatedAtEntity {
     private void validateGithubUpdatedAt(LocalDateTime githubUpdatedAt) {
         if (githubUpdatedAt == null) {
             throw new IllegalArgumentException("GitHub 수정 시각은 필수입니다.");
+        }
+    }
+
+    private void validateCreatedAtEqualsUpdatedAt(LocalDateTime githubCreatedAt, LocalDateTime githubUpdatedAt) {
+        if (!githubCreatedAt.equals(githubUpdatedAt)) {
+            throw new IllegalArgumentException("생성 시 GitHub 생성 시각과 수정 시각은 동일해야 합니다.");
         }
     }
 
