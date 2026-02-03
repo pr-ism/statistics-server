@@ -26,8 +26,6 @@ public class ReviewComment extends CreatedAtEntity {
 
     private Long githubReviewId;
 
-    private Long githubPullRequestId;
-
     private String body;
 
     private String path;
@@ -56,12 +54,11 @@ public class ReviewComment extends CreatedAtEntity {
     public static ReviewComment create(
             Long githubCommentId,
             Long githubReviewId,
-            Long githubPullRequestId,
             String body,
             String path,
             Integer startLine,
             int endLine,
-            CommentSide side,
+            String side,
             String commitSha,
             Long inReplyToId,
             String authorMention,
@@ -72,11 +69,10 @@ public class ReviewComment extends CreatedAtEntity {
         return ReviewComment.builder()
                 .githubCommentId(githubCommentId)
                 .githubReviewId(githubReviewId)
-                .githubPullRequestId(githubPullRequestId)
                 .body(body)
                 .path(path)
                 .lineRange(CommentLineRange.create(startLine, endLine))
-                .side(side)
+                .side(CommentSide.from(side))
                 .commitSha(commitSha)
                 .parentCommentId(ParentCommentId.create(inReplyToId))
                 .authorMention(authorMention)
@@ -91,7 +87,6 @@ public class ReviewComment extends CreatedAtEntity {
     private ReviewComment(
             Long githubCommentId,
             Long githubReviewId,
-            Long githubPullRequestId,
             String body,
             String path,
             CommentLineRange lineRange,
@@ -104,11 +99,10 @@ public class ReviewComment extends CreatedAtEntity {
             LocalDateTime githubUpdatedAt,
             boolean deleted
     ) {
-        validateFields(githubCommentId, githubReviewId, githubPullRequestId, body, path, lineRange, side, commitSha, authorMention, authorGithubUid, githubCreatedAt, githubUpdatedAt);
+        validateFields(githubCommentId, githubReviewId, body, path, lineRange, side, commitSha, authorMention, authorGithubUid, githubCreatedAt, githubUpdatedAt);
 
         this.githubCommentId = githubCommentId;
         this.githubReviewId = githubReviewId;
-        this.githubPullRequestId = githubPullRequestId;
         this.body = body;
         this.path = path;
         this.lineRange = lineRange;
@@ -125,7 +119,6 @@ public class ReviewComment extends CreatedAtEntity {
     private void validateFields(
             Long githubCommentId,
             Long githubReviewId,
-            Long githubPullRequestId,
             String body,
             String path,
             CommentLineRange lineRange,
@@ -138,7 +131,6 @@ public class ReviewComment extends CreatedAtEntity {
     ) {
         validateGithubCommentId(githubCommentId);
         validateGithubReviewId(githubReviewId);
-        validateGithubPullRequestId(githubPullRequestId);
         validateBody(body);
         validatePath(path);
         validateLineRange(lineRange);
@@ -159,12 +151,6 @@ public class ReviewComment extends CreatedAtEntity {
     private void validateGithubReviewId(Long githubReviewId) {
         if (githubReviewId == null) {
             throw new IllegalArgumentException("GitHub Review ID는 필수입니다.");
-        }
-    }
-
-    private void validateGithubPullRequestId(Long githubPullRequestId) {
-        if (githubPullRequestId == null) {
-            throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
         }
     }
 

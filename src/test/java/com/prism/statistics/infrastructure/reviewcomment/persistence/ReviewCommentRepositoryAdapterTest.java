@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.domain.reviewcomment.ReviewComment;
-import com.prism.statistics.domain.reviewcomment.enums.CommentSide;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -135,12 +134,11 @@ class ReviewCommentRepositoryAdapterTest {
         return ReviewComment.create(
                 githubCommentId,
                 100L,
-                200L,
                 "코드 리뷰 댓글입니다.",
                 "src/main/java/Example.java",
                 null,
                 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123sha",
                 null,
                 "reviewer",

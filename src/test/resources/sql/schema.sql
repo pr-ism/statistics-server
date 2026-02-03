@@ -174,7 +174,6 @@ CREATE TABLE IF NOT EXISTS review_comments (
     created_at TIMESTAMP NOT NULL,
     github_comment_id BIGINT NOT NULL,
     github_review_id BIGINT NOT NULL,
-    github_pull_request_id BIGINT NOT NULL,
     body TEXT NOT NULL,
     path VARCHAR(500) NOT NULL,
     start_line INT,

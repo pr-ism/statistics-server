@@ -26,11 +26,11 @@ class ReviewCommentTest {
     void 리뷰_댓글을_생성한다() {
         // when
         ReviewComment comment = ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 "코드 수정이 필요합니다.",
                 "src/main/java/Example.java",
                 5, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -41,7 +41,6 @@ class ReviewCommentTest {
         assertAll(
                 () -> assertThat(comment.getGithubCommentId()).isEqualTo(1L),
                 () -> assertThat(comment.getGithubReviewId()).isEqualTo(100L),
-                () -> assertThat(comment.getGithubPullRequestId()).isEqualTo(200L),
                 () -> assertThat(comment.getBody()).isEqualTo("코드 수정이 필요합니다."),
                 () -> assertThat(comment.getPath()).isEqualTo("src/main/java/Example.java"),
                 () -> assertThat(comment.getLineRange().getStartLine()).isEqualTo(5),
@@ -59,11 +58,11 @@ class ReviewCommentTest {
     void 단일_라인_댓글을_생성한다() {
         // when
         ReviewComment comment = ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 "코드 리뷰입니다.",
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -81,11 +80,11 @@ class ReviewCommentTest {
     void 부모_댓글이_있는_댓글을_생성한다() {
         // when
         ReviewComment comment = ReviewComment.create(
-                2L, 100L, 200L,
+                2L, 100L,
                 "답글입니다.",
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 1L,
                 "reviewer2", 67890L,
@@ -103,11 +102,11 @@ class ReviewCommentTest {
     void GitHub_Review_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> ReviewComment.create(
-                1L, null, 200L,
+                1L, null,
                 "댓글입니다.",
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -121,11 +120,11 @@ class ReviewCommentTest {
     void GitHub_Comment_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> ReviewComment.create(
-                null, 100L, 200L,
+                null, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -135,23 +134,6 @@ class ReviewCommentTest {
                 .hasMessage("GitHub Comment ID는 필수입니다.");
     }
 
-    @Test
-    void GitHub_PullRequest_ID가_null이면_예외가_발생한다() {
-        // when & then
-        assertThatThrownBy(() -> ReviewComment.create(
-                1L, 100L, null,
-                "댓글입니다.",
-                "src/main/java/Example.java",
-                null, 10,
-                CommentSide.RIGHT,
-                "abc123",
-                null,
-                "reviewer1", 12345L,
-                GITHUB_CREATED_AT, GITHUB_UPDATED_AT
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("GitHub PullRequest ID는 필수입니다.");
-    }
 
     @ParameterizedTest
     @NullAndEmptySource
@@ -159,11 +141,11 @@ class ReviewCommentTest {
     void 댓글_내용이_null이거나_빈_문자열이면_예외가_발생한다(String body) {
         // when & then
         assertThatThrownBy(() -> ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 body,
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -179,11 +161,11 @@ class ReviewCommentTest {
     void 파일_경로가_null이거나_빈_문자열이면_예외가_발생한다(String path) {
         // when & then
         assertThatThrownBy(() -> ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 "댓글입니다.",
                 path,
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -194,10 +176,10 @@ class ReviewCommentTest {
     }
 
     @Test
-    void CommentSide가_null이면_예외가_발생한다() {
+    void side가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
                 null, 10,
@@ -208,7 +190,7 @@ class ReviewCommentTest {
                 GITHUB_CREATED_AT, GITHUB_UPDATED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("CommentSide는 필수입니다.");
+                .hasMessage("알 수 없는 CommentSide입니다: null");
     }
 
     @ParameterizedTest
@@ -217,11 +199,11 @@ class ReviewCommentTest {
     void commitSha가_null이거나_빈_문자열이면_예외가_발생한다(String commitSha) {
         // when & then
         assertThatThrownBy(() -> ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 commitSha,
                 null,
                 "reviewer1", 12345L,
@@ -237,11 +219,11 @@ class ReviewCommentTest {
     void 작성자_멘션이_null이거나_빈_문자열이면_예외가_발생한다(String authorMention) {
         // when & then
         assertThatThrownBy(() -> ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 authorMention, 12345L,
@@ -255,11 +237,11 @@ class ReviewCommentTest {
     void 작성자_GitHub_UID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 "reviewer1", null,
@@ -273,11 +255,11 @@ class ReviewCommentTest {
     void GitHub_생성_시각이_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -291,11 +273,11 @@ class ReviewCommentTest {
     void GitHub_수정_시각이_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -309,11 +291,11 @@ class ReviewCommentTest {
     void isOlderThan은_현재_수정_시각보다_이후_시간이면_true를_반환한다() {
         // given
         ReviewComment comment = ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 "reviewer1", 12345L,
@@ -329,11 +311,11 @@ class ReviewCommentTest {
     void isOlderThan은_현재_수정_시각보다_이전_시간이면_false를_반환한다() {
         // given
         ReviewComment comment = ReviewComment.create(
-                1L, 100L, 200L,
+                1L, 100L,
                 "댓글입니다.",
                 "src/main/java/Example.java",
                 null, 10,
-                CommentSide.RIGHT,
+                "right",
                 "abc123",
                 null,
                 "reviewer1", 12345L,

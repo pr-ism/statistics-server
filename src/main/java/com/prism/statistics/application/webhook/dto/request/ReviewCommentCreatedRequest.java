@@ -5,7 +5,6 @@ import java.time.Instant;
 public record ReviewCommentCreatedRequest(
         Long githubCommentId,
         Long githubReviewId,
-        Long githubPullRequestId,
         String body,
         String path,
         int line,
