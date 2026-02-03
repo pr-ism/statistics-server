@@ -51,37 +51,6 @@ public class ReviewComment extends CreatedAtEntity {
 
     private boolean deleted;
 
-    public static ReviewComment create(
-            Long githubCommentId,
-            Long githubReviewId,
-            String body,
-            String path,
-            CommentLineRange lineRange,
-            CommentSide side,
-            String commitSha,
-            Long inReplyToId,
-            String authorMention,
-            Long authorGithubUid,
-            LocalDateTime githubCreatedAt,
-            LocalDateTime githubUpdatedAt
-    ) {
-        return ReviewComment.builder()
-                .githubCommentId(githubCommentId)
-                .githubReviewId(githubReviewId)
-                .body(body)
-                .path(path)
-                .lineRange(lineRange)
-                .side(side)
-                .commitSha(commitSha)
-                .parentCommentId(ParentCommentId.create(inReplyToId))
-                .authorMention(authorMention)
-                .authorGithubUid(authorGithubUid)
-                .githubCreatedAt(githubCreatedAt)
-                .githubUpdatedAt(githubUpdatedAt)
-                .deleted(false)
-                .build();
-    }
-
     @Builder
     private ReviewComment(
             Long githubCommentId,

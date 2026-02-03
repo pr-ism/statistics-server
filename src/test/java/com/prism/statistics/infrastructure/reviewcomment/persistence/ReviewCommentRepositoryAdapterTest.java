@@ -7,6 +7,7 @@ import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.domain.reviewcomment.ReviewComment;
 import com.prism.statistics.domain.reviewcomment.enums.CommentSide;
 import com.prism.statistics.domain.reviewcomment.vo.CommentLineRange;
+import com.prism.statistics.domain.reviewcomment.vo.ParentCommentId;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -134,19 +135,20 @@ class ReviewCommentRepositoryAdapterTest {
 
     private ReviewComment createReviewComment(Long githubCommentId) {
         LocalDateTime githubCreatedAt = LocalDateTime.of(2024, 1, 15, 10, 0);
-        return ReviewComment.create(
-                githubCommentId,
-                100L,
-                "코드 리뷰 댓글입니다.",
-                "src/main/java/Example.java",
-                CommentLineRange.create(null, 10),
-                CommentSide.RIGHT,
-                "abc123sha",
-                null,
-                "reviewer",
-                12345L,
-                githubCreatedAt,
-                githubCreatedAt
-        );
+        return ReviewComment.builder()
+                .githubCommentId(githubCommentId)
+                .githubReviewId(100L)
+                .body("코드 리뷰 댓글입니다.")
+                .path("src/main/java/Example.java")
+                .lineRange(CommentLineRange.create(null, 10))
+                .side(CommentSide.RIGHT)
+                .commitSha("abc123sha")
+                .parentCommentId(ParentCommentId.create(null))
+                .authorMention("reviewer")
+                .authorGithubUid(12345L)
+                .githubCreatedAt(githubCreatedAt)
+                .githubUpdatedAt(githubCreatedAt)
+                .deleted(false)
+                .build();
     }
 }
