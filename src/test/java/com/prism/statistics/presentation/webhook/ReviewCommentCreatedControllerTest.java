@@ -2,6 +2,7 @@ package com.prism.statistics.presentation.webhook;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -56,6 +57,9 @@ class ReviewCommentCreatedControllerTest extends CommonControllerSliceTestSuppor
                         .content(payload)
         )
         .andExpect(status().isOk());
+
+        then(reviewCommentCreatedService).should()
+                .createReviewComment(eq(TEST_API_KEY), any(ReviewCommentCreatedRequest.class));
     }
 
     @Test
