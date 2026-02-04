@@ -14,4 +14,6 @@ public interface ReviewCommentRepository {
     boolean existsByGithubCommentId(Long githubCommentId);
 
     long updateBodyIfLatest(Long githubCommentId, String body, LocalDateTime updatedAt);
+
+    long softDeleteIfLatest(Long githubCommentId, LocalDateTime updatedAt);
 }
