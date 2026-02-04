@@ -15,5 +15,8 @@ TRUNCATE TABLE pull_requests;
 TRUNCATE TABLE user_identities;
 TRUNCATE TABLE users;
 TRUNCATE TABLE projects;
+TRUNCATE TABLE pull_request_opened_commit_densities;
+TRUNCATE TABLE pull_request_opened_change_summaries;
+TRUNCATE TABLE pull_request_opened_file_change_diversities;
 
 SET REFERENTIAL_INTEGRITY TRUE;

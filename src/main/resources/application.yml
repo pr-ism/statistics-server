@@ -8,6 +8,12 @@ spring:
         - "token"
         - "social"
         - "security"
+        - "async"
+      prod:
+        - "token"
+        - "social"
+        - "security"
+        - "async"
 
 app:
   user:
