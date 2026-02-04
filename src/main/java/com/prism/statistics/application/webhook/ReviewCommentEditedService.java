@@ -1,6 +1,7 @@
 package com.prism.statistics.application.webhook;
 
 import com.prism.statistics.application.webhook.dto.request.ReviewCommentEditedRequest;
+import com.prism.statistics.application.webhook.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.reviewcomment.repository.ReviewCommentRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
@@ -8,15 +9,11 @@ import com.prism.statistics.infrastructure.reviewcomment.persistence.exception.R
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDateTime;
-
 @Service
 @RequiredArgsConstructor
 public class ReviewCommentEditedService {
 
-    private final Clock clock;
+    private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
     private final ReviewCommentRepository reviewCommentRepository;
 
@@ -27,7 +24,7 @@ public class ReviewCommentEditedService {
         reviewCommentRepository.updateBodyIfLatest(
                 request.githubCommentId(),
                 request.body(),
-                toLocalDateTime(request.updatedAt())
+                localDateTimeConverter.toLocalDateTime(request.updatedAt())
         );
     }
 
@@ -41,9 +38,5 @@ public class ReviewCommentEditedService {
         if (!projectRepository.existsByApiKey(apiKey)) {
             throw new InvalidApiKeyException();
         }
-    }
-
-    private LocalDateTime toLocalDateTime(Instant instant) {
-        return LocalDateTime.ofInstant(instant, clock.getZone());
     }
 }

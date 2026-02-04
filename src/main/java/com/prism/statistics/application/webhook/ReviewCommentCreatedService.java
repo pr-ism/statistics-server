@@ -1,6 +1,7 @@
 package com.prism.statistics.application.webhook;
 
 import com.prism.statistics.application.webhook.dto.request.ReviewCommentCreatedRequest;
+import com.prism.statistics.application.webhook.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.reviewcomment.ReviewComment;
 import com.prism.statistics.domain.reviewcomment.enums.CommentSide;
@@ -11,15 +12,13 @@ import com.prism.statistics.infrastructure.project.persistence.exception.Invalid
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewCommentCreatedService {
 
-    private final Clock clock;
+    private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
     private final ReviewCommentRepository reviewCommentRepository;
 
@@ -37,8 +36,8 @@ public class ReviewCommentCreatedService {
     }
 
     private ReviewComment createReviewComment(ReviewCommentCreatedRequest request) {
-        LocalDateTime createdAt = toLocalDateTime(request.createdAt());
-        LocalDateTime updatedAt = toLocalDateTime(request.updatedAt());
+        LocalDateTime createdAt = localDateTimeConverter.toLocalDateTime(request.createdAt());
+        LocalDateTime updatedAt = localDateTimeConverter.toLocalDateTime(request.updatedAt());
 
         return ReviewComment.builder()
                 .githubCommentId(request.githubCommentId())
@@ -55,9 +54,5 @@ public class ReviewCommentCreatedService {
                 .githubUpdatedAt(updatedAt)
                 .deleted(false)
                 .build();
-    }
-
-    private LocalDateTime toLocalDateTime(Instant instant) {
-        return LocalDateTime.ofInstant(instant, clock.getZone());
     }
 }

@@ -1,6 +1,7 @@
 package com.prism.statistics.application.webhook;
 
 import com.prism.statistics.application.webhook.dto.request.ReviewSubmittedRequest;
+import com.prism.statistics.application.webhook.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.review.Review;
 import com.prism.statistics.domain.review.enums.ReviewState;
@@ -9,15 +10,13 @@ import com.prism.statistics.infrastructure.project.persistence.exception.Invalid
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewSubmittedService {
 
-    private final Clock clock;
+    private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
     private final ReviewRepository reviewRepository;
 
@@ -36,7 +35,7 @@ public class ReviewSubmittedService {
 
     private Review createReview(ReviewSubmittedRequest request) {
         ReviewState state = ReviewState.from(request.state());
-        LocalDateTime submittedAt = toLocalDateTime(request.submittedAt());
+        LocalDateTime submittedAt = localDateTimeConverter.toLocalDateTime(request.submittedAt());
 
         return Review.create(
                 request.githubPullRequestId(),
@@ -49,9 +48,5 @@ public class ReviewSubmittedService {
                 request.commentCount(),
                 submittedAt
         );
-    }
-
-    private LocalDateTime toLocalDateTime(Instant instant) {
-        return LocalDateTime.ofInstant(instant, clock.getZone());
     }
 }

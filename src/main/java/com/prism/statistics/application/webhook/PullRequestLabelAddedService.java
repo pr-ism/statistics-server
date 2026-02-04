@@ -1,6 +1,7 @@
 package com.prism.statistics.application.webhook;
 
 import com.prism.statistics.application.webhook.dto.request.PullRequestLabelAddedRequest;
+import com.prism.statistics.application.webhook.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.label.PullRequestLabel;
 import com.prism.statistics.domain.label.PullRequestLabelHistory;
 import com.prism.statistics.domain.label.enums.PullRequestLabelAction;
@@ -15,15 +16,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class PullRequestLabelAddedService {
 
-    private final Clock clock;
+    private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final PullRequestLabelRepository pullRequestLabelRepository;
@@ -44,7 +43,7 @@ public class PullRequestLabelAddedService {
             return;
         }
 
-        LocalDateTime labeledAt = toLocalDateTime(request.labeledAt());
+        LocalDateTime labeledAt = localDateTimeConverter.toLocalDateTime(request.labeledAt());
 
         PullRequestLabel pullRequestLabel = PullRequestLabel.create(pullRequestId, labelName, labeledAt);
 
@@ -58,9 +57,5 @@ public class PullRequestLabelAddedService {
         );
 
         pullRequestLabelHistoryRepository.save(pullRequestLabelHistory);
-    }
-
-    private LocalDateTime toLocalDateTime(Instant instant) {
-        return LocalDateTime.ofInstant(instant, clock.getZone());
     }
 }

@@ -1,6 +1,7 @@
 package com.prism.statistics.application.webhook;
 
 import com.prism.statistics.application.webhook.dto.request.PullRequestLabelRemovedRequest;
+import com.prism.statistics.application.webhook.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.label.PullRequestLabelHistory;
 import com.prism.statistics.domain.label.enums.PullRequestLabelAction;
 import com.prism.statistics.domain.label.repository.PullRequestLabelHistoryRepository;
@@ -14,15 +15,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class PullRequestLabelRemovedService {
 
-    private final Clock clock;
+    private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final PullRequestLabelRepository pullRequestLabelRepository;
@@ -45,7 +44,7 @@ public class PullRequestLabelRemovedService {
             return;
         }
 
-        LocalDateTime unlabeledAt = toLocalDateTime(request.unlabeledAt());
+        LocalDateTime unlabeledAt = localDateTimeConverter.toLocalDateTime(request.unlabeledAt());
 
         PullRequestLabelHistory pullRequestLabelHistory = PullRequestLabelHistory.create(
                 pullRequestId,
@@ -54,9 +53,5 @@ public class PullRequestLabelRemovedService {
                 unlabeledAt
         );
         pullRequestLabelHistoryRepository.save(pullRequestLabelHistory);
-    }
-
-    private LocalDateTime toLocalDateTime(Instant instant) {
-        return LocalDateTime.ofInstant(instant, clock.getZone());
     }
 }
