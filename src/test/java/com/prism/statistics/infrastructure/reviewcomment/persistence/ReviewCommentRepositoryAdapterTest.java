@@ -203,6 +203,117 @@ class ReviewCommentRepositoryAdapterTest {
         }
     }
 
+    @Test
+    void 최신_updatedAt이면_soft_delete한다() {
+        // given
+        Long githubCommentId = 700L;
+        LocalDateTime initialTime = LocalDateTime.of(2024, 1, 15, 10, 0);
+        LocalDateTime deleteTime = LocalDateTime.of(2024, 1, 15, 11, 0);
+
+        ReviewComment comment = createReviewComment(githubCommentId, initialTime);
+        reviewCommentRepositoryAdapter.saveOrFind(comment);
+
+        // when
+        long actual = reviewCommentRepositoryAdapter.softDeleteIfLatest(githubCommentId, deleteTime);
+
+        // then
+        ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(githubCommentId).orElseThrow();
+        assertAll(
+                () -> assertThat(actual).isEqualTo(1L),
+                () -> assertThat(result.isDeleted()).isTrue(),
+                () -> assertThat(result.getGithubUpdatedAt()).isEqualTo(deleteTime)
+        );
+    }
+
+    @Test
+    void 과거_updatedAt이면_soft_delete하지_않는다() {
+        // given
+        Long githubCommentId = 701L;
+        LocalDateTime initialTime = LocalDateTime.of(2024, 1, 15, 10, 0);
+        LocalDateTime olderTime = LocalDateTime.of(2024, 1, 15, 9, 0);
+
+        ReviewComment comment = createReviewComment(githubCommentId, initialTime);
+        reviewCommentRepositoryAdapter.saveOrFind(comment);
+
+        // when
+        long actual = reviewCommentRepositoryAdapter.softDeleteIfLatest(githubCommentId, olderTime);
+
+        // then
+        ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(githubCommentId).orElseThrow();
+        assertAll(
+                () -> assertThat(actual).isEqualTo(0L),
+                () -> assertThat(result.isDeleted()).isFalse(),
+                () -> assertThat(result.getGithubUpdatedAt()).isEqualTo(initialTime)
+        );
+    }
+
+    @Test
+    void 이미_삭제된_댓글은_다시_삭제되지_않는다() {
+        // given
+        Long githubCommentId = 702L;
+        LocalDateTime initialTime = LocalDateTime.of(2024, 1, 15, 10, 0);
+        LocalDateTime firstDeleteTime = LocalDateTime.of(2024, 1, 15, 11, 0);
+        LocalDateTime secondDeleteTime = LocalDateTime.of(2024, 1, 15, 12, 0);
+
+        ReviewComment comment = createReviewComment(githubCommentId, initialTime);
+        reviewCommentRepositoryAdapter.saveOrFind(comment);
+        reviewCommentRepositoryAdapter.softDeleteIfLatest(githubCommentId, firstDeleteTime);
+
+        // when
+        long actual = reviewCommentRepositoryAdapter.softDeleteIfLatest(githubCommentId, secondDeleteTime);
+
+        // then
+        ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(githubCommentId).orElseThrow();
+        assertAll(
+                () -> assertThat(actual).isEqualTo(0L),
+                () -> assertThat(result.isDeleted()).isTrue(),
+                () -> assertThat(result.getGithubUpdatedAt()).isEqualTo(firstDeleteTime)
+        );
+    }
+
+    @Test
+    void 동시에_같은_댓글을_soft_delete하면_하나만_반영된다() throws Exception {
+        // given
+        Long githubCommentId = 800L;
+        LocalDateTime initialTime = LocalDateTime.of(2024, 1, 15, 10, 0);
+        LocalDateTime deleteTime = LocalDateTime.of(2024, 1, 15, 12, 0);
+
+        ReviewComment comment = createReviewComment(githubCommentId, initialTime);
+        reviewCommentRepositoryAdapter.saveOrFind(comment);
+
+        int requestCount = 10;
+        CountDownLatch readyLatch = new CountDownLatch(requestCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<Future<Long>> futures = new ArrayList<>();
+
+        try (ExecutorService executorService = Executors.newFixedThreadPool(requestCount)) {
+            for (int i = 0; i < requestCount; i++) {
+                futures.add(executorService.submit(() -> {
+                    readyLatch.countDown();
+                    startLatch.await();
+                    return reviewCommentRepositoryAdapter.softDeleteIfLatest(githubCommentId, deleteTime);
+                }));
+            }
+
+            assertThat(readyLatch.await(5, TimeUnit.SECONDS)).isTrue();
+            startLatch.countDown();
+
+            long totalUpdated = 0L;
+            for (Future<Long> future : futures) {
+                totalUpdated += future.get(5, TimeUnit.SECONDS);
+            }
+
+            // then
+            ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(githubCommentId).orElseThrow();
+            long finalTotalUpdated = totalUpdated;
+            assertAll(
+                    () -> assertThat(finalTotalUpdated).isEqualTo(1L),
+                    () -> assertThat(result.isDeleted()).isTrue(),
+                    () -> assertThat(result.getGithubUpdatedAt()).isEqualTo(deleteTime)
+            );
+        }
+    }
+
     private ReviewComment createReviewComment(Long githubCommentId) {
         LocalDateTime githubCreatedAt = LocalDateTime.of(2024, 1, 15, 10, 0);
         return createReviewComment(githubCommentId, githubCreatedAt);

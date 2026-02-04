@@ -67,4 +67,19 @@ public class ReviewCommentRepositoryAdapter implements ReviewCommentRepository {
                 )
                 .execute();
     }
+
+    @Override
+    @Transactional
+    public long softDeleteIfLatest(Long githubCommentId, LocalDateTime updatedAt) {
+        return queryFactory
+                .update(reviewComment)
+                .set(reviewComment.deleted, true)
+                .set(reviewComment.githubUpdatedAt, updatedAt)
+                .where(
+                        reviewComment.githubCommentId.eq(githubCommentId),
+                        reviewComment.githubUpdatedAt.lt(updatedAt),
+                        reviewComment.deleted.isFalse()
+                )
+                .execute();
+    }
 }

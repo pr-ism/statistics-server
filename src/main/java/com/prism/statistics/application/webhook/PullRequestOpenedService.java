@@ -6,6 +6,7 @@ import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedReq
 import com.prism.statistics.application.webhook.event.PullRequestDraftCreatedEvent;
 import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent.CommitData;
+import com.prism.statistics.application.webhook.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
@@ -18,8 +19,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,7 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PullRequestOpenedService {
 
-    private final Clock clock;
+    private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -41,7 +40,7 @@ public class PullRequestOpenedService {
             eventPublisher.publishEvent(new PullRequestDraftCreatedEvent(request));
             return;
         }
-        
+
         PullRequestData pullRequestData = request.pullRequest();
 
         PullRequest savedPullRequest = savePullRequest(projectId, pullRequestData);
@@ -50,7 +49,7 @@ public class PullRequestOpenedService {
     }
 
     private PullRequest savePullRequest(Long projectId, PullRequestData pullRequestData) {
-        LocalDateTime pullRequestCreatedAt = toLocalDateTime(pullRequestData.createdAt());
+        LocalDateTime pullRequestCreatedAt = localDateTimeConverter.toLocalDateTime(pullRequestData.createdAt());
 
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(
                 pullRequestData.changedFiles(),
@@ -80,7 +79,7 @@ public class PullRequestOpenedService {
             PullRequestData pullRequestData,
             PullRequestOpenedRequest request
     ) {
-        LocalDateTime pullRequestCreatedAt = toLocalDateTime(pullRequestData.createdAt());
+        LocalDateTime pullRequestCreatedAt = localDateTimeConverter.toLocalDateTime(pullRequestData.createdAt());
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(
                 pullRequestData.changedFiles(),
                 pullRequestData.additions(),
@@ -108,11 +107,7 @@ public class PullRequestOpenedService {
     private CommitData toCommitData(CommitNode node) {
         return new CommitData(
                 node.commit().oid(),
-                toLocalDateTime(node.commit().committedDate())
+                localDateTimeConverter.toLocalDateTime(node.commit().committedDate())
         );
-    }
-
-    private LocalDateTime toLocalDateTime(Instant instant) {
-        return LocalDateTime.ofInstant(instant, clock.getZone());
     }
 }

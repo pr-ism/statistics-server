@@ -1,7 +1,6 @@
 package com.prism.statistics.application.webhook;
 
-import com.prism.statistics.application.webhook.dto.request.ReviewCommentEditedRequest;
-import com.prism.statistics.application.webhook.utils.LocalDateTimeConverter;
+import com.prism.statistics.application.webhook.dto.request.ReviewCommentDeletedRequest;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.reviewcomment.repository.ReviewCommentRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
@@ -9,23 +8,32 @@ import com.prism.statistics.infrastructure.reviewcomment.persistence.exception.R
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
-public class ReviewCommentEditedService {
+public class ReviewCommentDeletedService {
 
-    private final LocalDateTimeConverter localDateTimeConverter;
+    private final Clock clock;
     private final ProjectRepository projectRepository;
     private final ReviewCommentRepository reviewCommentRepository;
 
-    public void editReviewComment(String apiKey, ReviewCommentEditedRequest request) {
+    public void deleteReviewComment(String apiKey, ReviewCommentDeletedRequest request) {
         validateApiKey(apiKey);
         validateReviewCommentExists(request.githubCommentId());
 
-        reviewCommentRepository.updateBodyIfLatest(
+        reviewCommentRepository.softDeleteIfLatest(
                 request.githubCommentId(),
-                request.body(),
-                localDateTimeConverter.toLocalDateTime(request.updatedAt())
+                toLocalDateTime(request.updatedAt())
         );
+    }
+
+    private void validateApiKey(String apiKey) {
+        if (!projectRepository.existsByApiKey(apiKey)) {
+            throw new InvalidApiKeyException();
+        }
     }
 
     private void validateReviewCommentExists(Long githubCommentId) {
@@ -34,9 +42,7 @@ public class ReviewCommentEditedService {
         }
     }
 
-    private void validateApiKey(String apiKey) {
-        if (!projectRepository.existsByApiKey(apiKey)) {
-            throw new InvalidApiKeyException();
-        }
+    private LocalDateTime toLocalDateTime(Instant instant) {
+        return LocalDateTime.ofInstant(instant, clock.getZone());
     }
 }

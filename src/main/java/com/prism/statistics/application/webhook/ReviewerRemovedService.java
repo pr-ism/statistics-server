@@ -1,6 +1,7 @@
 package com.prism.statistics.application.webhook;
 
 import com.prism.statistics.application.webhook.dto.request.ReviewerRemovedRequest;
+import com.prism.statistics.application.webhook.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.pullrequest.PullRequest;
 import com.prism.statistics.domain.pullrequest.repository.PullRequestRepository;
@@ -14,15 +15,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewerRemovedService {
 
-    private final Clock clock;
+    private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final RequestedReviewerRepository requestedReviewerRepository;
@@ -46,7 +45,7 @@ public class ReviewerRemovedService {
         }
 
         String githubMention = request.reviewer().login();
-        LocalDateTime removedAt = toLocalDateTime(request.removedAt());
+        LocalDateTime removedAt = localDateTimeConverter.toLocalDateTime(request.removedAt());
 
         RequestedReviewerHistory requestedReviewerHistory = RequestedReviewerHistory.create(
                 pullRequestId,
@@ -57,9 +56,5 @@ public class ReviewerRemovedService {
         );
 
         requestedReviewerHistoryRepository.save(requestedReviewerHistory);
-    }
-
-    private LocalDateTime toLocalDateTime(Instant instant) {
-        return LocalDateTime.ofInstant(instant, clock.getZone());
     }
 }
