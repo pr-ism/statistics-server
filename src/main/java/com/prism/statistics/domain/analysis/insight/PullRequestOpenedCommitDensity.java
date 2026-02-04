@@ -34,7 +34,7 @@ public class PullRequestOpenedCommitDensity extends BaseTimeEntity {
 
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
-            throw new IllegalArgumentException("PR ID는 필수입니다.");
+            throw new IllegalArgumentException("Pull Request ID는 필수입니다.");
         }
     }
 
