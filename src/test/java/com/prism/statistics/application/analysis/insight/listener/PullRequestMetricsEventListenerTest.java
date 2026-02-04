@@ -1,6 +1,7 @@
 package com.prism.statistics.application.analysis.insight.listener;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
@@ -11,6 +12,7 @@ import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedChangeSummaryRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedCommitDensityRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedFileChangeRepository;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -44,10 +46,12 @@ class PullRequestMetricsEventListenerTest {
         eventListener.handle(event);
 
         // then
-        assertAll(
-                () -> assertThat(changeSummaryRepository.count()).isEqualTo(1),
-                () -> assertThat(commitDensityRepository.count()).isEqualTo(1),
-                () -> assertThat(fileChangeRepository.count()).isEqualTo(1)
+        await().atMost(Duration.ofSeconds(2)).untilAsserted(() ->
+                assertAll(
+                        () -> assertThat(changeSummaryRepository.count()).isEqualTo(1),
+                        () -> assertThat(commitDensityRepository.count()).isEqualTo(1),
+                        () -> assertThat(fileChangeRepository.count()).isEqualTo(1)
+                )
         );
     }
 
