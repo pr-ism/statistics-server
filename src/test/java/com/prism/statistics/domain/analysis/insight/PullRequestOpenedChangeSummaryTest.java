@@ -42,7 +42,7 @@ class PullRequestOpenedChangeSummaryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> PullRequestOpenedChangeSummary.create(null, 10, BigDecimal.ONE))
                         .isInstanceOf(IllegalArgumentException.class)
-                        .hasMessage("PR ID는 필수입니다.")
+                        .hasMessage("Pull Request ID는 필수입니다.")
         );
     }
 
