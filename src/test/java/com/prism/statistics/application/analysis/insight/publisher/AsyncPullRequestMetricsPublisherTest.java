@@ -29,7 +29,7 @@ class AsyncPullRequestMetricsPublisherTest {
     private PullRequestMetricsService metricsService;
 
     @Test
-    void 파생_지표_수집이_성공하면_보상_로직을_호출하지_않는다() {
+    void publish_호출시_deriveMetrics를_비동기로_실행한다() {
         // given
         PullRequestOpenCreatedEvent event = createEvent();
 
