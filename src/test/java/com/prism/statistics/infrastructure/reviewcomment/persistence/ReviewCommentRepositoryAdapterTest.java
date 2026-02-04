@@ -133,8 +133,82 @@ class ReviewCommentRepositoryAdapterTest {
         );
     }
 
+    @Test
+    void 존재하는_github_comment_id는_true를_반환한다() {
+        // given
+        Long githubCommentId = 400L;
+        ReviewComment comment = createReviewComment(githubCommentId);
+        reviewCommentRepositoryAdapter.saveOrFind(comment);
+
+        // when
+        boolean exists = reviewCommentRepositoryAdapter.existsByGithubCommentId(githubCommentId);
+
+        // then
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    void 존재하지_않는_github_comment_id는_false를_반환한다() {
+        // given
+        Long nonExistentId = 999L;
+
+        // when
+        boolean exists = reviewCommentRepositoryAdapter.existsByGithubCommentId(nonExistentId);
+
+        // then
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    void 동시에_다른_updatedAt으로_수정하면_최신_값이_반영된다() throws Exception {
+        // given
+        Long githubCommentId = 600L;
+        LocalDateTime initialTime = LocalDateTime.of(2024, 1, 15, 10, 0);
+        LocalDateTime olderTime = LocalDateTime.of(2024, 1, 15, 11, 0);
+        LocalDateTime newerTime = LocalDateTime.of(2024, 1, 15, 12, 0);
+
+        ReviewComment comment = createReviewComment(githubCommentId, initialTime);
+        reviewCommentRepositoryAdapter.saveOrFind(comment);
+
+        int requestCount = 10;
+        CountDownLatch readyLatch = new CountDownLatch(requestCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<Future<Long>> futures = new ArrayList<>();
+
+        try (ExecutorService executorService = Executors.newFixedThreadPool(requestCount)) {
+            for (int i = 0; i < requestCount; i++) {
+                LocalDateTime updateTime = (i % 2 == 0) ? olderTime : newerTime;
+                String body = (i % 2 == 0) ? "과거 수정" : "최신 수정";
+
+                futures.add(executorService.submit(() -> {
+                    readyLatch.countDown();
+                    startLatch.await();
+                    return reviewCommentRepositoryAdapter.updateBodyIfLatest(githubCommentId, body, updateTime);
+                }));
+            }
+
+            assertThat(readyLatch.await(5, TimeUnit.SECONDS)).isTrue();
+            startLatch.countDown();
+
+            for (Future<Long> future : futures) {
+                future.get(5, TimeUnit.SECONDS);
+            }
+
+            // then
+            ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(githubCommentId).orElseThrow();
+            assertAll(
+                    () -> assertThat(result.getBody()).isEqualTo("최신 수정"),
+                    () -> assertThat(result.getGithubUpdatedAt()).isEqualTo(newerTime)
+            );
+        }
+    }
+
     private ReviewComment createReviewComment(Long githubCommentId) {
         LocalDateTime githubCreatedAt = LocalDateTime.of(2024, 1, 15, 10, 0);
+        return createReviewComment(githubCommentId, githubCreatedAt);
+    }
+
+    private ReviewComment createReviewComment(Long githubCommentId, LocalDateTime githubTime) {
         return ReviewComment.builder()
                 .githubCommentId(githubCommentId)
                 .githubReviewId(100L)
@@ -146,8 +220,8 @@ class ReviewCommentRepositoryAdapterTest {
                 .parentCommentId(ParentCommentId.create(null))
                 .authorMention("reviewer")
                 .authorGithubUid(12345L)
-                .githubCreatedAt(githubCreatedAt)
-                .githubUpdatedAt(githubCreatedAt)
+                .githubCreatedAt(githubTime)
+                .githubUpdatedAt(githubTime)
                 .deleted(false)
                 .build();
     }
