@@ -5,11 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
-import com.prism.statistics.application.webhook.dto.request.ReviewCommentDeletedRequest;
-import com.prism.statistics.domain.reviewcomment.ReviewComment;
+import com.prism.statistics.application.analysis.metadata.review.ReviewCommentDeletedService;
+import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentDeletedRequest;
+import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.reviewcomment.persistence.JpaReviewCommentRepository;
-import com.prism.statistics.infrastructure.reviewcomment.persistence.exception.ReviewCommentNotFoundException;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewCommentRepository;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewCommentNotFoundException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayNameGeneration;

@@ -1,7 +1,7 @@
 package com.prism.statistics.infrastructure.metric.persistence;
 
-import static com.prism.statistics.domain.pullrequest.QPullRequest.pullRequest;
-import static com.prism.statistics.domain.reviewer.QRequestedReviewer.requestedReviewer;
+import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
+import static com.prism.statistics.domain.analysis.metadata.review.QRequestedReviewer.requestedReviewer;
 
 import com.prism.statistics.domain.metric.repository.ReviewerStatisticsRepository;
 import com.prism.statistics.domain.metric.repository.dto.ReviewerStatisticsDto;

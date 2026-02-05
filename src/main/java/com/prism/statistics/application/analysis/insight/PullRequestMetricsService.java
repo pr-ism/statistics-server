@@ -1,15 +1,15 @@
 package com.prism.statistics.application.analysis.insight;
 
-import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.FileData;
-import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent;
+import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.FileData;
+import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedChangeSummary;
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedCommitDensity;
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedFileChange;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedChangeSummaryRepository;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedCommitDensityRepository;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedFileChangeRepository;
-import com.prism.statistics.domain.pullrequest.enums.FileChangeType;
-import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.FileChangeType;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.EnumMap;

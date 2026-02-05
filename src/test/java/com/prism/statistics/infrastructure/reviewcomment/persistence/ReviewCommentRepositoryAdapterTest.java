@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
-import com.prism.statistics.domain.reviewcomment.ReviewComment;
-import com.prism.statistics.domain.reviewcomment.enums.CommentSide;
-import com.prism.statistics.domain.reviewcomment.vo.CommentLineRange;
-import com.prism.statistics.domain.reviewcomment.vo.ParentCommentId;
+import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
+import com.prism.statistics.domain.analysis.metadata.review.enums.CommentSide;
+import com.prism.statistics.domain.analysis.metadata.review.vo.CommentLineRange;
+import com.prism.statistics.domain.analysis.metadata.review.vo.ParentCommentId;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +16,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewCommentRepository;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.ReviewCommentRepositoryAdapter;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;

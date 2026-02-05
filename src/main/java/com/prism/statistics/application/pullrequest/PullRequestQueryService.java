@@ -4,10 +4,10 @@ import com.prism.statistics.application.pullrequest.dto.response.PullRequestDeta
 import com.prism.statistics.application.pullrequest.dto.response.PullRequestListResponse;
 import com.prism.statistics.application.pullrequest.dto.response.PullRequestListResponse.PullRequestSummary;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
-import com.prism.statistics.domain.pullrequest.PullRequest;
-import com.prism.statistics.domain.pullrequest.repository.PullRequestRepository;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
-import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

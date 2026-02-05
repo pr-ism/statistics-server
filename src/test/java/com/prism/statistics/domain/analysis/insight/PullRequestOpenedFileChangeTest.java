@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import com.prism.statistics.domain.pullrequest.enums.FileChangeType;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.FileChangeType;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;

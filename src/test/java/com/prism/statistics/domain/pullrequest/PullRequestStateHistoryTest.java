@@ -6,7 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.time.LocalDateTime;
 
-import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullRequestStateHistory;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package com.prism.statistics.application.analysis.insight.listener;
 
 import com.prism.statistics.application.analysis.insight.PullRequestMetricsPublisher;
-import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent;
+import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;

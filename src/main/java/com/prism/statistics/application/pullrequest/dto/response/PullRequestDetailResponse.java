@@ -1,8 +1,8 @@
 package com.prism.statistics.application.pullrequest.dto.response;
 
-import com.prism.statistics.domain.pullrequest.PullRequest;
-import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
-import com.prism.statistics.domain.pullrequest.vo.PullRequestTiming;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestTiming;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

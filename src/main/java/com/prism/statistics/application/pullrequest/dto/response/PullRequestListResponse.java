@@ -1,6 +1,6 @@
 package com.prism.statistics.application.pullrequest.dto.response;
 
-import com.prism.statistics.domain.pullrequest.PullRequest;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import java.util.List;
 
 public record PullRequestListResponse(

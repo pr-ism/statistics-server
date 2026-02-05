@@ -1,0 +1,181 @@
+package com.prism.statistics.domain.analysis.metadata.pullrequest;
+
+import com.prism.statistics.domain.common.CreatedAtEntity;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestTiming;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@Entity
+@Table(name = "pull_requests")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class PullRequest extends CreatedAtEntity {
+
+    private Long projectId;
+
+    private String authorGithubId;
+
+    private int pullRequestNumber;
+
+    private String title;
+
+    @Enumerated(EnumType.STRING)
+    private PullRequestState state;
+
+    private String link;
+
+    @Embedded
+    private PullRequestChangeStats changeStats;
+
+    private int commitCount;
+
+    @Embedded
+    private PullRequestTiming timing;
+
+    public static PullRequest create(
+            Long projectId,
+            String authorGithubId,
+            int pullRequestNumber,
+            String title,
+            PullRequestState state,
+            String link,
+            PullRequestChangeStats changeStats,
+            int commitCount,
+            PullRequestTiming pullRequestTiming
+    ) {
+        validateProjectId(projectId);
+        validateAuthorGithubId(authorGithubId);
+        validatePullRequestNumber(pullRequestNumber);
+        validateTitle(title);
+        validateState(state);
+        validateLink(link);
+        validateChangeStats(changeStats);
+        validateCommitCount(commitCount);
+        validateTiming(pullRequestTiming);
+        return new PullRequest(projectId, authorGithubId, pullRequestNumber, title, state, link, changeStats, commitCount, pullRequestTiming);
+    }
+
+    public static PullRequest opened(
+            Long projectId,
+            String authorGithubId,
+            int pullRequestNumber,
+            String title,
+            String link,
+            PullRequestChangeStats changeStats,
+            int commitCount,
+            PullRequestTiming pullRequestTiming
+    ) {
+        return create(projectId, authorGithubId, pullRequestNumber, title, PullRequestState.OPEN, link, changeStats, commitCount, pullRequestTiming);
+    }
+
+    private static void validateProjectId(Long projectId) {
+        if (projectId == null) {
+            throw new IllegalArgumentException("프로젝트 ID는 필수입니다.");
+        }
+    }
+
+    private static void validateAuthorGithubId(String authorGithubId) {
+        if (authorGithubId == null || authorGithubId.isBlank()) {
+            throw new IllegalArgumentException("작성자 GitHub ID는 필수입니다.");
+        }
+    }
+
+    private static void validatePullRequestNumber(int pullRequestNumber) {
+        if (pullRequestNumber <= 0) {
+            throw new IllegalArgumentException("PullRequest 번호는 양수여야 합니다.");
+        }
+    }
+
+    private static void validateTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("PullRequest 제목은 필수입니다.");
+        }
+    }
+
+    private static void validateState(PullRequestState state) {
+        if (state == null) {
+            throw new IllegalArgumentException("PullRequest 상태는 필수입니다.");
+        }
+    }
+
+    private static void validateLink(String link) {
+        if (link == null || link.isBlank()) {
+            throw new IllegalArgumentException("PullRequest 링크는 필수입니다.");
+        }
+    }
+
+    private static void validateChangeStats(PullRequestChangeStats changeStats) {
+        if (changeStats == null) {
+            throw new IllegalArgumentException("변경 통계는 필수입니다.");
+        }
+    }
+
+    private static void validateCommitCount(int commitCount) {
+        if (commitCount < 0) {
+            throw new IllegalArgumentException("커밋 수는 0보다 작을 수 없습니다.");
+        }
+    }
+
+    private static void validateTiming(PullRequestTiming pullRequestTiming) {
+        if (pullRequestTiming == null) {
+            throw new IllegalArgumentException("시간 정보는 필수입니다.");
+        }
+    }
+
+    private PullRequest(
+            Long projectId,
+            String authorGithubId,
+            int pullRequestNumber,
+            String title,
+            PullRequestState state,
+            String link,
+            PullRequestChangeStats changeStats,
+            int commitCount,
+            PullRequestTiming pullRequestTiming
+    ) {
+        this.projectId = projectId;
+        this.authorGithubId = authorGithubId;
+        this.pullRequestNumber = pullRequestNumber;
+        this.title = title;
+        this.state = state;
+        this.link = link;
+        this.changeStats = changeStats;
+        this.commitCount = commitCount;
+        this.timing = pullRequestTiming;
+    }
+
+    public boolean isMerged() {
+        return this.state.isMerged();
+    }
+
+    public boolean isClosed() {
+        return this.state.isClosed();
+    }
+
+    public boolean isDraft() {
+        return this.state.isDraft();
+    }
+
+    public boolean isOpen() {
+        return this.state.isOpen();
+    }
+
+    public long calculateMergeTimeMinutes() {
+        if (!isMerged()) {
+            throw new IllegalStateException("병합되지 않은 PullRequest 입니다.");
+        }
+        return timing.calculateMergeTimeMinutes();
+    }
+
+    public PullRequestTiming getTimingOrDefault() {
+        return this.timing != null ? this.timing : PullRequestTiming.createOpen(this.getCreatedAt());
+    }
+}

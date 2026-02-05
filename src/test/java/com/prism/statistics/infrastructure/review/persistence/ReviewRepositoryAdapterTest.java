@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
-import com.prism.statistics.domain.review.Review;
-import com.prism.statistics.domain.review.enums.ReviewState;
+import com.prism.statistics.domain.analysis.metadata.review.Review;
+import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +14,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewRepository;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.ReviewRepositoryAdapter;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;

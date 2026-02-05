@@ -6,14 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.time.LocalDateTime;
 
+import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullRequestFileHistory;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 
-import com.prism.statistics.domain.pullrequest.enums.FileChangeType;
-import com.prism.statistics.domain.pullrequest.vo.FileChanges;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.FileChangeType;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.FileChanges;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)

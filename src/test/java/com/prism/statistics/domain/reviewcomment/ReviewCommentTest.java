@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.time.LocalDateTime;
 
+import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -13,9 +14,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.prism.statistics.domain.reviewcomment.enums.CommentSide;
-import com.prism.statistics.domain.reviewcomment.vo.CommentLineRange;
-import com.prism.statistics.domain.reviewcomment.vo.ParentCommentId;
+import com.prism.statistics.domain.analysis.metadata.review.enums.CommentSide;
+import com.prism.statistics.domain.analysis.metadata.review.vo.CommentLineRange;
+import com.prism.statistics.domain.analysis.metadata.review.vo.ParentCommentId;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)

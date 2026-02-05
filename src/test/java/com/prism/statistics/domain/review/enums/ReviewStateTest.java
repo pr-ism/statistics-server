@@ -3,6 +3,7 @@ package com.prism.statistics.domain.review.enums;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;

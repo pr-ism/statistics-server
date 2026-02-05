@@ -5,10 +5,10 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
-import com.prism.statistics.application.webhook.dto.request.PullRequestOpenedRequest.FileData;
-import com.prism.statistics.application.webhook.event.PullRequestOpenCreatedEvent;
-import com.prism.statistics.domain.pullrequest.enums.PullRequestState;
-import com.prism.statistics.domain.pullrequest.vo.PullRequestChangeStats;
+import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.FileData;
+import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedChangeSummaryRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedCommitDensityRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedFileChangeRepository;
