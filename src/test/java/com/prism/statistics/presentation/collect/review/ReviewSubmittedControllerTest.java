@@ -46,7 +46,7 @@ class ReviewSubmittedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/webhook/review/submitted")
+                post("/collect/review/submitted")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
@@ -76,7 +76,7 @@ class ReviewSubmittedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/webhook/review/submitted")
+                post("/collect/review/submitted")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
         )
@@ -108,7 +108,7 @@ class ReviewSubmittedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/webhook/review/submitted")
+                post("/collect/review/submitted")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)

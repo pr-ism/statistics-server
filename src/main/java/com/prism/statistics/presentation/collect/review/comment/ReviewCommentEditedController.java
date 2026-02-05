@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/webhook")
+@RequestMapping("/collect/review")
 @RequiredArgsConstructor
 public class ReviewCommentEditedController {
 
     private final ReviewCommentEditedService reviewCommentEditedService;
 
-    @PostMapping("/review-comment/edited")
+    @PostMapping("/comment/edited")
     public ResponseEntity<Void> handleReviewCommentEdited(
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody ReviewCommentEditedRequest request

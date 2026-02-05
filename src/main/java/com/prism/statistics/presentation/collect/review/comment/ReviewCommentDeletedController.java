@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/webhook")
+@RequestMapping("/collect/review")
 @RequiredArgsConstructor
 public class ReviewCommentDeletedController {
 
     private final ReviewCommentDeletedService reviewCommentDeletedService;
 
-    @PostMapping("/review-comment/deleted")
+    @PostMapping("/comment/deleted")
     public ResponseEntity<Void> handleReviewCommentDeleted(
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody ReviewCommentDeletedRequest request

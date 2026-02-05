@@ -44,7 +44,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
 
         // when & then
         mockMvc.perform(
-                post("/webhook/pull-request/label/removed")
+                post("/collect/pull-request/label/removed")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
@@ -69,7 +69,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
 
         // when & then
         mockMvc.perform(
-                post("/webhook/pull-request/label/removed")
+                post("/collect/pull-request/label/removed")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
         )
@@ -94,7 +94,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
 
         // when & then
         mockMvc.perform(
-                post("/webhook/pull-request/label/removed")
+                post("/collect/pull-request/label/removed")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
@@ -122,7 +122,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
 
         // when & then
         mockMvc.perform(
-                post("/webhook/pull-request/label/removed")
+                post("/collect/pull-request/label/removed")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)

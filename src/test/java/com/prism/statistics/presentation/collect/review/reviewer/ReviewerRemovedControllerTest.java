@@ -41,7 +41,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/webhook/reviewer/removed")
+                post("/collect/review/reviewer/removed")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
@@ -65,7 +65,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/webhook/reviewer/removed")
+                post("/collect/review/reviewer/removed")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
         )
@@ -91,7 +91,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/webhook/reviewer/removed")
+                post("/collect/review/reviewer/removed")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
@@ -120,7 +120,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/webhook/reviewer/removed")
+                post("/collect/review/reviewer/removed")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)

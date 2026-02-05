@@ -60,7 +60,7 @@ class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/webhook/pull-request/opened")
+                post("/collect/pull-request/opened")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
@@ -74,7 +74,7 @@ class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
     void API_Key_헤더_누락_시_400_반환한다() throws Exception {
         // when & then
         mockMvc.perform(
-                post("/webhook/pull-request/opened")
+                post("/collect/pull-request/opened")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}")
         )
@@ -116,7 +116,7 @@ class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/webhook/pull-request/opened")
+                post("/collect/pull-request/opened")
                         .header(API_KEY_HEADER, TEST_API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
