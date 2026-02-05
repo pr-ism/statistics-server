@@ -7,6 +7,6 @@
 operation::user-controller-test/닉네임_변경_성공_테스트[snippets='http-request,request-headers,request-fields,http-response,response-fields']
 
 [[User-Info]]
-== 회원 정보 조회 API
+=== 회원 정보 조회 API
 
 operation::user-controller-test/회원_정보_조회_성공_테스트[snippets='http-request,request-headers,http-response,response-fields']
