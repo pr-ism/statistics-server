@@ -1,6 +1,6 @@
 package com.prism.statistics.infrastructure.metric.persistence;
 
-import static com.prism.statistics.domain.pullrequest.QPullRequest.pullRequest;
+import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
 
 import com.prism.statistics.domain.metric.repository.TrendStatisticsRepository;
 import com.prism.statistics.domain.metric.repository.dto.TrendStatisticsDto;

@@ -1,11 +1,11 @@
 package com.prism.statistics.infrastructure.metric.persistence;
 
-import static com.prism.statistics.domain.pullrequest.QPullRequest.pullRequest;
-import static com.prism.statistics.domain.pullrequest.QPullRequestFile.pullRequestFile;
+import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
+import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequestFile.pullRequestFile;
 
 import com.prism.statistics.domain.metric.repository.HotFileStatisticsRepository;
 import com.prism.statistics.domain.metric.repository.dto.HotFileStatisticsDto;
-import com.prism.statistics.domain.pullrequest.enums.FileChangeType;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.FileChangeType;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;

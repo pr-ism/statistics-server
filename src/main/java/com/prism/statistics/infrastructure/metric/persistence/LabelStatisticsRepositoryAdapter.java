@@ -1,7 +1,7 @@
 package com.prism.statistics.infrastructure.metric.persistence;
 
-import static com.prism.statistics.domain.label.QPullRequestLabel.pullRequestLabel;
-import static com.prism.statistics.domain.pullrequest.QPullRequest.pullRequest;
+import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequestLabel.pullRequestLabel;
+import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
 
 import com.prism.statistics.domain.metric.repository.LabelStatisticsRepository;
 import com.prism.statistics.domain.metric.repository.dto.LabelStatisticsDto;

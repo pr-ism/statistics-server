@@ -8,7 +8,7 @@ import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.pullrequest.dto.response.PullRequestDetailResponse;
 import com.prism.statistics.application.pullrequest.dto.response.PullRequestListResponse;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
-import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;

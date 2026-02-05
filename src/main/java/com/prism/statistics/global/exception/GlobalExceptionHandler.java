@@ -17,9 +17,9 @@ import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUs
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
-import com.prism.statistics.infrastructure.pullrequest.persistence.exception.PullRequestNotFoundException;
-import com.prism.statistics.infrastructure.review.persistence.exception.ReviewNotFoundException;
-import com.prism.statistics.infrastructure.reviewcomment.persistence.exception.ReviewCommentNotFoundException;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewCommentNotFoundException;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;

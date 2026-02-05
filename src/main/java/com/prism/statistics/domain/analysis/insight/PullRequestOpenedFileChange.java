@@ -1,7 +1,7 @@
 package com.prism.statistics.domain.analysis.insight;
 
 import com.prism.statistics.domain.common.CreatedAtEntity;
-import com.prism.statistics.domain.pullrequest.enums.FileChangeType;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.FileChangeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
