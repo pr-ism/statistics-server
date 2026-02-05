@@ -15,20 +15,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/users/me")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/me")
+    @GetMapping
     public ResponseEntity<UserInfoResponse> findMyInfo(AuthUserId authUserId) {
         UserInfoResponse response = userService.findUserInfo(authUserId.userId());
 
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/me/nickname")
+    @PatchMapping("/nickname")
     public ResponseEntity<ChangedNicknameResponse> changeNickname(
             AuthUserId authUserId,
             @Valid @RequestBody ChangeNicknameRequest request
