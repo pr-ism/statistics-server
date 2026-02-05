@@ -2,6 +2,7 @@ package com.prism.statistics.global.exception;
 
 import com.prism.statistics.application.auth.exception.UserMissingException;
 import com.prism.statistics.application.auth.exception.WithdrawnUserLoginException;
+import com.prism.statistics.application.user.exception.UserNotFoundException;
 import com.prism.statistics.domain.user.exception.AlreadyWithdrawnUserException;
 import com.prism.statistics.global.exception.dto.response.AuthErrorCode;
 import com.prism.statistics.global.exception.dto.response.DefaultErrorCode;
@@ -69,6 +70,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.info("WithdrawnUserLoginException : {}", ex.getMessage());
 
         return createResponseEntity(AuthErrorCode.WITHDRAWN_USER);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex) {
+        log.info("UserNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(UserErrorCode.USER_NOT_FOUND);
     }
 
     @ExceptionHandler(AlreadyWithdrawnUserException.class)

@@ -22,7 +22,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<UserInfoResponse> getUserInfo(AuthUserId authUserId) {
+    public ResponseEntity<UserInfoResponse> findMyInfo(AuthUserId authUserId) {
         UserInfoResponse response = userService.findUserInfo(authUserId.userId());
 
         return ResponseEntity.ok(response);
