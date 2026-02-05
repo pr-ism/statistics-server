@@ -9,6 +9,7 @@
 :docinfo: shared-head
 
 include::{docdir}/domain/auth.adoc[]
+include::{docdir}/domain/user.adoc[]
 include::{docdir}/domain/project.adoc[]
 include::{docdir}/domain/pull-request.adoc[]
 include::{docdir}/domain/author-statistics.adoc[]

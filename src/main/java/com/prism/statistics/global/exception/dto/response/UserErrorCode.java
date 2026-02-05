@@ -5,7 +5,8 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum UserErrorCode implements ErrorCode {
-    ALREADY_WITHDRAWN("U00", "이미 탈퇴한 회원", HttpStatus.BAD_REQUEST);
+    ALREADY_WITHDRAWN("U00", "이미 탈퇴한 회원", HttpStatus.BAD_REQUEST),
+    USER_NOT_FOUND("U01", "존재하지 않는 회원", HttpStatus.NOT_FOUND);
 
     private final String errorCode;
     private final String message;
