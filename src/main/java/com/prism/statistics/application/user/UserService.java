@@ -2,6 +2,7 @@ package com.prism.statistics.application.user;
 
 import com.prism.statistics.application.user.dto.request.ChangeNicknameRequest;
 import com.prism.statistics.application.user.dto.response.ChangedNicknameResponse;
+import com.prism.statistics.application.user.dto.response.UserInfoResponse;
 import com.prism.statistics.application.user.exception.UserNotFoundException;
 import com.prism.statistics.domain.user.User;
 import com.prism.statistics.domain.user.repository.UserRepository;
@@ -14,6 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    @Transactional(readOnly = true)
+    public UserInfoResponse findUserInfo(Long id) {
+        User user = userRepository.findById(id)
+                                  .orElseThrow(() -> new UserNotFoundException());
+
+        return UserInfoResponse.from(user);
+    }
 
     @Transactional
     public ChangedNicknameResponse changedNickname(Long id, ChangeNicknameRequest request) {
