@@ -12,7 +12,6 @@ import com.prism.statistics.domain.analysis.metadata.review.repository.Requested
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -25,7 +24,6 @@ public class ReviewerAddedService {
     private final RequestedReviewerRepository requestedReviewerRepository;
     private final RequestedReviewerHistoryRepository requestedReviewerHistoryRepository;
 
-    @Transactional
     public void addReviewer(String apiKey, ReviewerAddedRequest request) {
         if (!projectRepository.existsByApiKey(apiKey)) {
             throw new InvalidApiKeyException();
