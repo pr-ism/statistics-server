@@ -10,6 +10,7 @@ import com.prism.statistics.global.exception.dto.response.ErrorCode;
 import com.prism.statistics.global.exception.dto.response.ExceptionResponse;
 import com.prism.statistics.global.exception.dto.response.ProjectErrorCode;
 import com.prism.statistics.global.exception.dto.response.PullRequestErrorCode;
+import com.prism.statistics.global.exception.dto.response.PullRequestLabelErrorCode;
 import com.prism.statistics.global.exception.dto.response.ReviewCommentErrorCode;
 import com.prism.statistics.global.exception.dto.response.ReviewErrorCode;
 import com.prism.statistics.global.exception.dto.response.UserErrorCode;
@@ -17,6 +18,7 @@ import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUs
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestLabelNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewCommentNotFoundException;
@@ -126,6 +128,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.info("PullRequestNotFoundException : {}", ex.getMessage());
 
         return createResponseEntity(PullRequestErrorCode.PULL_REQUEST_NOT_FOUND);
+    }
+
+    @ExceptionHandler(PullRequestLabelNotFoundException.class)
+    public ResponseEntity<Object> handlePullRequestLabelNotFoundException(PullRequestLabelNotFoundException ex) {
+        log.info("PullRequestLabelNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(PullRequestLabelErrorCode.PULL_REQUEST_LABEL_NOT_FOUND);
     }
 
     @ExceptionHandler(ReviewCommentNotFoundException.class)
