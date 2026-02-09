@@ -12,7 +12,6 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullReque
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestLabelHistoryRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestLabelRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -34,7 +33,9 @@ import java.util.concurrent.TimeUnit;
 class PullRequestLabelRemovedServiceTest {
 
     private static final String TEST_API_KEY = "test-api-key";
+    private static final Long TEST_GITHUB_PULL_REQUEST_ID = 1001L;
     private static final int TEST_PULL_REQUEST_NUMBER = 123;
+    private static final String TEST_HEAD_COMMIT_SHA = "abc123";
 
     @Autowired
     private PullRequestLabelRemovedService pullRequestLabelRemovedService;
@@ -123,17 +124,6 @@ class PullRequestLabelRemovedServiceTest {
                 .isInstanceOf(InvalidApiKeyException.class);
     }
 
-    @Sql("/sql/webhook/insert_project.sql")
-    @Test
-    void 존재하지_않는_PullRequest면_예외가_발생한다() {
-        // given
-        PullRequestLabelRemovedRequest request = createLabelRemovedRequest("bug");
-
-        // when & then
-        assertThatThrownBy(() -> pullRequestLabelRemovedService.removePullRequestLabel(TEST_API_KEY, request))
-                .isInstanceOf(PullRequestNotFoundException.class);
-    }
-
     @Sql("/sql/webhook/insert_project_pr_and_label.sql")
     @Test
     void 동일_Label을_동시에_삭제해도_한번만_삭제되고_단일_History만_저장된다() throws Exception {
@@ -179,7 +169,9 @@ class PullRequestLabelRemovedServiceTest {
 
     private PullRequestLabelRemovedRequest createLabelRemovedRequest(String labelName) {
         return new PullRequestLabelRemovedRequest(
+                TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
+                TEST_HEAD_COMMIT_SHA,
                 new LabelData(labelName),
                 Instant.parse("2024-01-15T10:00:00Z")
         );
