@@ -41,7 +41,7 @@ public class ReviewerAddedService {
 
         RequestedReviewer saved = requestedReviewerRepository.saveOrFind(requestedReviewer);
 
-        if (saved != requestedReviewer) {
+        if (!saved.equals(requestedReviewer)) {
             return;
         }
 

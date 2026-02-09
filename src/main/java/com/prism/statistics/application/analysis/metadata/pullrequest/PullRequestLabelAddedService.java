@@ -37,7 +37,7 @@ public class PullRequestLabelAddedService {
 
         PullRequestLabel saved = pullRequestLabelRepository.saveOrFind(pullRequestLabel);
 
-        if (saved != pullRequestLabel) {
+        if (!saved.equals(pullRequestLabel)) {
             return;
         }
 
