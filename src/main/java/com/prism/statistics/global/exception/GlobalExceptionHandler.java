@@ -11,6 +11,7 @@ import com.prism.statistics.global.exception.dto.response.ExceptionResponse;
 import com.prism.statistics.global.exception.dto.response.ProjectErrorCode;
 import com.prism.statistics.global.exception.dto.response.PullRequestErrorCode;
 import com.prism.statistics.global.exception.dto.response.PullRequestLabelErrorCode;
+import com.prism.statistics.global.exception.dto.response.RequestedReviewerErrorCode;
 import com.prism.statistics.global.exception.dto.response.ReviewCommentErrorCode;
 import com.prism.statistics.global.exception.dto.response.ReviewErrorCode;
 import com.prism.statistics.global.exception.dto.response.UserErrorCode;
@@ -20,6 +21,7 @@ import com.prism.statistics.infrastructure.project.persistence.exception.Invalid
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestLabelNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.RequestedReviewerNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewCommentNotFoundException;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
@@ -142,6 +144,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.info("ReviewCommentNotFoundException : {}", ex.getMessage());
 
         return createResponseEntity(ReviewCommentErrorCode.REVIEW_COMMENT_NOT_FOUND);
+    }
+
+    @ExceptionHandler(RequestedReviewerNotFoundException.class)
+    public ResponseEntity<Object> handleRequestedReviewerNotFoundException(RequestedReviewerNotFoundException ex) {
+        log.info("RequestedReviewerNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(RequestedReviewerErrorCode.REQUESTED_REVIEWER_NOT_FOUND);
     }
 
     @ExceptionHandler(ReviewNotFoundException.class)
