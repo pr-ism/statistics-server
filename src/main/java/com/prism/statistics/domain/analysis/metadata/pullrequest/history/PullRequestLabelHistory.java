@@ -18,7 +18,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PullRequestLabelHistory extends CreatedAtEntity {
 
+    private Long githubPullRequestId;
+
     private Long pullRequestId;
+
+    private String headCommitSha;
 
     private String labelName;
 
@@ -28,21 +32,30 @@ public class PullRequestLabelHistory extends CreatedAtEntity {
     private LocalDateTime changedAt;
 
     public static PullRequestLabelHistory create(
+            Long githubPullRequestId,
             Long pullRequestId,
+            String headCommitSha,
             String labelName,
             PullRequestLabelAction action,
             LocalDateTime changedAt
     ) {
-        validatePullRequestId(pullRequestId);
+        validateGithubPullRequestId(githubPullRequestId);
+        validateHeadCommitSha(headCommitSha);
         validateLabelName(labelName);
         validateAction(action);
         validateChangedAt(changedAt);
-        return new PullRequestLabelHistory(pullRequestId, labelName, action, changedAt);
+        return new PullRequestLabelHistory(githubPullRequestId, pullRequestId, headCommitSha, labelName, action, changedAt);
     }
 
-    private static void validatePullRequestId(Long pullRequestId) {
-        if (pullRequestId == null) {
-            throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
+    private static void validateGithubPullRequestId(Long githubPullRequestId) {
+        if (githubPullRequestId == null) {
+            throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
+        }
+    }
+
+    private static void validateHeadCommitSha(String headCommitSha) {
+        if (headCommitSha == null || headCommitSha.isBlank()) {
+            throw new IllegalArgumentException("Head Commit SHA는 필수입니다.");
         }
     }
 
@@ -65,12 +78,16 @@ public class PullRequestLabelHistory extends CreatedAtEntity {
     }
 
     private PullRequestLabelHistory(
+            Long githubPullRequestId,
             Long pullRequestId,
+            String headCommitSha,
             String labelName,
             PullRequestLabelAction action,
             LocalDateTime changedAt
     ) {
+        this.githubPullRequestId = githubPullRequestId;
         this.pullRequestId = pullRequestId;
+        this.headCommitSha = headCommitSha;
         this.labelName = labelName;
         this.action = action;
         this.changedAt = changedAt;
