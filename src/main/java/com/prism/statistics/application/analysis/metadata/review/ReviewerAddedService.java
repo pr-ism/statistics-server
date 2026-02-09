@@ -49,6 +49,7 @@ public class ReviewerAddedService {
 
         RequestedReviewerHistory requestedReviewerHistory = RequestedReviewerHistory.create(
                 requestedReviewer.getGithubPullRequestId(),
+                request.headCommitSha(),
                 reviewer,
                 ReviewerAction.REQUESTED,
                 requestedAt

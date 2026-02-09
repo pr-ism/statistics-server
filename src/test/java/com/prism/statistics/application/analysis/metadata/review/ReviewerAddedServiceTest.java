@@ -108,6 +108,8 @@ class ReviewerAddedServiceTest {
 
         RequestedReviewerHistory history = histories.get(0);
         assertAll(
+                () -> assertThat(history.getGithubPullRequestId()).isEqualTo(TEST_GITHUB_PULL_REQUEST_ID),
+                () -> assertThat(history.getHeadCommitSha()).isEqualTo(TEST_HEAD_COMMIT_SHA),
                 () -> assertThat(history.getReviewer().getUserName()).isEqualTo(githubMention),
                 () -> assertThat(history.getReviewer().getUserId()).isEqualTo(githubUid),
                 () -> assertThat(history.getAction()).isEqualTo(ReviewerAction.REQUESTED),
