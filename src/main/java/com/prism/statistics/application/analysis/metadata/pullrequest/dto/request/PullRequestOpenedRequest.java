@@ -21,7 +21,7 @@ public record PullRequestOpenedRequest(
             CommitsConnection commits
     ) {}
 
-    public record Author(String login) {}
+    public record Author(String login, Long id) {}
 
     public record CommitsConnection(int totalCount, List<CommitNode> nodes) {}
 
