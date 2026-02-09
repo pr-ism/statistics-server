@@ -54,7 +54,7 @@ public record PullRequestDetailResponse(
             pullRequest.getPullRequestNumber(),
             pullRequest.getTitle(),
             pullRequest.getState().name(),
-            pullRequest.getAuthorGithubId(),
+            pullRequest.getAuthor().getUserName(),
             pullRequest.getLink(),
             pullRequest.getCommitCount(),
             PullRequestChangeStatsResponse.from(Objects.requireNonNullElse(pullRequestChangeStats, PullRequestChangeStats.EMPTY)),
