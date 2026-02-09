@@ -8,13 +8,9 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullReque
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestLabelHistoryRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestLabelRepository;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -24,38 +20,42 @@ public class PullRequestLabelAddedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
-    private final PullRequestRepository pullRequestRepository;
     private final PullRequestLabelRepository pullRequestLabelRepository;
     private final PullRequestLabelHistoryRepository pullRequestLabelHistoryRepository;
 
-    @Transactional
     public void addPullRequestLabel(String apiKey, PullRequestLabelAddedRequest request) {
-        Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new InvalidApiKeyException());
+        validateApiKey(apiKey);
 
-        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.pullRequestNumber())
-                .orElseThrow(() -> new PullRequestNotFoundException());
-
-        Long pullRequestId = pullRequest.getId();
+        Long githubPullRequestId = request.githubPullRequestId();
+        String headCommitSha = request.headCommitSha();
         String labelName = request.label().name();
+        LocalDateTime labeledAt = localDateTimeConverter.toLocalDateTime(request.labeledAt());
 
-        if (pullRequestLabelRepository.exists(pullRequestId, labelName)) {
+        PullRequestLabel pullRequestLabel = PullRequestLabel.create(
+                githubPullRequestId, null, headCommitSha, labelName, labeledAt
+        );
+
+        PullRequestLabel saved = pullRequestLabelRepository.saveOrFind(pullRequestLabel);
+
+        if (saved != pullRequestLabel) {
             return;
         }
 
-        LocalDateTime labeledAt = localDateTimeConverter.toLocalDateTime(request.labeledAt());
-
-        PullRequestLabel pullRequestLabel = PullRequestLabel.create(pullRequestId, labelName, labeledAt);
-
-        pullRequestLabelRepository.save(pullRequestLabel);
-
         PullRequestLabelHistory pullRequestLabelHistory = PullRequestLabelHistory.create(
-                pullRequestId,
+                githubPullRequestId,
+                null,
+                headCommitSha,
                 labelName,
                 PullRequestLabelAction.ADDED,
                 labeledAt
         );
 
         pullRequestLabelHistoryRepository.save(pullRequestLabelHistory);
+    }
+
+    private void validateApiKey(String apiKey) {
+        if (!projectRepository.existsByApiKey(apiKey)) {
+            throw new InvalidApiKeyException();
+        }
     }
 }

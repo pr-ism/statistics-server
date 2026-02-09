@@ -13,7 +13,6 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullReque
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestLabelHistoryRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestLabelRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,9 @@ import java.util.concurrent.TimeUnit;
 class PullRequestLabelAddedServiceTest {
 
     private static final String TEST_API_KEY = "test-api-key";
+    private static final Long TEST_GITHUB_PULL_REQUEST_ID = 1001L;
     private static final int TEST_PULL_REQUEST_NUMBER = 123;
+    private static final String TEST_HEAD_COMMIT_SHA = "abc123";
 
     @Autowired
     private PullRequestLabelAddedService pullRequestLabelAddedService;
@@ -74,7 +75,11 @@ class PullRequestLabelAddedServiceTest {
 
         // then
         PullRequestLabel pullRequestLabel = jpaPullRequestLabelRepository.findAll().getFirst();
-        assertThat(pullRequestLabel.getLabelName()).isEqualTo(labelName);
+        assertAll(
+                () -> assertThat(pullRequestLabel.getGithubPullRequestId()).isEqualTo(TEST_GITHUB_PULL_REQUEST_ID),
+                () -> assertThat(pullRequestLabel.getHeadCommitSha()).isEqualTo(TEST_HEAD_COMMIT_SHA),
+                () -> assertThat(pullRequestLabel.getLabelName()).isEqualTo(labelName)
+        );
     }
 
     @Sql("/sql/webhook/insert_project_and_pull_request.sql")
@@ -126,13 +131,20 @@ class PullRequestLabelAddedServiceTest {
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void 존재하지_않는_PullRequest면_예외가_발생한다() {
+    void PullRequest가_없어도_Label이_저장된다() {
         // given
         PullRequestLabelAddedRequest request = createLabelAddedRequest("bug");
 
-        // when & then
-        assertThatThrownBy(() -> pullRequestLabelAddedService.addPullRequestLabel(TEST_API_KEY, request))
-                .isInstanceOf(PullRequestNotFoundException.class);
+        // when
+        pullRequestLabelAddedService.addPullRequestLabel(TEST_API_KEY, request);
+
+        // then
+        PullRequestLabel pullRequestLabel = jpaPullRequestLabelRepository.findAll().getFirst();
+        assertAll(
+                () -> assertThat(pullRequestLabel.getGithubPullRequestId()).isEqualTo(TEST_GITHUB_PULL_REQUEST_ID),
+                () -> assertThat(pullRequestLabel.getPullRequestId()).isNull(),
+                () -> assertThat(pullRequestLabel.getLabelName()).isEqualTo("bug")
+        );
     }
 
     @Sql("/sql/webhook/insert_project_and_pull_request.sql")
@@ -180,7 +192,9 @@ class PullRequestLabelAddedServiceTest {
 
     private PullRequestLabelAddedRequest createLabelAddedRequest(String labelName) {
         return new PullRequestLabelAddedRequest(
+                TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
+                TEST_HEAD_COMMIT_SHA,
                 new LabelData(labelName),
                 Instant.parse("2024-01-15T10:00:00Z")
         );
