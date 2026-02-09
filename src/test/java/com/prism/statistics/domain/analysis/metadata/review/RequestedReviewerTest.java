@@ -44,7 +44,7 @@ class RequestedReviewerTest {
                 null, HEAD_COMMIT_SHA, REVIEWER, REQUESTED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Github PullRequest ID는 필수입니다.");
+                .hasMessage("GitHub PullRequest ID는 필수입니다.");
     }
 
     @Test

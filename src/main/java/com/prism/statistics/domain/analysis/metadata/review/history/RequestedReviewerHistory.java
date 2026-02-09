@@ -84,7 +84,7 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
 
     private void validateGithubPullRequestId(Long githubPullRequestId) {
         if (githubPullRequestId == null) {
-            throw new IllegalArgumentException("Github PullRequest ID는 필수입니다.");
+            throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
         }
     }
 
