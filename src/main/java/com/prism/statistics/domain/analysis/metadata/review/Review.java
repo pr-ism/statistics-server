@@ -1,5 +1,6 @@
 package com.prism.statistics.domain.analysis.metadata.review;
 
+import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.common.CreatedAtEntity;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.analysis.metadata.review.vo.ReviewBody;
@@ -21,18 +22,19 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends CreatedAtEntity {
 
+    private Long pullRequestId;
+
     private Long githubPullRequestId;
 
     private Long githubReviewId;
 
-    private String githubMention;
-
-    private Long githubUid;
+    @Embedded
+    private GithubUser reviewer;
 
     @Enumerated(EnumType.STRING)
     private ReviewState reviewState;
 
-    private String commitSha;
+    private String headCommitSha;
 
     @Embedded
     private ReviewBody body;
@@ -44,10 +46,9 @@ public class Review extends CreatedAtEntity {
     public static Review create(
             Long githubPullRequestId,
             Long githubReviewId,
-            String githubMention,
-            Long githubUid,
+            GithubUser reviewer,
             ReviewState reviewState,
-            String commitSha,
+            String headCommitSha,
             String body,
             int commentCount,
             LocalDateTime submittedAt
@@ -55,10 +56,9 @@ public class Review extends CreatedAtEntity {
         return Review.builder()
                 .githubPullRequestId(githubPullRequestId)
                 .githubReviewId(githubReviewId)
-                .githubMention(githubMention)
-                .githubUid(githubUid)
+                .reviewer(reviewer)
                 .reviewState(reviewState)
-                .commitSha(commitSha)
+                .headCommitSha(headCommitSha)
                 .body(createReviewBody(reviewState, body))
                 .commentCount(commentCount)
                 .submittedAt(submittedAt)
@@ -76,22 +76,20 @@ public class Review extends CreatedAtEntity {
     private Review(
             Long githubPullRequestId,
             Long githubReviewId,
-            String githubMention,
-            Long githubUid,
+            GithubUser reviewer,
             ReviewState reviewState,
-            String commitSha,
+            String headCommitSha,
             ReviewBody body,
             int commentCount,
             LocalDateTime submittedAt
     ) {
-        validateFields(githubPullRequestId, githubReviewId, githubMention, githubUid, reviewState, commitSha, commentCount, submittedAt);
+        validateFields(githubPullRequestId, githubReviewId, reviewer, reviewState, headCommitSha, commentCount, submittedAt);
 
         this.githubPullRequestId = githubPullRequestId;
         this.githubReviewId = githubReviewId;
-        this.githubMention = githubMention;
-        this.githubUid = githubUid;
+        this.reviewer = reviewer;
         this.reviewState = reviewState;
-        this.commitSha = commitSha;
+        this.headCommitSha = headCommitSha;
         this.body = body;
         this.commentCount = commentCount;
         this.submittedAt = submittedAt;
@@ -100,19 +98,17 @@ public class Review extends CreatedAtEntity {
     private void validateFields(
             Long githubPullRequestId,
             Long githubReviewId,
-            String githubMention,
-            Long githubUid,
+            GithubUser reviewer,
             ReviewState reviewState,
-            String commitSha,
+            String headCommitSha,
             int commentCount,
             LocalDateTime submittedAt
     ) {
         validateGithubPullRequestId(githubPullRequestId);
         validateGithubReviewId(githubReviewId);
-        validateGithubMention(githubMention);
-        validateGithubUid(githubUid);
+        validateReviewer(reviewer);
         validateReviewState(reviewState);
-        validateCommitSha(commitSha);
+        validateHeadCommitSha(headCommitSha);
         validateCommentCount(commentCount);
         validateSubmittedAt(submittedAt);
     }
@@ -129,15 +125,9 @@ public class Review extends CreatedAtEntity {
         }
     }
 
-    private void validateGithubMention(String githubMention) {
-        if (githubMention == null || githubMention.isBlank()) {
-            throw new IllegalArgumentException("GitHub 멘션은 필수입니다.");
-        }
-    }
-
-    private void validateGithubUid(Long githubUid) {
-        if (githubUid == null) {
-            throw new IllegalArgumentException("GitHub UID는 필수입니다.");
+    private void validateReviewer(GithubUser reviewer) {
+        if (reviewer == null) {
+            throw new IllegalArgumentException("리뷰어는 필수입니다.");
         }
     }
 
@@ -147,9 +137,9 @@ public class Review extends CreatedAtEntity {
         }
     }
 
-    private void validateCommitSha(String commitSha) {
-        if (commitSha == null || commitSha.isBlank()) {
-            throw new IllegalArgumentException("커밋 SHA는 필수입니다.");
+    private void validateHeadCommitSha(String headCommitSha) {
+        if (headCommitSha == null || headCommitSha.isBlank()) {
+            throw new IllegalArgumentException("헤드 커밋 SHA는 필수입니다.");
         }
     }
 
