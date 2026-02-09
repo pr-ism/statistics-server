@@ -6,33 +6,33 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.time.LocalDateTime;
 
+import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
+import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewerAction;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewerAction;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class RequestedReviewerHistoryTest {
 
+    private static final Long GITHUB_PULL_REQUEST_ID = 1L;
+    private static final String HEAD_COMMIT_SHA = "abc123def456";
+    private static final GithubUser REVIEWER = GithubUser.create("reviewer1", 12345L);
     private static final LocalDateTime CHANGED_AT = LocalDateTime.of(2024, 1, 15, 10, 0, 0);
 
     @Test
     void 리뷰어_요청_이력을_생성한다() {
         // when
         RequestedReviewerHistory history = RequestedReviewerHistory.create(
-                1L, "reviewer1", 12345L, ReviewerAction.REQUESTED, CHANGED_AT
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, REVIEWER, ReviewerAction.REQUESTED, CHANGED_AT
         );
 
         // then
         assertAll(
-                () -> assertThat(history.getPullRequestId()).isEqualTo(1L),
-                () -> assertThat(history.getGithubMention()).isEqualTo("reviewer1"),
-                () -> assertThat(history.getGithubUid()).isEqualTo(12345L),
+                () -> assertThat(history.getGithubPullRequestId()).isEqualTo(GITHUB_PULL_REQUEST_ID),
+                () -> assertThat(history.getHeadCommitSha()).isEqualTo(HEAD_COMMIT_SHA),
+                () -> assertThat(history.getReviewer()).isEqualTo(REVIEWER),
                 () -> assertThat(history.getAction()).isEqualTo(ReviewerAction.REQUESTED),
                 () -> assertThat(history.getChangedAt()).isEqualTo(CHANGED_AT)
         );
@@ -42,56 +42,64 @@ class RequestedReviewerHistoryTest {
     void 리뷰어_제거_이력을_생성한다() {
         // when
         RequestedReviewerHistory history = RequestedReviewerHistory.create(
-                1L, "reviewer1", 12345L, ReviewerAction.REMOVED, CHANGED_AT
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, REVIEWER, ReviewerAction.REMOVED, CHANGED_AT
         );
 
         // then
         assertAll(
-                () -> assertThat(history.getPullRequestId()).isEqualTo(1L),
-                () -> assertThat(history.getGithubMention()).isEqualTo("reviewer1"),
-                () -> assertThat(history.getGithubUid()).isEqualTo(12345L),
+                () -> assertThat(history.getGithubPullRequestId()).isEqualTo(GITHUB_PULL_REQUEST_ID),
+                () -> assertThat(history.getHeadCommitSha()).isEqualTo(HEAD_COMMIT_SHA),
+                () -> assertThat(history.getReviewer()).isEqualTo(REVIEWER),
                 () -> assertThat(history.getAction()).isEqualTo(ReviewerAction.REMOVED),
                 () -> assertThat(history.getChangedAt()).isEqualTo(CHANGED_AT)
         );
     }
 
     @Test
-    void Pull_Request_ID가_null이면_예외가_발생한다() {
+    void Github_Pull_Request_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> RequestedReviewerHistory.create(
-                null, "reviewer1", 12345L, ReviewerAction.REQUESTED, CHANGED_AT
+                null, HEAD_COMMIT_SHA, REVIEWER, ReviewerAction.REQUESTED, CHANGED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("PullRequest ID는 필수입니다.");
-    }
-
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = {" "})
-    void GitHub_멘션이_null이거나_빈_문자열이면_예외가_발생한다(String githubMention) {
-        // when & then
-        assertThatThrownBy(() -> RequestedReviewerHistory.create(
-                1L, githubMention, 12345L, ReviewerAction.REQUESTED, CHANGED_AT
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("GitHub 멘션은 필수입니다.");
+                .hasMessage("Github PullRequest ID는 필수입니다.");
     }
 
     @Test
-    void GitHub_UID가_null이면_예외가_발생한다() {
+    void Head_Commit_SHA가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> RequestedReviewerHistory.create(
-                1L, "reviewer1", null, ReviewerAction.REQUESTED, CHANGED_AT
+                GITHUB_PULL_REQUEST_ID, null, REVIEWER, ReviewerAction.REQUESTED, CHANGED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("GitHub UID는 필수입니다.");
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
+    @Test
+    void Head_Commit_SHA가_빈_문자열이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> RequestedReviewerHistory.create(
+                GITHUB_PULL_REQUEST_ID, "  ", REVIEWER, ReviewerAction.REQUESTED, CHANGED_AT
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
+    @Test
+    void 리뷰어가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> RequestedReviewerHistory.create(
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, null, ReviewerAction.REQUESTED, CHANGED_AT
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("리뷰어는 필수입니다.");
     }
 
     @Test
     void 리뷰어_액션이_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> RequestedReviewerHistory.create(
-                1L, "reviewer1", 12345L, null, CHANGED_AT
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, REVIEWER, null, CHANGED_AT
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("리뷰어 액션은 필수입니다.");
@@ -101,7 +109,7 @@ class RequestedReviewerHistoryTest {
     void 변경_시각이_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> RequestedReviewerHistory.create(
-                1L, "reviewer1", 12345L, ReviewerAction.REQUESTED, null
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, REVIEWER, ReviewerAction.REQUESTED, null
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 시각은 필수입니다.");
