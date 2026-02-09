@@ -1,7 +1,9 @@
 
 package com.prism.statistics.domain.analysis.metadata.review;
 
+import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.common.CreatedAtEntity;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -18,40 +20,43 @@ public class RequestedReviewer extends CreatedAtEntity {
 
     private Long pullRequestId;
 
-    private String githubMention;
+    private Long githubPullRequestId;
 
-    private Long githubUid;
+    private String headCommitSha;
+
+    @Embedded
+    private GithubUser reviewer;
 
     private LocalDateTime requestedAt;
 
     public static RequestedReviewer create(
-            Long pullRequestId,
-            String githubMention,
-            Long githubUid,
+            Long githubPullRequestId,
+            String headCommitSha,
+            GithubUser reviewer,
             LocalDateTime requestedAt
     ) {
-        validatePullRequestId(pullRequestId);
-        validateGithubMention(githubMention);
-        validateGithubUid(githubUid);
+        validateGithubPullRequestId(githubPullRequestId);
+        validateHeadCommitSha(headCommitSha);
+        validateReviewer(reviewer);
         validateRequestedAt(requestedAt);
-        return new RequestedReviewer(pullRequestId, githubMention, githubUid, requestedAt);
+        return new RequestedReviewer(githubPullRequestId, headCommitSha, reviewer, requestedAt);
     }
 
-    private static void validatePullRequestId(Long pullRequestId) {
-        if (pullRequestId == null) {
-            throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
+    private static void validateGithubPullRequestId(Long githubPullRequestId) {
+        if (githubPullRequestId == null) {
+            throw new IllegalArgumentException("Github PullRequest ID는 필수입니다.");
         }
     }
 
-    private static void validateGithubMention(String githubMention) {
-        if (githubMention == null || githubMention.isBlank()) {
-            throw new IllegalArgumentException("GitHub 멘션은 필수입니다.");
+    private static void validateHeadCommitSha(String headCommitSha) {
+        if (headCommitSha == null || headCommitSha.isBlank()) {
+            throw new IllegalArgumentException("Head Commit SHA는 필수입니다.");
         }
     }
 
-    private static void validateGithubUid(Long githubUid) {
-        if (githubUid == null) {
-            throw new IllegalArgumentException("GitHub UID는 필수입니다.");
+    private static void validateReviewer(GithubUser reviewer) {
+        if (reviewer == null) {
+            throw new IllegalArgumentException("리뷰어는 필수입니다.");
         }
     }
 
@@ -62,14 +67,14 @@ public class RequestedReviewer extends CreatedAtEntity {
     }
 
     private RequestedReviewer(
-            Long pullRequestId,
-            String githubMention,
-            Long githubUid,
+            Long githubPullRequestId,
+            String headCommitSha,
+            GithubUser reviewer,
             LocalDateTime requestedAt
     ) {
-        this.pullRequestId = pullRequestId;
-        this.githubMention = githubMention;
-        this.githubUid = githubUid;
+        this.githubPullRequestId = githubPullRequestId;
+        this.headCommitSha = headCommitSha;
+        this.reviewer = reviewer;
         this.requestedAt = requestedAt;
     }
 }
