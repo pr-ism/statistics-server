@@ -21,12 +21,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PullRequest extends CreatedAtEntity {
 
+    private Long githubPullRequestId;
+
     private Long projectId;
 
     @Embedded
     private GithubUser author;
 
     private int pullRequestNumber;
+
+    private String headCommitSha;
 
     private String title;
 
@@ -45,9 +49,11 @@ public class PullRequest extends CreatedAtEntity {
 
     @Builder
     private PullRequest(
+            Long githubPullRequestId,
             Long projectId,
             GithubUser author,
             int pullRequestNumber,
+            String headCommitSha,
             String title,
             PullRequestState state,
             String link,
@@ -55,11 +61,13 @@ public class PullRequest extends CreatedAtEntity {
             int commitCount,
             PullRequestTiming timing
     ) {
-        validateFields(projectId, author, pullRequestNumber, title, state, link, changeStats, commitCount, timing);
+        validateFields(githubPullRequestId, projectId, author, pullRequestNumber, headCommitSha, title, state, link, changeStats, commitCount, timing);
 
+        this.githubPullRequestId = githubPullRequestId;
         this.projectId = projectId;
         this.author = author;
         this.pullRequestNumber = pullRequestNumber;
+        this.headCommitSha = headCommitSha;
         this.title = title;
         this.state = state;
         this.link = link;
@@ -69,9 +77,11 @@ public class PullRequest extends CreatedAtEntity {
     }
 
     private void validateFields(
+            Long githubPullRequestId,
             Long projectId,
             GithubUser author,
             int pullRequestNumber,
+            String headCommitSha,
             String title,
             PullRequestState state,
             String link,
@@ -79,15 +89,23 @@ public class PullRequest extends CreatedAtEntity {
             int commitCount,
             PullRequestTiming timing
     ) {
+        validateGithubPullRequestId(githubPullRequestId);
         validateProjectId(projectId);
         validateAuthor(author);
         validatePullRequestNumber(pullRequestNumber);
+        validateHeadCommitSha(headCommitSha);
         validateTitle(title);
         validateState(state);
         validateLink(link);
         validateChangeStats(changeStats);
         validateCommitCount(commitCount);
         validateTiming(timing);
+    }
+
+    private void validateGithubPullRequestId(Long githubPullRequestId) {
+        if (githubPullRequestId == null) {
+            throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
+        }
     }
 
     private void validateProjectId(Long projectId) {
@@ -105,6 +123,12 @@ public class PullRequest extends CreatedAtEntity {
     private void validatePullRequestNumber(int pullRequestNumber) {
         if (pullRequestNumber <= 0) {
             throw new IllegalArgumentException("PullRequest 번호는 양수여야 합니다.");
+        }
+    }
+
+    private void validateHeadCommitSha(String headCommitSha) {
+        if (headCommitSha == null || headCommitSha.isBlank()) {
+            throw new IllegalArgumentException("Head Commit SHA는 필수입니다.");
         }
     }
 
