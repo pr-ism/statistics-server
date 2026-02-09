@@ -53,9 +53,11 @@ public class PullRequestOpenedService {
         LocalDateTime pullRequestCreatedAt = localDateTimeConverter.toLocalDateTime(pullRequestData.createdAt());
 
         PullRequest pullRequest = PullRequest.builder()
+                .githubPullRequestId(pullRequestData.githubPullRequestId())
                 .projectId(projectId)
                 .author(GithubUser.create(pullRequestData.author().login(), pullRequestData.author().id()))
                 .pullRequestNumber(pullRequestData.number())
+                .headCommitSha(pullRequestData.headCommitSha())
                 .title(pullRequestData.title())
                 .state(PullRequestState.OPEN)
                 .link(pullRequestData.url())
