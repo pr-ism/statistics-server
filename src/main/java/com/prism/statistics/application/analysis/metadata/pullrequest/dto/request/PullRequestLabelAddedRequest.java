@@ -3,7 +3,9 @@ package com.prism.statistics.application.analysis.metadata.pullrequest.dto.reque
 import java.time.Instant;
 
 public record PullRequestLabelAddedRequest(
+        Long githubPullRequestId,
         int pullRequestNumber,
+        String headCommitSha,
         LabelData label,
         Instant labeledAt
 ) {
