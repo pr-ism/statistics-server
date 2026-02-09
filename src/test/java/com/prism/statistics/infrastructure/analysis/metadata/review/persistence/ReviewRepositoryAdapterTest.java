@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import java.time.LocalDateTime;
@@ -138,8 +139,7 @@ class ReviewRepositoryAdapterTest {
         return Review.create(
                 1L,
                 githubReviewId,
-                "reviewer",
-                12345L,
+                GithubUser.create("reviewer", 12345L),
                 ReviewState.APPROVED,
                 "abc123sha",
                 "LGTM",

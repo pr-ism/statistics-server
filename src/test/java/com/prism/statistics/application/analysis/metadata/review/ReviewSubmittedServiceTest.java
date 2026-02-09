@@ -71,10 +71,10 @@ class ReviewSubmittedServiceTest {
         assertAll(
                 () -> assertThat(review.getGithubPullRequestId()).isEqualTo(1L),
                 () -> assertThat(review.getGithubReviewId()).isEqualTo(githubReviewId),
-                () -> assertThat(review.getGithubMention()).isEqualTo(reviewerLogin),
-                () -> assertThat(review.getGithubUid()).isEqualTo(reviewerId),
+                () -> assertThat(review.getReviewer().getUserName()).isEqualTo(reviewerLogin),
+                () -> assertThat(review.getReviewer().getUserId()).isEqualTo(reviewerId),
                 () -> assertThat(review.getReviewState()).isEqualTo(ReviewState.APPROVED),
-                () -> assertThat(review.getCommitSha()).isEqualTo("abc123sha"),
+                () -> assertThat(review.getHeadCommitSha()).isEqualTo("abc123sha"),
                 () -> assertThat(review.getBody().getValue()).isEqualTo("LGTM"),
                 () -> assertThat(review.getCommentCount()).isEqualTo(3),
                 () -> assertThat(review.getSubmittedAt()).isEqualTo(EXPECTED_SUBMITTED_AT)
