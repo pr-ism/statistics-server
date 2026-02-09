@@ -46,7 +46,7 @@ public class RequestedReviewerRepositoryAdapter implements RequestedReviewerRepo
                 .from(requestedReviewer)
                 .where(
                         requestedReviewer.pullRequestId.eq(pullRequestId),
-                        requestedReviewer.githubUid.eq(githubUid)
+                        requestedReviewer.reviewer.userId.eq(githubUid)
                 )
                 .fetchFirst() != null;
     }
@@ -58,7 +58,7 @@ public class RequestedReviewerRepositoryAdapter implements RequestedReviewerRepo
                 .delete(requestedReviewer)
                 .where(
                         requestedReviewer.pullRequestId.eq(pullRequestId),
-                        requestedReviewer.githubUid.eq(githubUid)
+                        requestedReviewer.reviewer.userId.eq(githubUid)
                 )
                 .execute();
     }
