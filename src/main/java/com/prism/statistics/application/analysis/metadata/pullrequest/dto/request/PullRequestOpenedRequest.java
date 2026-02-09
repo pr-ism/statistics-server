@@ -10,9 +10,11 @@ public record PullRequestOpenedRequest(
 ) {
 
     public record PullRequestData(
+            Long githubPullRequestId,
             int number,
             String title,
             String url,
+            String headCommitSha,
             int additions,
             int deletions,
             int changedFiles,
