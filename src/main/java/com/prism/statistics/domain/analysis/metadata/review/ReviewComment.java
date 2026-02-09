@@ -22,6 +22,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ReviewComment extends CreatedAtEntity {
 
+    private Long reviewId;
+
     private Long githubCommentId;
 
     private Long githubReviewId;
