@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum PullRequestLabelErrorCode implements ErrorCode {
 
-    PULL_REQUEST_LABEL_NOT_FOUND("PRL00", "PullRequestLabel을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    PULL_REQUEST_LABEL_NOT_FOUND("PRL00", "PullRequestLabel을 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String errorCode;
     private final String message;

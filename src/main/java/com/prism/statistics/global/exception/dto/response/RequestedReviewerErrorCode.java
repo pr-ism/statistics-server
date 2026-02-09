@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum RequestedReviewerErrorCode implements ErrorCode {
 
-    REQUESTED_REVIEWER_NOT_FOUND("RR00", "요청된 리뷰어를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    REQUESTED_REVIEWER_NOT_FOUND("RR00", "요청된 리뷰어를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String errorCode;
     private final String message;

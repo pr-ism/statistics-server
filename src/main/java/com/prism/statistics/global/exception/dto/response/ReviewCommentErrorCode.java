@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ReviewCommentErrorCode implements ErrorCode {
 
-    REVIEW_COMMENT_NOT_FOUND("RC00", "리뷰 댓글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    REVIEW_COMMENT_NOT_FOUND("RC00", "리뷰 댓글을 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String errorCode;
     private final String message;

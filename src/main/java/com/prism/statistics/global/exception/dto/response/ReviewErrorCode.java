@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ReviewErrorCode implements ErrorCode {
 
-    REVIEW_NOT_FOUND("RV00", "Review를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    REVIEW_NOT_FOUND("RV00", "Review를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String errorCode;
     private final String message;
