@@ -11,7 +11,6 @@ import com.prism.statistics.domain.analysis.metadata.review.RequestedReviewer;
 import com.prism.statistics.domain.analysis.metadata.review.history.RequestedReviewerHistory;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewerAction;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaRequestedReviewerHistoryRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaRequestedReviewerRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -36,7 +35,9 @@ import java.util.concurrent.TimeUnit;
 class ReviewerAddedServiceTest {
 
     private static final String TEST_API_KEY = "test-api-key";
+    private static final Long TEST_GITHUB_PULL_REQUEST_ID = 999L;
     private static final int TEST_PULL_REQUEST_NUMBER = 123;
+    private static final String TEST_HEAD_COMMIT_SHA = "abc123def456";
     private static final Instant TEST_REQUESTED_AT = Instant.parse("2024-01-15T10:00:00Z");
     private static final LocalDateTime EXPECTED_REQUESTED_AT = LocalDateTime.of(2024, 1, 15, 19, 0, 0);
 
@@ -82,8 +83,10 @@ class ReviewerAddedServiceTest {
 
         RequestedReviewer requestedReviewer = reviewers.get(0);
         assertAll(
-                () -> assertThat(requestedReviewer.getGithubMention()).isEqualTo(githubMention),
-                () -> assertThat(requestedReviewer.getGithubUid()).isEqualTo(githubUid),
+                () -> assertThat(requestedReviewer.getGithubPullRequestId()).isEqualTo(TEST_GITHUB_PULL_REQUEST_ID),
+                () -> assertThat(requestedReviewer.getHeadCommitSha()).isEqualTo(TEST_HEAD_COMMIT_SHA),
+                () -> assertThat(requestedReviewer.getReviewer().getUserName()).isEqualTo(githubMention),
+                () -> assertThat(requestedReviewer.getReviewer().getUserId()).isEqualTo(githubUid),
                 () -> assertThat(requestedReviewer.getRequestedAt()).isEqualTo(EXPECTED_REQUESTED_AT)
         );
     }
@@ -105,8 +108,8 @@ class ReviewerAddedServiceTest {
 
         RequestedReviewerHistory history = histories.get(0);
         assertAll(
-                () -> assertThat(history.getGithubMention()).isEqualTo(githubMention),
-                () -> assertThat(history.getGithubUid()).isEqualTo(githubUid),
+                () -> assertThat(history.getReviewer().getUserName()).isEqualTo(githubMention),
+                () -> assertThat(history.getReviewer().getUserId()).isEqualTo(githubUid),
                 () -> assertThat(history.getAction()).isEqualTo(ReviewerAction.REQUESTED),
                 () -> assertThat(history.getChangedAt()).isEqualTo(EXPECTED_REQUESTED_AT)
         );
@@ -138,17 +141,6 @@ class ReviewerAddedServiceTest {
         // when & then
         assertThatThrownBy(() -> reviewerAddedService.addReviewer(invalidApiKey, request))
                 .isInstanceOf(InvalidApiKeyException.class);
-    }
-
-    @Sql("/sql/webhook/insert_project.sql")
-    @Test
-    void 존재하지_않는_PullRequest면_예외가_발생한다() {
-        // given
-        ReviewerAddedRequest request = createReviewerAddedRequest("reviewer1", 12345L);
-
-        // when & then
-        assertThatThrownBy(() -> reviewerAddedService.addReviewer(TEST_API_KEY, request))
-                .isInstanceOf(PullRequestNotFoundException.class);
     }
 
     @Sql("/sql/webhook/insert_project_and_pull_request.sql")
@@ -197,7 +189,9 @@ class ReviewerAddedServiceTest {
 
     private ReviewerAddedRequest createReviewerAddedRequest(String login, Long id) {
         return new ReviewerAddedRequest(
+                TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
+                TEST_HEAD_COMMIT_SHA,
                 new ReviewerData(login, id),
                 TEST_REQUESTED_AT
         );
