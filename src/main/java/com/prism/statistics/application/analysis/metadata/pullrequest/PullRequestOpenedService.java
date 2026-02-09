@@ -93,6 +93,7 @@ public class PullRequestOpenedService {
         PullRequestOpenCreatedEvent event = new PullRequestOpenCreatedEvent(
                 savedPullRequest.getId(),
                 projectId,
+                pullRequestData.headCommitSha(),
                 PullRequestState.OPEN,
                 pullRequestChangeStats,
                 pullRequestData.commits().totalCount(),

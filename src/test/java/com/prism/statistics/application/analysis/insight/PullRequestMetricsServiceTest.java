@@ -96,6 +96,7 @@ class PullRequestMetricsServiceTest {
         return new PullRequestOpenCreatedEvent(
                 1L,
                 10L,
+                "abc123",
                 PullRequestState.OPEN,
                 changeStats,
                 4,

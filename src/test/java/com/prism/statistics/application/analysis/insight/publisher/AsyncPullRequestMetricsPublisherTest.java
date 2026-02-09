@@ -46,6 +46,7 @@ class AsyncPullRequestMetricsPublisherTest {
         return new PullRequestOpenCreatedEvent(
                 1L,
                 2L,
+                "abc123",
                 PullRequestState.OPEN,
                 PullRequestChangeStats.create(1, 2, 3),
                 1,
