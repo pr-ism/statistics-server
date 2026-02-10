@@ -76,7 +76,8 @@ class PullRequestLabelRemovedServiceTest {
         PullRequestLabelHistory pullRequestLabelHistory = jpaPullRequestLabelHistoryRepository.findAll().getFirst();
         assertAll(
                 () -> assertThat(pullRequestLabelHistory.getLabelName()).isEqualTo(labelName),
-                () -> assertThat(pullRequestLabelHistory.getAction()).isEqualTo(PullRequestLabelAction.REMOVED)
+                () -> assertThat(pullRequestLabelHistory.getAction()).isEqualTo(PullRequestLabelAction.REMOVED),
+                () -> assertThat(pullRequestLabelHistory.getPullRequestId()).isEqualTo(1L)
         );
     }
 

@@ -97,7 +97,8 @@ class PullRequestLabelAddedServiceTest {
         PullRequestLabelHistory pullRequestLabelHistory = jpaPullRequestLabelHistoryRepository.findAll().getFirst();
         assertAll(
                 () -> assertThat(pullRequestLabelHistory.getLabelName()).isEqualTo(labelName),
-                () -> assertThat(pullRequestLabelHistory.getAction()).isEqualTo(PullRequestLabelAction.ADDED)
+                () -> assertThat(pullRequestLabelHistory.getAction()).isEqualTo(PullRequestLabelAction.ADDED),
+                () -> assertThat(pullRequestLabelHistory.getPullRequestId()).isEqualTo(1L)
         );
     }
 
