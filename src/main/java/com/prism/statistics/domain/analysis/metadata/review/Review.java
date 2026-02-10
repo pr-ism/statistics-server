@@ -43,6 +43,12 @@ public class Review extends CreatedAtEntity {
 
     private LocalDateTime submittedAt;
 
+    public void assignPullRequestId(Long pullRequestId) {
+        if (this.pullRequestId == null) {
+            this.pullRequestId = pullRequestId;
+        }
+    }
+
     @Builder
     private Review(
             Long githubPullRequestId,

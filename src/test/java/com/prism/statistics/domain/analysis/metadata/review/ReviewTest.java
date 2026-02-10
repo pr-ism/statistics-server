@@ -268,4 +268,47 @@ class ReviewTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("댓글 수는 0 이상이어야 합니다.");
     }
+
+    @Test
+    void assignPullRequestId로_pullRequestId를_할당한다() {
+        // given
+        Review review = Review.builder()
+                .githubPullRequestId(1L)
+                .githubReviewId(100L)
+                .reviewer(REVIEWER)
+                .reviewState(ReviewState.APPROVED)
+                .headCommitSha("abc123")
+                .body("LGTM")
+                .commentCount(0)
+                .submittedAt(SUBMITTED_AT)
+                .build();
+
+        // when
+        review.assignPullRequestId(1L);
+
+        // then
+        assertThat(review.getPullRequestId()).isEqualTo(1L);
+    }
+
+    @Test
+    void pullRequestId가_이미_할당되어_있으면_덮어쓰지_않는다() {
+        // given
+        Review review = Review.builder()
+                .githubPullRequestId(1L)
+                .githubReviewId(100L)
+                .reviewer(REVIEWER)
+                .reviewState(ReviewState.APPROVED)
+                .headCommitSha("abc123")
+                .body("LGTM")
+                .commentCount(0)
+                .submittedAt(SUBMITTED_AT)
+                .build();
+        review.assignPullRequestId(1L);
+
+        // when
+        review.assignPullRequestId(999L);
+
+        // then
+        assertThat(review.getPullRequestId()).isEqualTo(1L);
+    }
 }
