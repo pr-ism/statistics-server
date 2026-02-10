@@ -2,6 +2,7 @@ package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentCreatedRequest;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
+import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
 import com.prism.statistics.domain.analysis.metadata.review.enums.CommentSide;
@@ -48,8 +49,7 @@ public class ReviewCommentCreatedService {
                 .side(CommentSide.from(request.side()))
                 .commitSha(request.commitSha())
                 .parentCommentId(ParentCommentId.create(request.inReplyToId()))
-                .authorMention(request.author().login())
-                .authorGithubUid(request.author().id())
+                .author(GithubUser.create(request.author().login(), request.author().id()))
                 .githubCreatedAt(createdAt)
                 .githubUpdatedAt(updatedAt)
                 .deleted(false)

@@ -86,8 +86,8 @@ class ReviewCommentCreatedServiceTest {
                 () -> assertThat(comment.getSide()).isEqualTo(CommentSide.RIGHT),
                 () -> assertThat(comment.getCommitSha()).isEqualTo("abc123sha"),
                 () -> assertThat(comment.getParentCommentId().hasParent()).isFalse(),
-                () -> assertThat(comment.getAuthorMention()).isEqualTo(authorLogin),
-                () -> assertThat(comment.getAuthorGithubUid()).isEqualTo(authorId),
+                () -> assertThat(comment.getAuthor().getUserName()).isEqualTo(authorLogin),
+                () -> assertThat(comment.getAuthor().getUserId()).isEqualTo(authorId),
                 () -> assertThat(comment.getGithubCreatedAt()).isEqualTo(EXPECTED_CREATED_AT),
                 () -> assertThat(comment.getGithubUpdatedAt()).isEqualTo(EXPECTED_CREATED_AT),
                 () -> assertThat(comment.isDeleted()).isFalse()
