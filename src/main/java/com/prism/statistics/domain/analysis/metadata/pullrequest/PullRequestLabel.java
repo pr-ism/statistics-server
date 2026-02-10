@@ -4,6 +4,7 @@ import com.prism.statistics.domain.common.CreatedAtEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,7 +28,6 @@ public class PullRequestLabel extends CreatedAtEntity {
 
     public static PullRequestLabel create(
             Long githubPullRequestId,
-            Long pullRequestId,
             String headCommitSha,
             String labelName,
             LocalDateTime labeledAt
@@ -36,7 +36,13 @@ public class PullRequestLabel extends CreatedAtEntity {
         validateHeadCommitSha(headCommitSha);
         validateLabelName(labelName);
         validateLabeledAt(labeledAt);
-        return new PullRequestLabel(githubPullRequestId, pullRequestId, headCommitSha, labelName, labeledAt);
+        return new PullRequestLabel(githubPullRequestId, headCommitSha, labelName, labeledAt);
+    }
+
+    public void assignPullRequestId(Long pullRequestId) {
+        if (this.pullRequestId == null) {
+            this.pullRequestId = pullRequestId;
+        }
     }
 
     private static void validateGithubPullRequestId(Long githubPullRequestId) {
@@ -63,15 +69,14 @@ public class PullRequestLabel extends CreatedAtEntity {
         }
     }
 
+    @Builder
     private PullRequestLabel(
             Long githubPullRequestId,
-            Long pullRequestId,
             String headCommitSha,
             String labelName,
             LocalDateTime labeledAt
     ) {
         this.githubPullRequestId = githubPullRequestId;
-        this.pullRequestId = pullRequestId;
         this.headCommitSha = headCommitSha;
         this.labelName = labelName;
         this.labeledAt = labeledAt;
