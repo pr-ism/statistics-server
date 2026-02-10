@@ -14,4 +14,6 @@ public interface PullRequestRepository {
     Optional<PullRequest> findWithLock(Long projectId, int pullRequestNumber);
 
     List<PullRequest> findAllByProjectId(Long projectId);
+
+    Optional<Long> findIdByGithubId(Long githubPullRequestId);
 }
