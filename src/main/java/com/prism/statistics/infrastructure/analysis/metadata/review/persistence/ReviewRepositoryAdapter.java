@@ -22,8 +22,7 @@ public class ReviewRepositoryAdapter implements ReviewRepository {
     @Override
     public Review saveOrFind(Review review) {
         try {
-            reviewCreator.saveNew(review);
-            return review;
+            return reviewCreator.saveNew(review);
         } catch (DataIntegrityViolationException ex) {
             if (duplicateKeyDetector.isDuplicateKey(ex)) {
                 return findByGithubReviewId(review.getGithubReviewId())

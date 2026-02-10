@@ -7,10 +7,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullReque
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestLabelHistoryRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestLabelRepository;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,22 +20,18 @@ public class PullRequestLabelRemovedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
-    private final PullRequestRepository pullRequestRepository;
     private final PullRequestLabelRepository pullRequestLabelRepository;
     private final PullRequestLabelHistoryRepository pullRequestLabelHistoryRepository;
 
     @Transactional
     public void removePullRequestLabel(String apiKey, PullRequestLabelRemovedRequest request) {
-        Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new InvalidApiKeyException());
+        validateApiKey(apiKey);
 
-        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.pullRequestNumber())
-                .orElseThrow(() -> new PullRequestNotFoundException());
-
-        Long pullRequestId = pullRequest.getId();
+        Long githubPullRequestId = request.githubPullRequestId();
+        String headCommitSha = request.headCommitSha();
         String labelName = request.label().name();
 
-        long deleted = pullRequestLabelRepository.deleteLabel(pullRequestId, labelName);
+        long deleted = pullRequestLabelRepository.deleteLabelByGithubId(githubPullRequestId, labelName);
 
         if (deleted == 0L) {
             return;
@@ -47,11 +40,19 @@ public class PullRequestLabelRemovedService {
         LocalDateTime unlabeledAt = localDateTimeConverter.toLocalDateTime(request.unlabeledAt());
 
         PullRequestLabelHistory pullRequestLabelHistory = PullRequestLabelHistory.create(
-                pullRequestId,
+                githubPullRequestId,
+                null,
+                headCommitSha,
                 labelName,
                 PullRequestLabelAction.REMOVED,
                 unlabeledAt
         );
         pullRequestLabelHistoryRepository.save(pullRequestLabelHistory);
+    }
+
+    private void validateApiKey(String apiKey) {
+        if (!projectRepository.existsByApiKey(apiKey)) {
+            throw new InvalidApiKeyException();
+        }
     }
 }

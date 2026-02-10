@@ -8,6 +8,7 @@ import com.prism.statistics.application.analysis.metadata.pullrequest.event.Pull
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent.CommitData;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
+import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
@@ -51,24 +52,23 @@ public class PullRequestOpenedService {
     private PullRequest savePullRequest(Long projectId, PullRequestData pullRequestData) {
         LocalDateTime pullRequestCreatedAt = localDateTimeConverter.toLocalDateTime(pullRequestData.createdAt());
 
-        PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(
-                pullRequestData.changedFiles(),
-                pullRequestData.additions(),
-                pullRequestData.deletions()
-        );
-
-        PullRequestTiming pullRequestTiming = PullRequestTiming.createOpen(pullRequestCreatedAt);
-
-        PullRequest pullRequest = PullRequest.opened(
-                projectId,
-                pullRequestData.author().login(),
-                pullRequestData.number(),
-                pullRequestData.title(),
-                pullRequestData.url(),
-                pullRequestChangeStats,
-                pullRequestData.commits().totalCount(),
-                pullRequestTiming
-        );
+        PullRequest pullRequest = PullRequest.builder()
+                .githubPullRequestId(pullRequestData.githubPullRequestId())
+                .projectId(projectId)
+                .author(GithubUser.create(pullRequestData.author().login(), pullRequestData.author().id()))
+                .pullRequestNumber(pullRequestData.number())
+                .headCommitSha(pullRequestData.headCommitSha())
+                .title(pullRequestData.title())
+                .state(PullRequestState.OPEN)
+                .link(pullRequestData.url())
+                .changeStats(PullRequestChangeStats.create(
+                        pullRequestData.changedFiles(),
+                        pullRequestData.additions(),
+                        pullRequestData.deletions()
+                ))
+                .commitCount(pullRequestData.commits().totalCount())
+                .timing(PullRequestTiming.createOpen(pullRequestCreatedAt))
+                .build();
 
         return pullRequestRepository.save(pullRequest);
     }
@@ -93,6 +93,7 @@ public class PullRequestOpenedService {
         PullRequestOpenCreatedEvent event = new PullRequestOpenCreatedEvent(
                 savedPullRequest.getId(),
                 projectId,
+                pullRequestData.headCommitSha(),
                 PullRequestState.OPEN,
                 pullRequestChangeStats,
                 pullRequestData.commits().totalCount(),

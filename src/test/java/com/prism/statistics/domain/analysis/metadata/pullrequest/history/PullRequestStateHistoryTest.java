@@ -16,17 +16,19 @@ import org.junit.jupiter.api.Test;
 class PullRequestStateHistoryTest {
 
     private static final LocalDateTime CHANGED_AT = LocalDateTime.of(2024, 1, 15, 10, 0);
+    private static final String HEAD_COMMIT_SHA = "abc123";
 
     @Test
     void 상태_변경_이력을_생성한다() {
         // when
         PullRequestStateHistory history = PullRequestStateHistory.create(
-                1L, PullRequestState.OPEN, PullRequestState.MERGED, CHANGED_AT
+                1L, HEAD_COMMIT_SHA, PullRequestState.OPEN, PullRequestState.MERGED, CHANGED_AT
         );
 
         // then
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isEqualTo(1L),
+                () -> assertThat(history.getHeadCommitSha()).isEqualTo(HEAD_COMMIT_SHA),
                 () -> assertThat(history.getPreviousState()).isEqualTo(PullRequestState.OPEN),
                 () -> assertThat(history.getNewState()).isEqualTo(PullRequestState.MERGED),
                 () -> assertThat(history.getChangedAt()).isEqualTo(CHANGED_AT),
@@ -37,11 +39,12 @@ class PullRequestStateHistoryTest {
     @Test
     void 최초_상태_이력을_생성한다() {
         // when
-        PullRequestStateHistory history = PullRequestStateHistory.createInitial(1L, PullRequestState.OPEN, CHANGED_AT);
+        PullRequestStateHistory history = PullRequestStateHistory.createInitial(1L, HEAD_COMMIT_SHA, PullRequestState.OPEN, CHANGED_AT);
 
         // then
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isEqualTo(1L),
+                () -> assertThat(history.getHeadCommitSha()).isEqualTo(HEAD_COMMIT_SHA),
                 () -> assertThat(history.getPreviousState()).isNull(),
                 () -> assertThat(history.getNewState()).isEqualTo(PullRequestState.OPEN),
                 () -> assertThat(history.getChangedAt()).isEqualTo(CHANGED_AT),
@@ -52,7 +55,7 @@ class PullRequestStateHistoryTest {
     @Test
     void 최초_상태가_DRAFT인_이력을_생성한다() {
         // when
-        PullRequestStateHistory history = PullRequestStateHistory.createInitial(1L, PullRequestState.DRAFT, CHANGED_AT);
+        PullRequestStateHistory history = PullRequestStateHistory.createInitial(1L, HEAD_COMMIT_SHA, PullRequestState.DRAFT, CHANGED_AT);
 
         // then
         assertAll(
@@ -65,7 +68,7 @@ class PullRequestStateHistoryTest {
     @Test
     void Pull_Request_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestStateHistory.create(null, PullRequestState.OPEN, PullRequestState.MERGED, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestStateHistory.create(null, HEAD_COMMIT_SHA, PullRequestState.OPEN, PullRequestState.MERGED, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PullRequest ID는 필수입니다.");
     }
@@ -73,15 +76,31 @@ class PullRequestStateHistoryTest {
     @Test
     void 최초_상태_생성시_PullRequest_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(null, PullRequestState.OPEN, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(null, HEAD_COMMIT_SHA, PullRequestState.OPEN, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PullRequest ID는 필수입니다.");
     }
 
     @Test
+    void Head_Commit_SHA가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestStateHistory.create(1L, null, PullRequestState.OPEN, PullRequestState.MERGED, CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
+    @Test
+    void Head_Commit_SHA가_빈_문자열이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestStateHistory.create(1L, "  ", PullRequestState.OPEN, PullRequestState.MERGED, CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
+    @Test
     void 새로운_상태가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestStateHistory.create(1L, PullRequestState.OPEN, null, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestStateHistory.create(1L, HEAD_COMMIT_SHA, PullRequestState.OPEN, null, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("새로운 상태는 필수입니다.");
     }
@@ -89,7 +108,7 @@ class PullRequestStateHistoryTest {
     @Test
     void 최초_상태_생성시_상태가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(1L, null, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(1L, HEAD_COMMIT_SHA, null, CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("새로운 상태는 필수입니다.");
     }
@@ -97,7 +116,7 @@ class PullRequestStateHistoryTest {
     @Test
     void 변경_시각이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestStateHistory.create(1L, PullRequestState.OPEN, PullRequestState.MERGED, null))
+        assertThatThrownBy(() -> PullRequestStateHistory.create(1L, HEAD_COMMIT_SHA, PullRequestState.OPEN, PullRequestState.MERGED, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 시각은 필수입니다.");
     }
@@ -105,7 +124,7 @@ class PullRequestStateHistoryTest {
     @Test
     void 최초_상태_생성시_변경_시각이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(1L, PullRequestState.OPEN, null))
+        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(1L, HEAD_COMMIT_SHA, PullRequestState.OPEN, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 시각은 필수입니다.");
     }

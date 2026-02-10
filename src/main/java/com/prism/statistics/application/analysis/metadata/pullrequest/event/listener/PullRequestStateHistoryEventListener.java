@@ -18,6 +18,7 @@ public class PullRequestStateHistoryEventListener {
     public void handle(PullRequestOpenCreatedEvent event) {
         PullRequestStateHistory pullRequestStateHistory = PullRequestStateHistory.createInitial(
                 event.pullRequestId(),
+                event.headCommitSha(),
                 event.initialState(),
                 event.pullRequestCreatedAt()
         );

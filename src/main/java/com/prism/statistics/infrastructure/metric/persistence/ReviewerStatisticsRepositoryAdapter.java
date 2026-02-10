@@ -25,7 +25,7 @@ public class ReviewerStatisticsRepositoryAdapter implements ReviewerStatisticsRe
                 .select(
                         Projections.constructor(
                                 ReviewerStatisticsDto.class,
-                                requestedReviewer.githubMention,
+                                requestedReviewer.reviewer.userName,
                                 requestedReviewer.count(),
                                 pullRequest.changeStats.additionCount.sumLong().coalesce(0L),
                                 pullRequest.changeStats.deletionCount.sumLong().coalesce(0L),
@@ -38,7 +38,7 @@ public class ReviewerStatisticsRepositoryAdapter implements ReviewerStatisticsRe
                 .from(requestedReviewer)
                 .join(pullRequest).on(requestedReviewer.pullRequestId.eq(pullRequest.id))
                 .where(pullRequest.projectId.eq(projectId))
-                .groupBy(requestedReviewer.githubMention)
+                .groupBy(requestedReviewer.reviewer.userName)
                 .fetch();
     }
 }

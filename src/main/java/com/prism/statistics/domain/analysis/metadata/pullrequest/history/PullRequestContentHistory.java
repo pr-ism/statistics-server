@@ -19,6 +19,8 @@ public class PullRequestContentHistory extends CreatedAtEntity {
 
     private Long pullRequestId;
 
+    private String headCommitSha;
+
     @Embedded
     private PullRequestChangeStats changeStats;
 
@@ -28,20 +30,28 @@ public class PullRequestContentHistory extends CreatedAtEntity {
 
     public static PullRequestContentHistory create(
             Long pullRequestId,
+            String headCommitSha,
             PullRequestChangeStats changeStats,
             int commitCount,
             LocalDateTime changedAt
     ) {
         validatePullRequestId(pullRequestId);
+        validateHeadCommitSha(headCommitSha);
         validateChangeStats(changeStats);
         validateCommitCount(commitCount);
         validateChangedAt(changedAt);
-        return new PullRequestContentHistory(pullRequestId, changeStats, commitCount, changedAt);
+        return new PullRequestContentHistory(pullRequestId, headCommitSha, changeStats, commitCount, changedAt);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
             throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
+        }
+    }
+
+    private static void validateHeadCommitSha(String headCommitSha) {
+        if (headCommitSha == null || headCommitSha.isBlank()) {
+            throw new IllegalArgumentException("Head Commit SHA는 필수입니다.");
         }
     }
 
@@ -65,11 +75,13 @@ public class PullRequestContentHistory extends CreatedAtEntity {
 
     private PullRequestContentHistory(
             Long pullRequestId,
+            String headCommitSha,
             PullRequestChangeStats changeStats,
             int commitCount,
             LocalDateTime changedAt
     ) {
         this.pullRequestId = pullRequestId;
+        this.headCommitSha = headCommitSha;
         this.changeStats = changeStats;
         this.commitCount = commitCount;
         this.changedAt = changedAt;

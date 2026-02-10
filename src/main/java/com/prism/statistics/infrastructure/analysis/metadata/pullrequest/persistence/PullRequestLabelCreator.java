@@ -1,6 +1,6 @@
-package com.prism.statistics.infrastructure.analysis.metadata.review.persistence;
+package com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence;
 
-import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequestLabel;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -9,14 +9,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
-public class ReviewCommentCreator {
+public class PullRequestLabelCreator {
 
-    private final JpaReviewCommentRepository jpaReviewCommentRepository;
+    private final JpaPullRequestLabelRepository jpaPullRequestLabelRepository;
     private final EntityManager entityManager;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public ReviewComment saveNew(ReviewComment reviewComment) {
-        ReviewComment saved = jpaReviewCommentRepository.save(reviewComment);
+    public PullRequestLabel saveNew(PullRequestLabel pullRequestLabel) {
+        PullRequestLabel saved = jpaPullRequestLabelRepository.save(pullRequestLabel);
         entityManager.flush();
         return saved;
     }

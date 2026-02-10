@@ -23,6 +23,8 @@ public class PullRequestFileHistory extends CreatedAtEntity {
 
     private Long pullRequestId;
 
+    private String headCommitSha;
+
     private String fileName;
 
     @Embedded
@@ -38,29 +40,32 @@ public class PullRequestFileHistory extends CreatedAtEntity {
 
     public static PullRequestFileHistory create(
             Long pullRequestId,
+            String headCommitSha,
             String fileName,
             FileChangeType changeType,
             FileChanges fileChanges,
             LocalDateTime changedAt
     ) {
-        validateBaseFields(pullRequestId, fileName, fileChanges, changedAt);
+        validateBaseFields(pullRequestId, headCommitSha, fileName, fileChanges, changedAt);
         validateChangeType(changeType);
-        return new PullRequestFileHistory(pullRequestId, fileName, PreviousFileName.empty(), changeType, fileChanges, changedAt);
+        return new PullRequestFileHistory(pullRequestId, headCommitSha, fileName, PreviousFileName.empty(), changeType, fileChanges, changedAt);
     }
 
     public static PullRequestFileHistory createRenamed(
             Long pullRequestId,
+            String headCommitSha,
             String fileName,
             String previousFileName,
             FileChanges fileChanges,
             LocalDateTime changedAt
     ) {
-        validateBaseFields(pullRequestId, fileName, fileChanges, changedAt);
-        return new PullRequestFileHistory(pullRequestId, fileName, PreviousFileName.of(previousFileName), FileChangeType.RENAMED, fileChanges, changedAt);
+        validateBaseFields(pullRequestId, headCommitSha, fileName, fileChanges, changedAt);
+        return new PullRequestFileHistory(pullRequestId, headCommitSha, fileName, PreviousFileName.of(previousFileName), FileChangeType.RENAMED, fileChanges, changedAt);
     }
 
-    private static void validateBaseFields(Long pullRequestId, String fileName, FileChanges fileChanges, LocalDateTime changedAt) {
+    private static void validateBaseFields(Long pullRequestId, String headCommitSha, String fileName, FileChanges fileChanges, LocalDateTime changedAt) {
         validatePullRequestId(pullRequestId);
+        validateHeadCommitSha(headCommitSha);
         validateFileName(fileName);
         validateFileChanges(fileChanges);
         validateChangedAt(changedAt);
@@ -69,6 +74,12 @@ public class PullRequestFileHistory extends CreatedAtEntity {
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
             throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
+        }
+    }
+
+    private static void validateHeadCommitSha(String headCommitSha) {
+        if (headCommitSha == null || headCommitSha.isBlank()) {
+            throw new IllegalArgumentException("Head Commit SHA는 필수입니다.");
         }
     }
 
@@ -98,6 +109,7 @@ public class PullRequestFileHistory extends CreatedAtEntity {
 
     private PullRequestFileHistory(
             Long pullRequestId,
+            String headCommitSha,
             String fileName,
             PreviousFileName previousFileName,
             FileChangeType changeType,
@@ -105,6 +117,7 @@ public class PullRequestFileHistory extends CreatedAtEntity {
             LocalDateTime changedAt
     ) {
         this.pullRequestId = pullRequestId;
+        this.headCommitSha = headCommitSha;
         this.fileName = fileName;
         this.previousFileName = previousFileName;
         this.changeType = changeType;

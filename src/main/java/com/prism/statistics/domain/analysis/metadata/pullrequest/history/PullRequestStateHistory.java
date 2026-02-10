@@ -20,6 +20,8 @@ public class PullRequestStateHistory extends CreatedAtEntity {
 
     private Long pullRequestId;
 
+    private String headCommitSha;
+
     @Enumerated(EnumType.STRING)
     private PullRequestState previousState;
 
@@ -30,26 +32,40 @@ public class PullRequestStateHistory extends CreatedAtEntity {
 
     public static PullRequestStateHistory create(
             Long pullRequestId,
+            String headCommitSha,
             PullRequestState previousState,
             PullRequestState newState,
             LocalDateTime changedAt
     ) {
         validatePullRequestId(pullRequestId);
+        validateHeadCommitSha(headCommitSha);
         validateNewState(newState);
         validateChangedAt(changedAt);
-        return new PullRequestStateHistory(pullRequestId, previousState, newState, changedAt);
+        return new PullRequestStateHistory(pullRequestId, headCommitSha, previousState, newState, changedAt);
     }
 
-    public static PullRequestStateHistory createInitial(Long pullRequestId, PullRequestState initialState, LocalDateTime changedAt) {
+    public static PullRequestStateHistory createInitial(
+            Long pullRequestId,
+            String headCommitSha,
+            PullRequestState initialState,
+            LocalDateTime changedAt
+    ) {
         validatePullRequestId(pullRequestId);
+        validateHeadCommitSha(headCommitSha);
         validateNewState(initialState);
         validateChangedAt(changedAt);
-        return new PullRequestStateHistory(pullRequestId, null, initialState, changedAt);
+        return new PullRequestStateHistory(pullRequestId, headCommitSha, null, initialState, changedAt);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
             throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
+        }
+    }
+
+    private static void validateHeadCommitSha(String headCommitSha) {
+        if (headCommitSha == null || headCommitSha.isBlank()) {
+            throw new IllegalArgumentException("Head Commit SHA는 필수입니다.");
         }
     }
 
@@ -67,11 +83,13 @@ public class PullRequestStateHistory extends CreatedAtEntity {
 
     private PullRequestStateHistory(
             Long pullRequestId,
+            String headCommitSha,
             PullRequestState previousState,
             PullRequestState newState,
             LocalDateTime changedAt
     ) {
         this.pullRequestId = pullRequestId;
+        this.headCommitSha = headCommitSha;
         this.previousState = previousState;
         this.newState = newState;
         this.changedAt = changedAt;

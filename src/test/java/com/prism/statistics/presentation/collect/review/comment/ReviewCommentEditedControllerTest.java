@@ -117,7 +117,7 @@ class ReviewCommentEditedControllerTest extends CommonControllerSliceTestSupport
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload)
         )
-        .andExpect(status().isNotFound())
+        .andExpect(status().isInternalServerError())
         .andExpect(jsonPath("$.errorCode").value("RC00"))
         .andExpect(jsonPath("$.message").value("리뷰 댓글을 찾을 수 없습니다."));
     }

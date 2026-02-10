@@ -18,6 +18,7 @@ public class PullRequestContentHistoryEventListener {
     public void handle(PullRequestOpenCreatedEvent event) {
         PullRequestContentHistory pullRequestContentHistory = PullRequestContentHistory.create(
                 event.pullRequestId(),
+                event.headCommitSha(),
                 event.changeStats(),
                 event.commitCount(),
                 event.pullRequestCreatedAt()

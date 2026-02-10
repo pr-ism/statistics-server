@@ -14,26 +14,40 @@ import java.time.LocalDateTime;
 @Table(name = "pull_request_labels")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PullRequestLabel extends CreatedAtEntity {
+
+    private Long githubPullRequestId;
+
     private Long pullRequestId;
+
+    private String headCommitSha;
 
     private String labelName;
 
     private LocalDateTime labeledAt;
 
     public static PullRequestLabel create(
+            Long githubPullRequestId,
             Long pullRequestId,
+            String headCommitSha,
             String labelName,
             LocalDateTime labeledAt
     ) {
-        validatePullRequestId(pullRequestId);
+        validateGithubPullRequestId(githubPullRequestId);
+        validateHeadCommitSha(headCommitSha);
         validateLabelName(labelName);
         validateLabeledAt(labeledAt);
-        return new PullRequestLabel(pullRequestId, labelName, labeledAt);
+        return new PullRequestLabel(githubPullRequestId, pullRequestId, headCommitSha, labelName, labeledAt);
     }
 
-    private static void validatePullRequestId(Long pullRequestId) {
-        if (pullRequestId == null) {
-            throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
+    private static void validateGithubPullRequestId(Long githubPullRequestId) {
+        if (githubPullRequestId == null) {
+            throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
+        }
+    }
+
+    private static void validateHeadCommitSha(String headCommitSha) {
+        if (headCommitSha == null || headCommitSha.isBlank()) {
+            throw new IllegalArgumentException("Head Commit SHA는 필수입니다.");
         }
     }
 
@@ -50,11 +64,15 @@ public class PullRequestLabel extends CreatedAtEntity {
     }
 
     private PullRequestLabel(
+            Long githubPullRequestId,
             Long pullRequestId,
+            String headCommitSha,
             String labelName,
             LocalDateTime labeledAt
     ) {
+        this.githubPullRequestId = githubPullRequestId;
         this.pullRequestId = pullRequestId;
+        this.headCommitSha = headCommitSha;
         this.labelName = labelName;
         this.labeledAt = labeledAt;
     }

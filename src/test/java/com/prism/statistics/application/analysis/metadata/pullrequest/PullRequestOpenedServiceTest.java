@@ -167,14 +167,16 @@ class PullRequestOpenedServiceTest {
         );
 
         PullRequestData pullRequestData = new PullRequestData(
+                100L,
                 42,
                 "테스트 PR 제목",
                 "https://github.com/owner/repo/pull/42",
+                "abc123",
                 100,
                 50,
                 10,
                 Instant.parse("2024-01-15T10:00:00Z"),
-                new Author("test-author"),
+                new Author("test-author", 1L),
                 new CommitsConnection(2, commitNodes)
         );
 

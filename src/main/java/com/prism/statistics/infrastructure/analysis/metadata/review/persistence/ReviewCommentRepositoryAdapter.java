@@ -27,8 +27,7 @@ public class ReviewCommentRepositoryAdapter implements ReviewCommentRepository {
     @Override
     public ReviewComment saveOrFind(ReviewComment reviewComment) {
         try {
-            reviewCommentCreator.saveNew(reviewComment);
-            return reviewComment;
+            return reviewCommentCreator.saveNew(reviewComment);
         } catch (DataIntegrityViolationException ex) {
             if (duplicateKeyDetector.isDuplicateKey(ex)) {
                 return findByGithubCommentId(reviewComment.getGithubCommentId())

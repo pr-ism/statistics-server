@@ -15,8 +15,9 @@ public class ReviewCreator {
     private final EntityManager entityManager;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveNew(Review review) {
-        jpaReviewRepository.save(review);
+    public Review saveNew(Review review) {
+        Review saved = jpaReviewRepository.save(review);
         entityManager.flush();
+        return saved;
     }
 }

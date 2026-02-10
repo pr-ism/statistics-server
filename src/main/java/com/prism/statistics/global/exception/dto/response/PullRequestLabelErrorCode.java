@@ -4,15 +4,15 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public enum ReviewErrorCode implements ErrorCode {
+public enum PullRequestLabelErrorCode implements ErrorCode {
 
-    REVIEW_NOT_FOUND("RV00", "Review를 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    PULL_REQUEST_LABEL_NOT_FOUND("PRL00", "PullRequestLabel을 찾을 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String errorCode;
     private final String message;
     private final HttpStatus httpStatus;
 
-    ReviewErrorCode(String errorCode, String message, HttpStatus httpStatus) {
+    PullRequestLabelErrorCode(String errorCode, String message, HttpStatus httpStatus) {
         this.errorCode = errorCode;
         this.message = message;
         this.httpStatus = httpStatus;

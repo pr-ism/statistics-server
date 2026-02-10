@@ -21,7 +21,7 @@ public record PullRequestListResponse(
                     pullRequest.getPullRequestNumber(),
                     pullRequest.getTitle(),
                     pullRequest.getState().name(),
-                    pullRequest.getAuthorGithubId(),
+                    pullRequest.getAuthor().getUserName(),
                     pullRequest.getLink(),
                     pullRequest.getCommitCount()
             );

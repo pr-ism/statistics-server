@@ -24,7 +24,7 @@ public class AuthorStatisticsRepositoryAdapter implements AuthorStatisticsReposi
                 .select(
                         Projections.constructor(
                                 AuthorStatisticsDto.class,
-                                pullRequest.authorGithubId,
+                                pullRequest.author.userName,
                                 pullRequest.count(),
                                 pullRequest.changeStats.additionCount.sumLong().coalesce(0L),
                                 pullRequest.changeStats.deletionCount.sumLong().coalesce(0L),
@@ -36,7 +36,7 @@ public class AuthorStatisticsRepositoryAdapter implements AuthorStatisticsReposi
                 )
                 .from(pullRequest)
                 .where(pullRequest.projectId.eq(projectId))
-                .groupBy(pullRequest.authorGithubId)
+                .groupBy(pullRequest.author.userName)
                 .fetch();
     }
 }
