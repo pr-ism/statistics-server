@@ -13,6 +13,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.review.enums.CommentSide;
 import com.prism.statistics.domain.analysis.metadata.review.vo.CommentLineRange;
 import com.prism.statistics.domain.analysis.metadata.review.vo.ParentCommentId;
@@ -36,8 +37,7 @@ class ReviewCommentTest {
                 .side(CommentSide.RIGHT)
                 .commitSha("abc123")
                 .parentCommentId(ParentCommentId.create(null))
-                .authorMention("reviewer1")
-                .authorGithubUid(12345L)
+                .author(GithubUser.create("reviewer1", 12345L))
                 .githubCreatedAt(GITHUB_CREATED_AT)
                 .githubUpdatedAt(GITHUB_UPDATED_AT)
                 .deleted(false)
@@ -54,8 +54,8 @@ class ReviewCommentTest {
                 () -> assertThat(comment.getSide()).isEqualTo(CommentSide.RIGHT),
                 () -> assertThat(comment.getCommitSha()).isEqualTo("abc123"),
                 () -> assertThat(comment.getParentCommentId().hasParent()).isFalse(),
-                () -> assertThat(comment.getAuthorMention()).isEqualTo("reviewer1"),
-                () -> assertThat(comment.getAuthorGithubUid()).isEqualTo(12345L),
+                () -> assertThat(comment.getAuthor().getUserName()).isEqualTo("reviewer1"),
+                () -> assertThat(comment.getAuthor().getUserId()).isEqualTo(12345L),
                 () -> assertThat(comment.isDeleted()).isFalse()
         );
     }
@@ -72,8 +72,7 @@ class ReviewCommentTest {
                 .side(CommentSide.RIGHT)
                 .commitSha("abc123")
                 .parentCommentId(ParentCommentId.create(null))
-                .authorMention("reviewer1")
-                .authorGithubUid(12345L)
+                .author(GithubUser.create("reviewer1", 12345L))
                 .githubCreatedAt(GITHUB_CREATED_AT)
                 .githubUpdatedAt(GITHUB_UPDATED_AT)
                 .deleted(false)
@@ -98,8 +97,7 @@ class ReviewCommentTest {
                 .side(CommentSide.RIGHT)
                 .commitSha("abc123")
                 .parentCommentId(ParentCommentId.create(1L))
-                .authorMention("reviewer2")
-                .authorGithubUid(67890L)
+                .author(GithubUser.create("reviewer2", 67890L))
                 .githubCreatedAt(GITHUB_CREATED_AT)
                 .githubUpdatedAt(GITHUB_UPDATED_AT)
                 .deleted(false)
@@ -125,8 +123,7 @@ class ReviewCommentTest {
                         .side(CommentSide.RIGHT)
                         .commitSha("abc123")
                         .parentCommentId(ParentCommentId.create(null))
-                        .authorMention("reviewer1")
-                        .authorGithubUid(12345L)
+                        .author(GithubUser.create("reviewer1", 12345L))
                         .githubCreatedAt(GITHUB_CREATED_AT)
                         .githubUpdatedAt(GITHUB_UPDATED_AT)
                         .deleted(false)
@@ -149,8 +146,7 @@ class ReviewCommentTest {
                         .side(CommentSide.RIGHT)
                         .commitSha("abc123")
                         .parentCommentId(ParentCommentId.create(null))
-                        .authorMention("reviewer1")
-                        .authorGithubUid(12345L)
+                        .author(GithubUser.create("reviewer1", 12345L))
                         .githubCreatedAt(GITHUB_CREATED_AT)
                         .githubUpdatedAt(GITHUB_UPDATED_AT)
                         .deleted(false)
@@ -176,8 +172,7 @@ class ReviewCommentTest {
                         .side(CommentSide.RIGHT)
                         .commitSha("abc123")
                         .parentCommentId(ParentCommentId.create(null))
-                        .authorMention("reviewer1")
-                        .authorGithubUid(12345L)
+                        .author(GithubUser.create("reviewer1", 12345L))
                         .githubCreatedAt(GITHUB_CREATED_AT)
                         .githubUpdatedAt(GITHUB_UPDATED_AT)
                         .deleted(false)
@@ -202,8 +197,7 @@ class ReviewCommentTest {
                         .side(CommentSide.RIGHT)
                         .commitSha("abc123")
                         .parentCommentId(ParentCommentId.create(null))
-                        .authorMention("reviewer1")
-                        .authorGithubUid(12345L)
+                        .author(GithubUser.create("reviewer1", 12345L))
                         .githubCreatedAt(GITHUB_CREATED_AT)
                         .githubUpdatedAt(GITHUB_UPDATED_AT)
                         .deleted(false)
@@ -226,8 +220,7 @@ class ReviewCommentTest {
                         .side(CommentSide.RIGHT)
                         .commitSha("abc123")
                         .parentCommentId(ParentCommentId.create(null))
-                        .authorMention("reviewer1")
-                        .authorGithubUid(12345L)
+                        .author(GithubUser.create("reviewer1", 12345L))
                         .githubCreatedAt(GITHUB_CREATED_AT)
                         .githubUpdatedAt(GITHUB_UPDATED_AT)
                         .deleted(false)
@@ -250,8 +243,7 @@ class ReviewCommentTest {
                         .side(null)
                         .commitSha("abc123")
                         .parentCommentId(ParentCommentId.create(null))
-                        .authorMention("reviewer1")
-                        .authorGithubUid(12345L)
+                        .author(GithubUser.create("reviewer1", 12345L))
                         .githubCreatedAt(GITHUB_CREATED_AT)
                         .githubUpdatedAt(GITHUB_UPDATED_AT)
                         .deleted(false)
@@ -276,8 +268,7 @@ class ReviewCommentTest {
                         .side(CommentSide.RIGHT)
                         .commitSha(commitSha)
                         .parentCommentId(ParentCommentId.create(null))
-                        .authorMention("reviewer1")
-                        .authorGithubUid(12345L)
+                        .author(GithubUser.create("reviewer1", 12345L))
                         .githubCreatedAt(GITHUB_CREATED_AT)
                         .githubUpdatedAt(GITHUB_UPDATED_AT)
                         .deleted(false)
@@ -287,34 +278,8 @@ class ReviewCommentTest {
                 .hasMessage("커밋 SHA는 필수입니다.");
     }
 
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = {" "})
-    void 작성자_멘션이_null이거나_빈_문자열이면_예외가_발생한다(String authorMention) {
-        // when & then
-        assertThatThrownBy(() ->
-                ReviewComment.builder()
-                        .githubCommentId(1L)
-                        .githubReviewId(100L)
-                        .body("댓글입니다.")
-                        .path("src/main/java/Example.java")
-                        .lineRange(CommentLineRange.create(null, 10))
-                        .side(CommentSide.RIGHT)
-                        .commitSha("abc123")
-                        .parentCommentId(ParentCommentId.create(null))
-                        .authorMention(authorMention)
-                        .authorGithubUid(12345L)
-                        .githubCreatedAt(GITHUB_CREATED_AT)
-                        .githubUpdatedAt(GITHUB_UPDATED_AT)
-                        .deleted(false)
-                        .build()
-        )
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("작성자 멘션은 필수입니다.");
-    }
-
     @Test
-    void 작성자_GitHub_UID가_null이면_예외가_발생한다() {
+    void 작성자가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() ->
                 ReviewComment.builder()
@@ -326,15 +291,14 @@ class ReviewCommentTest {
                         .side(CommentSide.RIGHT)
                         .commitSha("abc123")
                         .parentCommentId(ParentCommentId.create(null))
-                        .authorMention("reviewer1")
-                        .authorGithubUid(null)
+                        .author(null)
                         .githubCreatedAt(GITHUB_CREATED_AT)
                         .githubUpdatedAt(GITHUB_UPDATED_AT)
                         .deleted(false)
                         .build()
         )
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("작성자 GitHub UID는 필수입니다.");
+                .hasMessage("작성자는 필수입니다.");
     }
 
     @Test
@@ -350,15 +314,14 @@ class ReviewCommentTest {
                         .side(CommentSide.RIGHT)
                         .commitSha("abc123")
                         .parentCommentId(ParentCommentId.create(null))
-                        .authorMention("reviewer1")
-                        .authorGithubUid(12345L)
+                        .author(GithubUser.create("reviewer1", 12345L))
                         .githubCreatedAt(null)
                         .githubUpdatedAt(GITHUB_UPDATED_AT)
                         .deleted(false)
                         .build()
         )
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("GitHub 생성 시각은 필수입니다.");
+                .hasMessage("GitHub 댓글 생성 시각은 필수입니다.");
     }
 
     @Test
@@ -374,15 +337,14 @@ class ReviewCommentTest {
                         .side(CommentSide.RIGHT)
                         .commitSha("abc123")
                         .parentCommentId(ParentCommentId.create(null))
-                        .authorMention("reviewer1")
-                        .authorGithubUid(12345L)
+                        .author(GithubUser.create("reviewer1", 12345L))
                         .githubCreatedAt(GITHUB_CREATED_AT)
                         .githubUpdatedAt(null)
                         .deleted(false)
                         .build()
         )
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("GitHub 수정 시각은 필수입니다.");
+                .hasMessage("GitHub 댓글 수정 시각은 필수입니다.");
     }
 
     @Test
@@ -402,8 +364,7 @@ class ReviewCommentTest {
                         .side(CommentSide.RIGHT)
                         .commitSha("abc123")
                         .parentCommentId(ParentCommentId.create(null))
-                        .authorMention("reviewer1")
-                        .authorGithubUid(12345L)
+                        .author(GithubUser.create("reviewer1", 12345L))
                         .githubCreatedAt(createdAt)
                         .githubUpdatedAt(updatedAt)
                         .deleted(false)
@@ -425,8 +386,7 @@ class ReviewCommentTest {
                 .side(CommentSide.RIGHT)
                 .commitSha("abc123")
                 .parentCommentId(ParentCommentId.create(null))
-                .authorMention("reviewer1")
-                .authorGithubUid(12345L)
+                .author(GithubUser.create("reviewer1", 12345L))
                 .githubCreatedAt(GITHUB_CREATED_AT)
                 .githubUpdatedAt(GITHUB_UPDATED_AT)
                 .deleted(false)
@@ -449,8 +409,7 @@ class ReviewCommentTest {
                 .side(CommentSide.RIGHT)
                 .commitSha("abc123")
                 .parentCommentId(ParentCommentId.create(null))
-                .authorMention("reviewer1")
-                .authorGithubUid(12345L)
+                .author(GithubUser.create("reviewer1", 12345L))
                 .githubCreatedAt(GITHUB_CREATED_AT)
                 .githubUpdatedAt(GITHUB_UPDATED_AT)
                 .deleted(false)
