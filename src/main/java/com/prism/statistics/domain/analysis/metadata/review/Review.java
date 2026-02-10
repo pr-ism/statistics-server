@@ -43,35 +43,6 @@ public class Review extends CreatedAtEntity {
 
     private LocalDateTime submittedAt;
 
-    public static Review create(
-            Long githubPullRequestId,
-            Long githubReviewId,
-            GithubUser reviewer,
-            ReviewState reviewState,
-            String headCommitSha,
-            String body,
-            int commentCount,
-            LocalDateTime submittedAt
-    ) {
-        return Review.builder()
-                .githubPullRequestId(githubPullRequestId)
-                .githubReviewId(githubReviewId)
-                .reviewer(reviewer)
-                .reviewState(reviewState)
-                .headCommitSha(headCommitSha)
-                .body(createReviewBody(reviewState, body))
-                .commentCount(commentCount)
-                .submittedAt(submittedAt)
-                .build();
-    }
-
-    private static ReviewBody createReviewBody(ReviewState reviewState, String body) {
-        if (reviewState == ReviewState.COMMENTED) {
-            return ReviewBody.createRequired(body);
-        }
-        return ReviewBody.create(body);
-    }
-
     @Builder
     private Review(
             Long githubPullRequestId,
@@ -79,7 +50,7 @@ public class Review extends CreatedAtEntity {
             GithubUser reviewer,
             ReviewState reviewState,
             String headCommitSha,
-            ReviewBody body,
+            String body,
             int commentCount,
             LocalDateTime submittedAt
     ) {
@@ -90,9 +61,16 @@ public class Review extends CreatedAtEntity {
         this.reviewer = reviewer;
         this.reviewState = reviewState;
         this.headCommitSha = headCommitSha;
-        this.body = body;
+        this.body = createReviewBody(reviewState, body);
         this.commentCount = commentCount;
         this.submittedAt = submittedAt;
+    }
+
+    private static ReviewBody createReviewBody(ReviewState reviewState, String body) {
+        if (reviewState == ReviewState.COMMENTED) {
+            return ReviewBody.createRequired(body);
+        }
+        return ReviewBody.create(body);
     }
 
     private void validateFields(
