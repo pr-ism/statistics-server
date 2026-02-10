@@ -3,6 +3,7 @@ package com.prism.statistics.application.analysis.metadata.review;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewSubmittedRequest;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
@@ -19,12 +20,17 @@ public class ReviewSubmittedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
+    private final PullRequestRepository pullRequestRepository;
     private final ReviewRepository reviewRepository;
 
     public void submitReview(String apiKey, ReviewSubmittedRequest request) {
         validateApiKey(apiKey);
 
         Review review = createReview(request);
+
+        pullRequestRepository.findIdByGithubId(request.githubPullRequestId())
+                .ifPresent(id -> review.assignPullRequestId(id));
+
         reviewRepository.saveOrFind(review);
     }
 
