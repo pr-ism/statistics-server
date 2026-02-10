@@ -7,6 +7,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -33,7 +34,6 @@ public class PullRequestLabelHistory extends CreatedAtEntity {
 
     public static PullRequestLabelHistory create(
             Long githubPullRequestId,
-            Long pullRequestId,
             String headCommitSha,
             String labelName,
             PullRequestLabelAction action,
@@ -44,7 +44,13 @@ public class PullRequestLabelHistory extends CreatedAtEntity {
         validateLabelName(labelName);
         validateAction(action);
         validateChangedAt(changedAt);
-        return new PullRequestLabelHistory(githubPullRequestId, pullRequestId, headCommitSha, labelName, action, changedAt);
+        return new PullRequestLabelHistory(githubPullRequestId, headCommitSha, labelName, action, changedAt);
+    }
+
+    public void assignPullRequestId(Long pullRequestId) {
+        if (this.pullRequestId == null) {
+            this.pullRequestId = pullRequestId;
+        }
     }
 
     private static void validateGithubPullRequestId(Long githubPullRequestId) {
@@ -77,16 +83,15 @@ public class PullRequestLabelHistory extends CreatedAtEntity {
         }
     }
 
+    @Builder
     private PullRequestLabelHistory(
             Long githubPullRequestId,
-            Long pullRequestId,
             String headCommitSha,
             String labelName,
             PullRequestLabelAction action,
             LocalDateTime changedAt
     ) {
         this.githubPullRequestId = githubPullRequestId;
-        this.pullRequestId = pullRequestId;
         this.headCommitSha = headCommitSha;
         this.labelName = labelName;
         this.action = action;
