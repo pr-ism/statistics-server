@@ -18,5 +18,6 @@ TRUNCATE TABLE projects;
 TRUNCATE TABLE pull_request_opened_commit_densities;
 TRUNCATE TABLE pull_request_opened_change_summaries;
 TRUNCATE TABLE pull_request_opened_file_change_diversities;
+TRUNCATE TABLE pull_request_opened_size_metrics;
 
 SET REFERENTIAL_INTEGRITY TRUE;
