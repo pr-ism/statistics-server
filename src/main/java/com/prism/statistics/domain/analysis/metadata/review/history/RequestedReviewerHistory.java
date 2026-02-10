@@ -42,13 +42,13 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
             ReviewerAction action,
             LocalDateTime changedAt
     ) {
-        return RequestedReviewerHistory.builder()
-                .githubPullRequestId(githubPullRequestId)
-                .headCommitSha(headCommitSha)
-                .reviewer(reviewer)
-                .action(action)
-                .changedAt(changedAt)
-                .build();
+        return new RequestedReviewerHistory(
+                githubPullRequestId,
+                headCommitSha,
+                reviewer,
+                action,
+                changedAt
+        );
     }
 
     @Builder
@@ -68,7 +68,7 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
         this.changedAt = changedAt;
     }
 
-    private void validateFields(
+    private static void validateFields(
             Long githubPullRequestId,
             String headCommitSha,
             GithubUser reviewer,
@@ -82,31 +82,31 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
         validateChangedAt(changedAt);
     }
 
-    private void validateGithubPullRequestId(Long githubPullRequestId) {
+    private static void validateGithubPullRequestId(Long githubPullRequestId) {
         if (githubPullRequestId == null) {
             throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
         }
     }
 
-    private void validateHeadCommitSha(String headCommitSha) {
+    private static void validateHeadCommitSha(String headCommitSha) {
         if (headCommitSha == null || headCommitSha.isBlank()) {
             throw new IllegalArgumentException("Head Commit SHA는 필수입니다.");
         }
     }
 
-    private void validateReviewer(GithubUser reviewer) {
+    private static void validateReviewer(GithubUser reviewer) {
         if (reviewer == null) {
             throw new IllegalArgumentException("리뷰어는 필수입니다.");
         }
     }
 
-    private void validateAction(ReviewerAction action) {
+    private static void validateAction(ReviewerAction action) {
         if (action == null) {
             throw new IllegalArgumentException("리뷰어 액션은 필수입니다.");
         }
     }
 
-    private void validateChangedAt(LocalDateTime changedAt) {
+    private static void validateChangedAt(LocalDateTime changedAt) {
         if (changedAt == null) {
             throw new IllegalArgumentException("변경 시각은 필수입니다.");
         }
