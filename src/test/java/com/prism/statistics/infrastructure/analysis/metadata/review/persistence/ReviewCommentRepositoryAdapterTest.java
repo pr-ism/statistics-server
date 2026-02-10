@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
 import com.prism.statistics.domain.analysis.metadata.review.enums.CommentSide;
 import com.prism.statistics.domain.analysis.metadata.review.vo.CommentLineRange;
@@ -330,8 +331,7 @@ class ReviewCommentRepositoryAdapterTest {
                 .side(CommentSide.RIGHT)
                 .commitSha("abc123sha")
                 .parentCommentId(ParentCommentId.create(null))
-                .authorMention("reviewer")
-                .authorGithubUid(12345L)
+                .author(GithubUser.create("reviewer", 12345L))
                 .githubCreatedAt(githubTime)
                 .githubUpdatedAt(githubTime)
                 .deleted(false)
