@@ -26,8 +26,7 @@ public class RequestedReviewerRepositoryAdapter implements RequestedReviewerRepo
     @Override
     public RequestedReviewer saveOrFind(RequestedReviewer reviewer) {
         try {
-            requestedReviewerCreator.saveNew(reviewer);
-            return reviewer;
+            return requestedReviewerCreator.saveNew(reviewer);
         } catch (DataIntegrityViolationException ex) {
             if (duplicateKeyDetector.isDuplicateKey(ex)) {
                 return jpaRequestedReviewerRepository.findByGithubPullRequestIdAndReviewerUserId(

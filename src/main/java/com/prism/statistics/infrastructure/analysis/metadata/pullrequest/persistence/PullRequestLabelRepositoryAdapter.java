@@ -26,8 +26,7 @@ public class PullRequestLabelRepositoryAdapter implements PullRequestLabelReposi
     @Override
     public PullRequestLabel saveOrFind(PullRequestLabel label) {
         try {
-            pullRequestLabelCreator.saveNew(label);
-            return label;
+            return pullRequestLabelCreator.saveNew(label);
         } catch (DataIntegrityViolationException ex) {
             if (duplicateKeyDetector.isDuplicateKey(ex)) {
                 return findByGithubPullRequestIdAndLabelName(
