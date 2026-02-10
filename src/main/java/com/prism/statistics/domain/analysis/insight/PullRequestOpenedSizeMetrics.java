@@ -8,6 +8,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,15 +36,16 @@ public class PullRequestOpenedSizeMetrics extends BaseTimeEntity {
 
     private int renamedFileCount;
 
-    public static PullRequestOpenedSizeMetrics create(
-            Long pullRequestId,
-            BigDecimal sizeScore,
-            PullRequestSizeGrade sizeGrade,
-            int changedFileCount,
-            int addedFileCount,
-            int modifiedFileCount,
-            int removedFileCount,
-            int renamedFileCount
+    @Builder
+    public PullRequestOpenedSizeMetrics(
+        Long pullRequestId,
+        BigDecimal sizeScore,
+        PullRequestSizeGrade sizeGrade,
+        int changedFileCount,
+        int addedFileCount,
+        int modifiedFileCount,
+        int removedFileCount,
+        int renamedFileCount
     ) {
         validatePullRequestId(pullRequestId);
         validateSizeScore(sizeScore);
@@ -53,16 +56,14 @@ public class PullRequestOpenedSizeMetrics extends BaseTimeEntity {
         validateFileCount(removedFileCount, "삭제 파일 수");
         validateFileCount(renamedFileCount, "이름 변경 파일 수");
 
-        return new PullRequestOpenedSizeMetrics(
-                pullRequestId,
-                sizeScore,
-                sizeGrade,
-                changedFileCount,
-                addedFileCount,
-                modifiedFileCount,
-                removedFileCount,
-                renamedFileCount
-        );
+        this.pullRequestId = pullRequestId;
+        this.sizeScore = sizeScore;
+        this.sizeGrade = sizeGrade;
+        this.changedFileCount = changedFileCount;
+        this.addedFileCount = addedFileCount;
+        this.modifiedFileCount = modifiedFileCount;
+        this.removedFileCount = removedFileCount;
+        this.renamedFileCount = renamedFileCount;
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
@@ -90,25 +91,5 @@ public class PullRequestOpenedSizeMetrics extends BaseTimeEntity {
         if (count < 0) {
             throw new IllegalArgumentException(fieldName + "는 0보다 작을 수 없습니다.");
         }
-    }
-
-    private PullRequestOpenedSizeMetrics(
-            Long pullRequestId,
-            BigDecimal sizeScore,
-            PullRequestSizeGrade sizeGrade,
-            int changedFileCount,
-            int addedFileCount,
-            int modifiedFileCount,
-            int removedFileCount,
-            int renamedFileCount
-    ) {
-        this.pullRequestId = pullRequestId;
-        this.sizeScore = sizeScore;
-        this.sizeGrade = sizeGrade;
-        this.changedFileCount = changedFileCount;
-        this.addedFileCount = addedFileCount;
-        this.modifiedFileCount = modifiedFileCount;
-        this.removedFileCount = removedFileCount;
-        this.renamedFileCount = renamedFileCount;
     }
 }

@@ -139,15 +139,15 @@ public class PullRequestMetricsService {
                 ? new EnumMap<>(FileChangeType.class)
                 : countFileChangeTypes(files);
 
-        return PullRequestOpenedSizeMetrics.create(
-                event.pullRequestId(),
-                sizeScore,
-                sizeGrade,
-                stats.getChangedFileCount(),
-                fileStatusCounts.getOrDefault(FileChangeType.ADDED, 0),
-                fileStatusCounts.getOrDefault(FileChangeType.MODIFIED, 0),
-                fileStatusCounts.getOrDefault(FileChangeType.REMOVED, 0),
-                fileStatusCounts.getOrDefault(FileChangeType.RENAMED, 0)
-        );
+        return PullRequestOpenedSizeMetrics.builder()
+            .pullRequestId(event.pullRequestId())
+            .sizeScore(sizeScore)
+            .sizeGrade(sizeGrade)
+            .changedFileCount(stats.getChangedFileCount())
+            .addedFileCount(fileStatusCounts.getOrDefault(FileChangeType.ADDED, 0))
+            .modifiedFileCount(fileStatusCounts.getOrDefault(FileChangeType.MODIFIED, 0))
+            .removedFileCount(fileStatusCounts.getOrDefault(FileChangeType.REMOVED, 0))
+            .renamedFileCount(fileStatusCounts.getOrDefault(FileChangeType.RENAMED, 0))
+            .build();
     }
 }

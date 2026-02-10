@@ -27,144 +27,180 @@ class PullRequestOpenedSizeMetricsTest {
         int renamedFileCount = 0;
 
         // when
-        PullRequestOpenedSizeMetrics metrics = PullRequestOpenedSizeMetrics.create(
-                pullRequestId,
-                sizeScore,
-                sizeGrade,
-                changedFileCount,
-                addedFileCount,
-                modifiedFileCount,
-                removedFileCount,
-                renamedFileCount
-        );
+        PullRequestOpenedSizeMetrics metrics = PullRequestOpenedSizeMetrics.builder()
+            .pullRequestId(pullRequestId)
+            .sizeScore(sizeScore)
+            .sizeGrade(sizeGrade)
+            .changedFileCount(changedFileCount)
+            .addedFileCount(addedFileCount)
+            .modifiedFileCount(modifiedFileCount)
+            .removedFileCount(removedFileCount)
+            .renamedFileCount(renamedFileCount)
+            .build();
 
         // then
         assertAll(
-                () -> assertThat(metrics.getPullRequestId()).isEqualTo(pullRequestId),
-                () -> assertThat(metrics.getSizeScore()).isEqualByComparingTo(sizeScore),
-                () -> assertThat(metrics.getSizeGrade()).isEqualTo(sizeGrade),
-                () -> assertThat(metrics.getChangedFileCount()).isEqualTo(changedFileCount),
-                () -> assertThat(metrics.getAddedFileCount()).isEqualTo(addedFileCount),
-                () -> assertThat(metrics.getModifiedFileCount()).isEqualTo(modifiedFileCount),
-                () -> assertThat(metrics.getRemovedFileCount()).isEqualTo(removedFileCount),
-                () -> assertThat(metrics.getRenamedFileCount()).isEqualTo(renamedFileCount)
+            () -> assertThat(metrics.getPullRequestId()).isEqualTo(pullRequestId),
+            () -> assertThat(metrics.getSizeScore()).isEqualByComparingTo(sizeScore),
+            () -> assertThat(metrics.getSizeGrade()).isEqualTo(sizeGrade),
+            () -> assertThat(metrics.getChangedFileCount()).isEqualTo(changedFileCount),
+            () -> assertThat(metrics.getAddedFileCount()).isEqualTo(addedFileCount),
+            () -> assertThat(metrics.getModifiedFileCount()).isEqualTo(modifiedFileCount),
+            () -> assertThat(metrics.getRemovedFileCount()).isEqualTo(removedFileCount),
+            () -> assertThat(metrics.getRenamedFileCount()).isEqualTo(renamedFileCount)
         );
     }
 
     @Test
     void pull_request_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.create(
-                null,
-                BigDecimal.TEN,
-                PullRequestSizeGrade.S,
-                1, 1, 0, 0, 0
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Pull Request ID는 필수입니다.");
+        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.builder()
+            .pullRequestId(null)
+            .sizeScore(BigDecimal.TEN)
+            .sizeGrade(PullRequestSizeGrade.S)
+            .changedFileCount(1)
+            .addedFileCount(1)
+            .modifiedFileCount(0)
+            .removedFileCount(0)
+            .renamedFileCount(0)
+            .build())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Pull Request ID는 필수입니다.");
     }
 
     @Test
     void 크기_점수가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.create(
-                1L,
-                null,
-                PullRequestSizeGrade.S,
-                1, 1, 0, 0, 0
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("크기 점수는 필수입니다.");
+        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.builder()
+            .pullRequestId(1L)
+            .sizeScore(null)
+            .sizeGrade(PullRequestSizeGrade.S)
+            .changedFileCount(1)
+            .addedFileCount(1)
+            .modifiedFileCount(0)
+            .removedFileCount(0)
+            .renamedFileCount(0)
+            .build())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("크기 점수는 필수입니다.");
     }
 
     @Test
     void 크기_점수가_음수이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.create(
-                1L,
-                new BigDecimal("-1"),
-                PullRequestSizeGrade.S,
-                1, 1, 0, 0, 0
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("크기 점수는 0보다 작을 수 없습니다.");
+        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.builder()
+            .pullRequestId(1L)
+            .sizeScore(new BigDecimal("-1"))
+            .sizeGrade(PullRequestSizeGrade.S)
+            .changedFileCount(1)
+            .addedFileCount(1)
+            .modifiedFileCount(0)
+            .removedFileCount(0)
+            .renamedFileCount(0)
+            .build())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("크기 점수는 0보다 작을 수 없습니다.");
     }
 
     @Test
     void 크기_등급이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.create(
-                1L,
-                BigDecimal.TEN,
-                null,
-                1, 1, 0, 0, 0
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("크기 등급은 필수입니다.");
+        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.builder()
+            .pullRequestId(1L)
+            .sizeScore(BigDecimal.TEN)
+            .sizeGrade(null)
+            .changedFileCount(1)
+            .addedFileCount(1)
+            .modifiedFileCount(0)
+            .removedFileCount(0)
+            .renamedFileCount(0)
+            .build())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("크기 등급은 필수입니다.");
     }
 
     @Test
     void 변경_파일_수가_음수이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.create(
-                1L,
-                BigDecimal.TEN,
-                PullRequestSizeGrade.S,
-                -1, 0, 0, 0, 0
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("변경 파일 수는 0보다 작을 수 없습니다.");
+        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.builder()
+            .pullRequestId(1L)
+            .sizeScore(BigDecimal.TEN)
+            .sizeGrade(PullRequestSizeGrade.S)
+            .changedFileCount(-1)
+            .addedFileCount(0)
+            .modifiedFileCount(0)
+            .removedFileCount(0)
+            .renamedFileCount(0)
+            .build())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("변경 파일 수는 0보다 작을 수 없습니다.");
     }
 
     @Test
     void 추가_파일_수가_음수이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.create(
-                1L,
-                BigDecimal.TEN,
-                PullRequestSizeGrade.S,
-                1, -1, 0, 0, 0
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("추가 파일 수는 0보다 작을 수 없습니다.");
+        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.builder()
+            .pullRequestId(1L)
+            .sizeScore(BigDecimal.TEN)
+            .sizeGrade(PullRequestSizeGrade.S)
+            .changedFileCount(1)
+            .addedFileCount(-1)
+            .modifiedFileCount(0)
+            .removedFileCount(0)
+            .renamedFileCount(0)
+            .build())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("추가 파일 수는 0보다 작을 수 없습니다.");
     }
 
     @Test
     void 수정_파일_수가_음수이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.create(
-                1L,
-                BigDecimal.TEN,
-                PullRequestSizeGrade.S,
-                1, 0, -1, 0, 0
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("수정 파일 수는 0보다 작을 수 없습니다.");
+        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.builder()
+            .pullRequestId(1L)
+            .sizeScore(BigDecimal.TEN)
+            .sizeGrade(PullRequestSizeGrade.S)
+            .changedFileCount(1)
+            .addedFileCount(0)
+            .modifiedFileCount(-1)
+            .removedFileCount(0)
+            .renamedFileCount(0)
+            .build())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("수정 파일 수는 0보다 작을 수 없습니다.");
     }
 
     @Test
     void 삭제_파일_수가_음수이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.create(
-                1L,
-                BigDecimal.TEN,
-                PullRequestSizeGrade.S,
-                1, 0, 0, -1, 0
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("삭제 파일 수는 0보다 작을 수 없습니다.");
+        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.builder()
+            .pullRequestId(1L)
+            .sizeScore(BigDecimal.TEN)
+            .sizeGrade(PullRequestSizeGrade.S)
+            .changedFileCount(1)
+            .addedFileCount(0)
+            .modifiedFileCount(0)
+            .removedFileCount(-1)
+            .renamedFileCount(0)
+            .build())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("삭제 파일 수는 0보다 작을 수 없습니다.");
     }
 
     @Test
     void 이름변경_파일_수가_음수이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.create(
-                1L,
-                BigDecimal.TEN,
-                PullRequestSizeGrade.S,
-                1, 0, 0, 0, -1
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("이름 변경 파일 수는 0보다 작을 수 없습니다.");
+        assertThatThrownBy(() -> PullRequestOpenedSizeMetrics.builder()
+            .pullRequestId(1L)
+            .sizeScore(BigDecimal.TEN)
+            .sizeGrade(PullRequestSizeGrade.S)
+            .changedFileCount(1)
+            .addedFileCount(0)
+            .modifiedFileCount(0)
+            .removedFileCount(0)
+            .renamedFileCount(-1)
+            .build())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("이름 변경 파일 수는 0보다 작을 수 없습니다.");
     }
 }
