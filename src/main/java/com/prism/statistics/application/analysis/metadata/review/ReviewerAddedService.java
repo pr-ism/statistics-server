@@ -3,11 +3,9 @@ package com.prism.statistics.application.analysis.metadata.review;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerAddedRequest;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.RequestedReviewer;
-import com.prism.statistics.domain.analysis.metadata.review.history.RequestedReviewerHistory;
-import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewerAction;
-import com.prism.statistics.domain.analysis.metadata.review.repository.RequestedReviewerHistoryRepository;
 import com.prism.statistics.domain.analysis.metadata.review.repository.RequestedReviewerRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +19,11 @@ public class ReviewerAddedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
+    private final PullRequestRepository pullRequestRepository;
     private final RequestedReviewerRepository requestedReviewerRepository;
-    private final RequestedReviewerHistoryRepository requestedReviewerHistoryRepository;
 
     public void addReviewer(String apiKey, ReviewerAddedRequest request) {
-        if (!projectRepository.existsByApiKey(apiKey)) {
-            throw new InvalidApiKeyException();
-        }
+        validateApiKey(apiKey);
 
         GithubUser reviewer = GithubUser.create(request.reviewer().login(), request.reviewer().id());
         LocalDateTime requestedAt = localDateTimeConverter.toLocalDateTime(request.requestedAt());
@@ -39,19 +35,15 @@ public class ReviewerAddedService {
                 requestedAt
         );
 
-        RequestedReviewer saved = requestedReviewerRepository.saveOrFind(requestedReviewer);
+        pullRequestRepository.findIdByGithubId(request.githubPullRequestId())
+                .ifPresent(id -> requestedReviewer.assignPullRequestId(id));
 
-        if (!saved.equals(requestedReviewer)) {
-            return;
+        requestedReviewerRepository.saveOrFind(requestedReviewer);
+    }
+
+    private void validateApiKey(String apiKey) {
+        if (!projectRepository.existsByApiKey(apiKey)) {
+            throw new InvalidApiKeyException();
         }
-
-        RequestedReviewerHistory requestedReviewerHistory = RequestedReviewerHistory.create(
-                requestedReviewer.getGithubPullRequestId(),
-                request.headCommitSha(),
-                reviewer,
-                ReviewerAction.REQUESTED,
-                requestedAt
-        );
-        requestedReviewerHistoryRepository.save(requestedReviewerHistory);
     }
 }

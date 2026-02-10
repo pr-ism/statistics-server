@@ -119,6 +119,23 @@ class ReviewerAddedServiceTest {
 
     @Sql("/sql/webhook/insert_project_and_pull_request.sql")
     @Test
+    void PullRequest가_존재하면_pullRequestId가_할당된다() {
+        // given
+        ReviewerAddedRequest request = new ReviewerAddedRequest(
+                1001L, TEST_PULL_REQUEST_NUMBER, TEST_HEAD_COMMIT_SHA,
+                new ReviewerData("reviewer1", 12345L), TEST_REQUESTED_AT
+        );
+
+        // when
+        reviewerAddedService.addReviewer(TEST_API_KEY, request);
+
+        // then
+        RequestedReviewer requestedReviewer = jpaRequestedReviewerRepository.findAll().getFirst();
+        assertThat(requestedReviewer.getPullRequestId()).isEqualTo(1L);
+    }
+
+    @Sql("/sql/webhook/insert_project_and_pull_request.sql")
+    @Test
     void 중복_리뷰어_추가_시_저장되지_않는다() {
         // given
         ReviewerAddedRequest request = createReviewerAddedRequest("reviewer1", 12345L);
