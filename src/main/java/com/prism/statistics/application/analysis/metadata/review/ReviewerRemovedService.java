@@ -3,6 +3,7 @@ package com.prism.statistics.application.analysis.metadata.review;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerRemovedRequest;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.history.RequestedReviewerHistory;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewerAction;
@@ -21,14 +22,13 @@ public class ReviewerRemovedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
+    private final PullRequestRepository pullRequestRepository;
     private final RequestedReviewerRepository requestedReviewerRepository;
     private final RequestedReviewerHistoryRepository requestedReviewerHistoryRepository;
 
     @Transactional
     public void removeReviewer(String apiKey, ReviewerRemovedRequest request) {
-        if (!projectRepository.existsByApiKey(apiKey)) {
-            throw new InvalidApiKeyException();
-        }
+        validateApiKey(apiKey);
 
         Long githubPullRequestId = request.githubPullRequestId();
         Long userId = request.reviewer().id();
@@ -50,6 +50,15 @@ public class ReviewerRemovedService {
                 removedAt
         );
 
+        pullRequestRepository.findIdByGithubId(githubPullRequestId)
+                .ifPresent(id -> requestedReviewerHistory.assignPullRequestId(id));
+
         requestedReviewerHistoryRepository.save(requestedReviewerHistory);
+    }
+
+    private void validateApiKey(String apiKey) {
+        if (!projectRepository.existsByApiKey(apiKey)) {
+            throw new InvalidApiKeyException();
+        }
     }
 }
