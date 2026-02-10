@@ -32,7 +32,7 @@ public class PullRequestLabelAddedService {
         LocalDateTime labeledAt = localDateTimeConverter.toLocalDateTime(request.labeledAt());
 
         PullRequestLabel pullRequestLabel = PullRequestLabel.create(
-                githubPullRequestId, null, headCommitSha, labelName, labeledAt
+                githubPullRequestId, headCommitSha, labelName, labeledAt
         );
 
         PullRequestLabel saved = pullRequestLabelRepository.saveOrFind(pullRequestLabel);
