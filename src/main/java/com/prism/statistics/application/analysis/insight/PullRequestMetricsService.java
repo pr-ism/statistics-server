@@ -133,7 +133,11 @@ public class PullRequestMetricsService {
         SizeGradeThresholds thresholds = SizeGradeThresholds.DEFAULT;
         PullRequestSizeGrade sizeGrade = thresholds.classify(totalChanges);
 
-        Map<FileChangeType, Integer> fileStatusCounts = countFileChangeTypes(event.files());
+        List<FileData> files = event.files();
+
+        Map<FileChangeType, Integer> fileStatusCounts = (files == null || files.isEmpty())
+                ? new EnumMap<>(FileChangeType.class)
+                : countFileChangeTypes(files);
 
         return PullRequestOpenedSizeMetrics.create(
                 event.pullRequestId(),
