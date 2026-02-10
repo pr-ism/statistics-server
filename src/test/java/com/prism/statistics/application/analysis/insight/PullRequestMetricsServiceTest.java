@@ -173,22 +173,21 @@ class PullRequestMetricsServiceTest {
         // then
         List<PullRequestOpenedSizeMetrics> allMetrics = sizeMetricsRepository.findAll();
 
-        assertThat(allMetrics).hasSize(3);
-
-        assertThat(allMetrics)
+        assertAll(
+            () -> assertThat(allMetrics).hasSize(3),
+            () -> assertThat(allMetrics)
                 .filteredOn(m -> m.getPullRequestId().equals(1L))
                 .singleElement()
-                .satisfies(m -> assertThat(m.getSizeGrade()).isEqualTo(PullRequestSizeGrade.XS));
-
-        assertThat(allMetrics)
+                .satisfies(m -> assertThat(m.getSizeGrade()).isEqualTo(PullRequestSizeGrade.XS)),
+            () -> assertThat(allMetrics)
                 .filteredOn(m -> m.getPullRequestId().equals(2L))
                 .singleElement()
-                .satisfies(m -> assertThat(m.getSizeGrade()).isEqualTo(PullRequestSizeGrade.M));
-
-        assertThat(allMetrics)
+                .satisfies(m -> assertThat(m.getSizeGrade()).isEqualTo(PullRequestSizeGrade.M)),
+            () -> assertThat(allMetrics)
                 .filteredOn(m -> m.getPullRequestId().equals(3L))
                 .singleElement()
-                .satisfies(m -> assertThat(m.getSizeGrade()).isEqualTo(PullRequestSizeGrade.XL));
+                .satisfies(m -> assertThat(m.getSizeGrade()).isEqualTo(PullRequestSizeGrade.XL))
+        );
     }
 
     @Test
