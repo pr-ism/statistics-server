@@ -15,8 +15,9 @@ public class ReviewCommentCreator {
     private final EntityManager entityManager;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveNew(ReviewComment reviewComment) {
-        jpaReviewCommentRepository.save(reviewComment);
+    public ReviewComment saveNew(ReviewComment reviewComment) {
+        ReviewComment saved = jpaReviewCommentRepository.save(reviewComment);
         entityManager.flush();
+        return saved;
     }
 }

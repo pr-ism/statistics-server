@@ -15,8 +15,9 @@ public class RequestedReviewerCreator {
     private final EntityManager entityManager;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveNew(RequestedReviewer requestedReviewer) {
-        jpaRequestedReviewerRepository.save(requestedReviewer);
+    public RequestedReviewer saveNew(RequestedReviewer requestedReviewer) {
+        RequestedReviewer saved = jpaRequestedReviewerRepository.save(requestedReviewer);
         entityManager.flush();
+        return saved;
     }
 }

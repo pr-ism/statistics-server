@@ -15,8 +15,9 @@ public class PullRequestLabelCreator {
     private final EntityManager entityManager;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveNew(PullRequestLabel pullRequestLabel) {
-        jpaPullRequestLabelRepository.save(pullRequestLabel);
+    public PullRequestLabel saveNew(PullRequestLabel pullRequestLabel) {
+        PullRequestLabel saved = jpaPullRequestLabelRepository.save(pullRequestLabel);
         entityManager.flush();
+        return saved;
     }
 }
