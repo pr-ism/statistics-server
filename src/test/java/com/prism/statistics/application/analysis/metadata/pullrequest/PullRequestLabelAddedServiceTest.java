@@ -77,6 +77,7 @@ class PullRequestLabelAddedServiceTest {
         PullRequestLabel pullRequestLabel = jpaPullRequestLabelRepository.findAll().getFirst();
         assertAll(
                 () -> assertThat(pullRequestLabel.getGithubPullRequestId()).isEqualTo(TEST_GITHUB_PULL_REQUEST_ID),
+                () -> assertThat(pullRequestLabel.getPullRequestId()).isEqualTo(1L),
                 () -> assertThat(pullRequestLabel.getHeadCommitSha()).isEqualTo(TEST_HEAD_COMMIT_SHA),
                 () -> assertThat(pullRequestLabel.getLabelName()).isEqualTo(labelName)
         );

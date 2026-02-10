@@ -3,10 +3,8 @@ package com.prism.statistics.application.analysis.metadata.pullrequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelAddedRequest;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequestLabel;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullRequestLabelHistory;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestLabelAction;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestLabelHistoryRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestLabelRepository;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +18,8 @@ public class PullRequestLabelAddedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
+    private final PullRequestRepository pullRequestRepository;
     private final PullRequestLabelRepository pullRequestLabelRepository;
-    private final PullRequestLabelHistoryRepository pullRequestLabelHistoryRepository;
 
     public void addPullRequestLabel(String apiKey, PullRequestLabelAddedRequest request) {
         validateApiKey(apiKey);
@@ -35,22 +33,10 @@ public class PullRequestLabelAddedService {
                 githubPullRequestId, headCommitSha, labelName, labeledAt
         );
 
-        PullRequestLabel saved = pullRequestLabelRepository.saveOrFind(pullRequestLabel);
+        pullRequestRepository.findIdByGithubId(githubPullRequestId)
+                .ifPresent(id -> pullRequestLabel.assignPullRequestId(id));
 
-        if (!saved.equals(pullRequestLabel)) {
-            return;
-        }
-
-        PullRequestLabelHistory pullRequestLabelHistory = PullRequestLabelHistory.create(
-                githubPullRequestId,
-                null,
-                headCommitSha,
-                labelName,
-                PullRequestLabelAction.ADDED,
-                labeledAt
-        );
-
-        pullRequestLabelHistoryRepository.save(pullRequestLabelHistory);
+        pullRequestLabelRepository.saveOrFind(pullRequestLabel);
     }
 
     private void validateApiKey(String apiKey) {
