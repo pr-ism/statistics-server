@@ -48,7 +48,7 @@ public class PullRequestMetricsService {
 
     private PullRequestOpenedChangeSummary createChangeSummary(PullRequestOpenCreatedEvent event) {
         PullRequestChangeStats stats = event.changeStats();
-        int totalChanges = stats.getAdditionCount() + stats.getDeletionCount();
+        int totalChanges = stats.getTotalChanges();
         BigDecimal avgChangesPerFile = divideOrZero(totalChanges, stats.getChangedFileCount(), 4);
 
         return PullRequestOpenedChangeSummary.create(
@@ -60,7 +60,7 @@ public class PullRequestMetricsService {
 
     private PullRequestOpenedCommitDensity createCommitDensity(PullRequestOpenCreatedEvent event) {
         PullRequestChangeStats stats = event.changeStats();
-        int totalChanges = stats.getAdditionCount() + stats.getDeletionCount();
+        int totalChanges = stats.getTotalChanges();
 
         BigDecimal densityPerFile = divideOrZero(event.commitCount(), stats.getChangedFileCount(), 4);
         BigDecimal densityPerChange = divideOrZero(event.commitCount(), totalChanges, 6);
@@ -129,7 +129,7 @@ public class PullRequestMetricsService {
                 stats.getChangedFileCount()
         );
 
-        int totalChanges = stats.getAdditionCount() + stats.getDeletionCount();
+        int totalChanges = stats.getTotalChanges();
         SizeGradeThresholds thresholds = SizeGradeThresholds.DEFAULT;
         PullRequestSizeGrade sizeGrade = thresholds.classify(totalChanges);
 
