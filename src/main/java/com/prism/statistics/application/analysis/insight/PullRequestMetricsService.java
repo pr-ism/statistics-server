@@ -5,9 +5,14 @@ import com.prism.statistics.application.analysis.metadata.pullrequest.event.Pull
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedChangeSummary;
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedCommitDensity;
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedFileChange;
+import com.prism.statistics.domain.analysis.insight.PullRequestOpenedSizeMetrics;
+import com.prism.statistics.domain.analysis.insight.enums.PullRequestSizeGrade;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedChangeSummaryRepository;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedCommitDensityRepository;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedFileChangeRepository;
+import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedSizeMetricsRepository;
+import com.prism.statistics.domain.analysis.insight.vo.SizeGradeThresholds;
+import com.prism.statistics.domain.analysis.insight.vo.SizeScoreWeights;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.FileChangeType;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
 import java.math.BigDecimal;
@@ -26,16 +31,19 @@ public class PullRequestMetricsService {
     private final PullRequestOpenedFileChangeRepository fileChangeRepository;
     private final PullRequestOpenedChangeSummaryRepository changeSummaryRepository;
     private final PullRequestOpenedCommitDensityRepository commitDensityRepository;
+    private final PullRequestOpenedSizeMetricsRepository sizeMetricsRepository;
 
     @Transactional
     public void deriveMetrics(PullRequestOpenCreatedEvent event) {
         PullRequestOpenedChangeSummary changeSummary = createChangeSummary(event);
         PullRequestOpenedCommitDensity commitDensity = createCommitDensity(event);
         List<PullRequestOpenedFileChange> fileChanges = createFileChanges(event);
+        PullRequestOpenedSizeMetrics sizeMetrics = createSizeMetrics(event);
 
         changeSummaryRepository.save(changeSummary);
         commitDensityRepository.save(commitDensity);
         fileChangeRepository.saveAll(fileChanges);
+        sizeMetricsRepository.save(sizeMetrics);
     }
 
     private PullRequestOpenedChangeSummary createChangeSummary(PullRequestOpenCreatedEvent event) {
@@ -109,5 +117,33 @@ public class PullRequestMetricsService {
 
     private BigDecimal calculateRatio(int count, int total) {
         return divideOrZero(count, total, 2);
+    }
+
+    private PullRequestOpenedSizeMetrics createSizeMetrics(PullRequestOpenCreatedEvent event) {
+        PullRequestChangeStats stats = event.changeStats();
+
+        SizeScoreWeights weights = SizeScoreWeights.DEFAULT;
+        BigDecimal sizeScore = weights.calculateScore(
+                stats.getAdditionCount(),
+                stats.getDeletionCount(),
+                stats.getChangedFileCount()
+        );
+
+        int totalChanges = stats.getAdditionCount() + stats.getDeletionCount();
+        SizeGradeThresholds thresholds = SizeGradeThresholds.DEFAULT;
+        PullRequestSizeGrade sizeGrade = thresholds.classify(totalChanges);
+
+        Map<FileChangeType, Integer> fileStatusCounts = countFileChangeTypes(event.files());
+
+        return PullRequestOpenedSizeMetrics.create(
+                event.pullRequestId(),
+                sizeScore,
+                sizeGrade,
+                stats.getChangedFileCount(),
+                fileStatusCounts.getOrDefault(FileChangeType.ADDED, 0),
+                fileStatusCounts.getOrDefault(FileChangeType.MODIFIED, 0),
+                fileStatusCounts.getOrDefault(FileChangeType.REMOVED, 0),
+                fileStatusCounts.getOrDefault(FileChangeType.RENAMED, 0)
+        );
     }
 }
