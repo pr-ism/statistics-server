@@ -30,6 +30,12 @@ public class RequestedReviewer extends CreatedAtEntity {
 
     private LocalDateTime requestedAt;
 
+    public void assignPullRequestId(Long pullRequestId) {
+        if (this.pullRequestId == null) {
+            this.pullRequestId = pullRequestId;
+        }
+    }
+
     public static RequestedReviewer create(
             Long githubPullRequestId,
             String headCommitSha,

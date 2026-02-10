@@ -78,6 +78,35 @@ class RequestedReviewerTest {
     }
 
     @Test
+    void assignPullRequestId로_pullRequestId를_할당한다() {
+        // given
+        RequestedReviewer reviewer = RequestedReviewer.create(
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, REVIEWER, REQUESTED_AT
+        );
+
+        // when
+        reviewer.assignPullRequestId(1L);
+
+        // then
+        assertThat(reviewer.getPullRequestId()).isEqualTo(1L);
+    }
+
+    @Test
+    void pullRequestId가_이미_할당되어_있으면_덮어쓰지_않는다() {
+        // given
+        RequestedReviewer reviewer = RequestedReviewer.create(
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, REVIEWER, REQUESTED_AT
+        );
+        reviewer.assignPullRequestId(1L);
+
+        // when
+        reviewer.assignPullRequestId(999L);
+
+        // then
+        assertThat(reviewer.getPullRequestId()).isEqualTo(1L);
+    }
+
+    @Test
     void 리뷰어_요청_시각이_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> RequestedReviewer.create(
