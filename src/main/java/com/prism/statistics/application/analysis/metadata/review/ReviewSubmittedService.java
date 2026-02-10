@@ -40,15 +40,15 @@ public class ReviewSubmittedService {
 
         GithubUser reviewer = GithubUser.create(request.reviewer().login(), request.reviewer().id());
 
-        return Review.create(
-                request.githubPullRequestId(),
-                request.githubReviewId(),
-                reviewer,
-                state,
-                request.commitSha(),
-                request.body(),
-                request.commentCount(),
-                submittedAt
-        );
+        return Review.builder()
+                .githubPullRequestId(request.githubPullRequestId())
+                .githubReviewId(request.githubReviewId())
+                .reviewer(reviewer)
+                .reviewState(state)
+                .headCommitSha(request.commitSha())
+                .body(request.body())
+                .commentCount(request.commentCount())
+                .submittedAt(submittedAt)
+                .build();
     }
 }

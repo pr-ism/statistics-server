@@ -136,15 +136,15 @@ class ReviewRepositoryAdapterTest {
     }
 
     private Review createReview(Long githubReviewId) {
-        return Review.create(
-                1L,
-                githubReviewId,
-                GithubUser.create("reviewer", 12345L),
-                ReviewState.APPROVED,
-                "abc123sha",
-                "LGTM",
-                0,
-                LocalDateTime.now()
-        );
+        return Review.builder()
+                .githubPullRequestId(1L)
+                .githubReviewId(githubReviewId)
+                .reviewer(GithubUser.create("reviewer", 12345L))
+                .reviewState(ReviewState.APPROVED)
+                .headCommitSha("abc123sha")
+                .body("LGTM")
+                .commentCount(0)
+                .submittedAt(LocalDateTime.now())
+                .build();
     }
 }
