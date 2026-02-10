@@ -25,6 +25,11 @@ public class ReviewerAddedService {
     public void addReviewer(String apiKey, ReviewerAddedRequest request) {
         validateApiKey(apiKey);
 
+        RequestedReviewer requestedReviewer = createRequestedReviewer(request);
+        requestedReviewerRepository.saveOrFind(requestedReviewer);
+    }
+
+    private RequestedReviewer createRequestedReviewer(ReviewerAddedRequest request) {
         GithubUser reviewer = GithubUser.create(request.reviewer().login(), request.reviewer().id());
         LocalDateTime requestedAt = localDateTimeConverter.toLocalDateTime(request.requestedAt());
 
@@ -38,7 +43,7 @@ public class ReviewerAddedService {
         pullRequestRepository.findIdByGithubId(request.githubPullRequestId())
                 .ifPresent(id -> requestedReviewer.assignPullRequestId(id));
 
-        requestedReviewerRepository.saveOrFind(requestedReviewer);
+        return requestedReviewer;
     }
 
     private void validateApiKey(String apiKey) {

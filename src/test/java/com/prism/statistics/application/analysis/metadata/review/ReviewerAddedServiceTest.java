@@ -131,7 +131,11 @@ class ReviewerAddedServiceTest {
 
         // then
         RequestedReviewer requestedReviewer = jpaRequestedReviewerRepository.findAll().getFirst();
-        assertThat(requestedReviewer.getPullRequestId()).isEqualTo(1L);
+        RequestedReviewerHistory history = jpaRequestedReviewerHistoryRepository.findAll().getFirst();
+        assertAll(
+                () -> assertThat(requestedReviewer.getPullRequestId()).isEqualTo(1L),
+                () -> assertThat(history.getPullRequestId()).isEqualTo(1L)
+        );
     }
 
     @Sql("/sql/webhook/insert_project_and_pull_request.sql")
