@@ -24,19 +24,22 @@ public class PullRequestLabelAddedService {
     public void addPullRequestLabel(String apiKey, PullRequestLabelAddedRequest request) {
         validateApiKey(apiKey);
 
+        PullRequestLabel pullRequestLabel = createPullRequestLabel(request);
+        pullRequestLabelRepository.saveOrFind(pullRequestLabel);
+    }
+
+    private PullRequestLabel createPullRequestLabel(PullRequestLabelAddedRequest request) {
         Long githubPullRequestId = request.githubPullRequestId();
-        String headCommitSha = request.headCommitSha();
-        String labelName = request.label().name();
         LocalDateTime labeledAt = localDateTimeConverter.toLocalDateTime(request.labeledAt());
 
         PullRequestLabel pullRequestLabel = PullRequestLabel.create(
-                githubPullRequestId, headCommitSha, labelName, labeledAt
+                githubPullRequestId, request.headCommitSha(), request.label().name(), labeledAt
         );
 
         pullRequestRepository.findIdByGithubId(githubPullRequestId)
                 .ifPresent(id -> pullRequestLabel.assignPullRequestId(id));
 
-        pullRequestLabelRepository.saveOrFind(pullRequestLabel);
+        return pullRequestLabel;
     }
 
     private void validateApiKey(String apiKey) {

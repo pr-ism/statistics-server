@@ -18,8 +18,11 @@ public class RequestedReviewerSavedEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void saveHistory(RequestedReviewerSavedEvent event) {
-        RequestedReviewer reviewer = event.requestedReviewer();
+        RequestedReviewerHistory history = createHistory(event.requestedReviewer());
+        requestedReviewerHistoryRepository.save(history);
+    }
 
+    private RequestedReviewerHistory createHistory(RequestedReviewer reviewer) {
         RequestedReviewerHistory history = RequestedReviewerHistory.create(
                 reviewer.getGithubPullRequestId(),
                 reviewer.getHeadCommitSha(),
@@ -28,10 +31,7 @@ public class RequestedReviewerSavedEventListener {
                 reviewer.getRequestedAt()
         );
 
-        if (reviewer.getPullRequestId() != null) {
-            history.assignPullRequestId(reviewer.getPullRequestId());
-        }
-
-        requestedReviewerHistoryRepository.save(history);
+        history.assignPullRequestId(reviewer.getPullRequestId());
+        return history;
     }
 }

@@ -18,8 +18,11 @@ public class PullRequestLabelSavedEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void saveHistory(PullRequestLabelSavedEvent event) {
-        PullRequestLabel label = event.pullRequestLabel();
+        PullRequestLabelHistory history = createHistory(event.pullRequestLabel());
+        pullRequestLabelHistoryRepository.save(history);
+    }
 
+    private PullRequestLabelHistory createHistory(PullRequestLabel label) {
         PullRequestLabelHistory history = PullRequestLabelHistory.create(
                 label.getGithubPullRequestId(),
                 label.getHeadCommitSha(),
@@ -28,10 +31,7 @@ public class PullRequestLabelSavedEventListener {
                 label.getLabeledAt()
         );
 
-        if (label.getPullRequestId() != null) {
-            history.assignPullRequestId(label.getPullRequestId());
-        }
-
-        pullRequestLabelHistoryRepository.save(history);
+        history.assignPullRequestId(label.getPullRequestId());
+        return history;
     }
 }
