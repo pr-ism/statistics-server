@@ -16,10 +16,10 @@ class DurationMinutesTest {
     @Test
     void 분_단위_시간을_생성한다() {
         // when
-        DurationMinutes duration = DurationMinutes.of(120);
+        DurationMinutes duration = DurationMinutes.of(120L);
 
         // then
-        assertThat(duration.getMinutes()).isEqualTo(120);
+        assertThat(duration.getMinutes()).isEqualTo(120L);
     }
 
     @Test
@@ -32,13 +32,13 @@ class DurationMinutesTest {
         DurationMinutes duration = DurationMinutes.between(start, end);
 
         // then
-        assertThat(duration.getMinutes()).isEqualTo(150);
+        assertThat(duration.getMinutes()).isEqualTo(150L);
     }
 
     @Test
     void 분이_음수이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> DurationMinutes.of(-1))
+        assertThatThrownBy(() -> DurationMinutes.of(-1L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("소요 시간은 0보다 작을 수 없습니다.");
     }
@@ -81,34 +81,34 @@ class DurationMinutesTest {
     @Test
     void 두_시간을_더한다() {
         // given
-        DurationMinutes duration1 = DurationMinutes.of(60);
-        DurationMinutes duration2 = DurationMinutes.of(30);
+        DurationMinutes duration1 = DurationMinutes.of(60L);
+        DurationMinutes duration2 = DurationMinutes.of(30L);
 
         // when
         DurationMinutes result = duration1.add(duration2);
 
         // then
-        assertThat(result.getMinutes()).isEqualTo(90);
+        assertThat(result.getMinutes()).isEqualTo(90L);
     }
 
     @Test
     void 두_시간을_뺀다() {
         // given
-        DurationMinutes duration1 = DurationMinutes.of(60);
-        DurationMinutes duration2 = DurationMinutes.of(30);
+        DurationMinutes duration1 = DurationMinutes.of(60L);
+        DurationMinutes duration2 = DurationMinutes.of(30L);
 
         // when
         DurationMinutes result = duration1.subtract(duration2);
 
         // then
-        assertThat(result.getMinutes()).isEqualTo(30);
+        assertThat(result.getMinutes()).isEqualTo(30L);
     }
 
     @Test
     void 뺄셈_결과가_음수이면_예외가_발생한다() {
         // given
-        DurationMinutes duration1 = DurationMinutes.of(30);
-        DurationMinutes duration2 = DurationMinutes.of(60);
+        DurationMinutes duration1 = DurationMinutes.of(30L);
+        DurationMinutes duration2 = DurationMinutes.of(60L);
 
         // when & then
         assertThatThrownBy(() -> duration1.subtract(duration2))
@@ -119,32 +119,32 @@ class DurationMinutesTest {
     @Test
     void 시간_단위로_변환한다() {
         // given
-        DurationMinutes duration = DurationMinutes.of(150);
+        DurationMinutes duration = DurationMinutes.of(150L);
 
         // when
         long hours = duration.toHours();
 
         // then
-        assertThat(hours).isEqualTo(2);
+        assertThat(hours).isEqualTo(2L);
     }
 
     @Test
     void 일_단위로_변환한다() {
         // given
-        DurationMinutes duration = DurationMinutes.of(2880); // 48시간
+        DurationMinutes duration = DurationMinutes.of(2880L); // 48시간
 
         // when
         long days = duration.toDays();
 
         // then
-        assertThat(days).isEqualTo(2);
+        assertThat(days).isEqualTo(2L);
     }
 
     @Test
     void 크기를_비교한다() {
         // given
-        DurationMinutes duration1 = DurationMinutes.of(60);
-        DurationMinutes duration2 = DurationMinutes.of(30);
+        DurationMinutes duration1 = DurationMinutes.of(60L);
+        DurationMinutes duration2 = DurationMinutes.of(30L);
 
         // then
         assertAll(
@@ -156,9 +156,9 @@ class DurationMinutesTest {
     @Test
     void 크기를_비교하는_다양한_상황을_검증한다() {
         // given
-        DurationMinutes a = DurationMinutes.of(10);
-        DurationMinutes b = DurationMinutes.of(5);
-        DurationMinutes c = DurationMinutes.of(10);
+        DurationMinutes a = DurationMinutes.of(10L);
+        DurationMinutes b = DurationMinutes.of(5L);
+        DurationMinutes c = DurationMinutes.of(10L);
 
         // when & then
         assertAll(
@@ -174,8 +174,8 @@ class DurationMinutesTest {
     @Test
     void 한_시간이_다른_시간보다_큰지_비교한다() {
         // given
-        DurationMinutes a = DurationMinutes.of(10);
-        DurationMinutes b = DurationMinutes.of(5);
+        DurationMinutes a = DurationMinutes.of(10L);
+        DurationMinutes b = DurationMinutes.of(5L);
 
         // then
         assertAll(
@@ -188,8 +188,8 @@ class DurationMinutesTest {
     @Test
     void 한_시간이_다른_시간보다_작은지_비교한다() {
         // given
-        DurationMinutes a = DurationMinutes.of(3);
-        DurationMinutes b = DurationMinutes.of(8);
+        DurationMinutes a = DurationMinutes.of(3L);
+        DurationMinutes b = DurationMinutes.of(8L);
 
         // then
         assertAll(
@@ -202,8 +202,8 @@ class DurationMinutesTest {
     @Test
     void 동등성을_비교한다() {
         // given
-        DurationMinutes duration1 = DurationMinutes.of(60);
-        DurationMinutes duration2 = DurationMinutes.of(60);
+        DurationMinutes duration1 = DurationMinutes.of(60L);
+        DurationMinutes duration2 = DurationMinutes.of(60L);
 
         // then
         assertThat(duration1).isEqualTo(duration2);
@@ -223,7 +223,7 @@ class DurationMinutesTest {
     @Test
     void null을_더하면_예외가_발생한다() {
         // given
-        DurationMinutes duration = DurationMinutes.of(60);
+        DurationMinutes duration = DurationMinutes.of(60L);
 
         // when & then
         assertThatThrownBy(() -> duration.add(null))
@@ -234,7 +234,7 @@ class DurationMinutesTest {
     @Test
     void null을_빼면_예외가_발생한다() {
         // given
-        DurationMinutes duration = DurationMinutes.of(60);
+        DurationMinutes duration = DurationMinutes.of(60L);
 
         // when & then
         assertThatThrownBy(() -> duration.subtract(null))
@@ -245,7 +245,7 @@ class DurationMinutesTest {
     @Test
     void Zero가_아니면_isZero는_false를_반환한다() {
         // given
-        DurationMinutes duration = DurationMinutes.of(1);
+        DurationMinutes duration = DurationMinutes.of(1L);
 
         // then
         assertThat(duration.isZero()).isFalse();
@@ -266,22 +266,22 @@ class DurationMinutesTest {
     @Test
     void isGreaterThan의_비교_대상이_null이면_예외가_발생한다() {
         // given
-        DurationMinutes duration = DurationMinutes.of(10);
+        DurationMinutes duration = DurationMinutes.of(10L);
 
         // when & then
         assertThatThrownBy(() -> duration.isGreaterThan(null))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("비교 대상은 null일 수 없습니다.");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("비교 대상은 null일 수 없습니다.");
     }
 
     @Test
     void isLessThan의_비교_대상이_null이면_예외가_발생한다() {
         // given
-        DurationMinutes duration = DurationMinutes.of(10);
+        DurationMinutes duration = DurationMinutes.of(10L);
 
         // when & then
         assertThatThrownBy(() -> duration.isLessThan(null))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("비교 대상은 null일 수 없습니다.");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("비교 대상은 null일 수 없습니다.");
     }
 }
