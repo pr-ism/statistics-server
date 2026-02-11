@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DurationMinutes {
 
-    private static final long MINUTES_PER_HOUR = 60;
-    private static final long MINUTES_PER_DAY = 1440;
+    private static final long MINUTES_PER_HOUR = 60L;
+    private static final long MINUTES_PER_DAY = 1440L;
 
     private long minutes;
 
@@ -39,11 +39,11 @@ public class DurationMinutes {
     }
 
     public static DurationMinutes zero() {
-        return new DurationMinutes(0);
+        return new DurationMinutes(0L);
     }
 
     private static void validateMinutes(long minutes) {
-        if (minutes < 0) {
+        if (minutes < 0L) {
             throw new IllegalArgumentException("소요 시간은 0보다 작을 수 없습니다.");
         }
     }
@@ -67,7 +67,7 @@ public class DurationMinutes {
 
         long result = this.minutes - other.minutes;
 
-        if (result < 0) {
+        if (result < 0L) {
             throw new IllegalArgumentException("결과 소요 시간은 0보다 작을 수 없습니다.");
         }
 
@@ -83,7 +83,7 @@ public class DurationMinutes {
     }
 
     public boolean isZero() {
-        return minutes == 0;
+        return minutes == 0L;
     }
 
     public boolean isGreaterThan(DurationMinutes other) {
