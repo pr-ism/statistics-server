@@ -54,7 +54,7 @@ public class DurationMinutes {
 
     public DurationMinutes add(DurationMinutes other) {
         if (other == null) {
-            return this;
+            throw new IllegalArgumentException("더할 대상은 null일 수 없습니다.");
         }
 
         return new DurationMinutes(this.minutes + other.minutes);
@@ -62,7 +62,7 @@ public class DurationMinutes {
 
     public DurationMinutes subtract(DurationMinutes other) {
         if (other == null) {
-            return this;
+            throw new IllegalArgumentException("뺄 대상은 null일 수 없습니다.");
         }
 
         long result = this.minutes - other.minutes;
