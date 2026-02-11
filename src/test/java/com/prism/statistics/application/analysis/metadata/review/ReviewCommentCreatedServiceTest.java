@@ -171,6 +171,34 @@ class ReviewCommentCreatedServiceTest {
         assertThat(comment.getSide()).isEqualTo(CommentSide.LEFT);
     }
 
+    @Sql("/sql/webhook/insert_project_and_review.sql")
+    @Test
+    void Review가_존재하면_reviewId가_할당된다() {
+        // given
+        ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(100L);
+
+        // when
+        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+
+        // then
+        ReviewComment comment = jpaReviewCommentRepository.findAll().getFirst();
+        assertThat(comment.getReviewId()).isEqualTo(1L);
+    }
+
+    @Sql("/sql/webhook/insert_project.sql")
+    @Test
+    void Review가_없으면_reviewId가_null이다() {
+        // given
+        ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(100L);
+
+        // when
+        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+
+        // then
+        ReviewComment comment = jpaReviewCommentRepository.findAll().getFirst();
+        assertThat(comment.getReviewId()).isNull();
+    }
+
     @Sql("/sql/webhook/insert_project.sql")
     @Test
     void 중복_댓글_생성_시_저장되지_않는다() {

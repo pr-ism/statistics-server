@@ -5,6 +5,7 @@ import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeCon
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
+import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewRepository;
 import com.prism.statistics.domain.analysis.metadata.review.enums.CommentSide;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewCommentRepository;
 import com.prism.statistics.domain.analysis.metadata.review.vo.CommentLineRange;
@@ -21,6 +22,7 @@ public class ReviewCommentCreatedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
+    private final ReviewRepository reviewRepository;
     private final ReviewCommentRepository reviewCommentRepository;
 
     public void createReviewComment(String apiKey, ReviewCommentCreatedRequest request) {
@@ -40,7 +42,7 @@ public class ReviewCommentCreatedService {
         LocalDateTime createdAt = localDateTimeConverter.toLocalDateTime(request.createdAt());
         LocalDateTime updatedAt = localDateTimeConverter.toLocalDateTime(request.updatedAt());
 
-        return ReviewComment.builder()
+        ReviewComment reviewComment = ReviewComment.builder()
                 .githubCommentId(request.githubCommentId())
                 .githubReviewId(request.githubReviewId())
                 .body(request.body())
@@ -54,5 +56,10 @@ public class ReviewCommentCreatedService {
                 .githubUpdatedAt(updatedAt)
                 .deleted(false)
                 .build();
+
+        reviewRepository.findIdByGithubReviewId(request.githubReviewId())
+                .ifPresent(id -> reviewComment.assignReviewId(id));
+
+        return reviewComment;
     }
 }
