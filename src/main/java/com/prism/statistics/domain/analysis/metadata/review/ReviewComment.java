@@ -53,6 +53,12 @@ public class ReviewComment extends CreatedAtEntity {
 
     private boolean deleted;
 
+    public void assignReviewId(Long reviewId) {
+        if (this.reviewId == null) {
+            this.reviewId = reviewId;
+        }
+    }
+
     @Builder
     private ReviewComment(
             Long githubCommentId,

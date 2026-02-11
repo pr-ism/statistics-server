@@ -419,4 +419,46 @@ class ReviewCommentTest {
         // when & then
         assertThat(comment.isOlderThan(earlierTime)).isFalse();
     }
+
+    @Test
+    void reviewId를_할당한다() {
+        // given
+        ReviewComment comment = createDefaultReviewComment();
+
+        // when
+        comment.assignReviewId(10L);
+
+        // then
+        assertThat(comment.getReviewId()).isEqualTo(10L);
+    }
+
+    @Test
+    void reviewId가_이미_할당되어_있으면_변경되지_않는다() {
+        // given
+        ReviewComment comment = createDefaultReviewComment();
+        comment.assignReviewId(10L);
+
+        // when
+        comment.assignReviewId(20L);
+
+        // then
+        assertThat(comment.getReviewId()).isEqualTo(10L);
+    }
+
+    private ReviewComment createDefaultReviewComment() {
+        return ReviewComment.builder()
+                .githubCommentId(1L)
+                .githubReviewId(100L)
+                .body("댓글입니다.")
+                .path("src/main/java/Example.java")
+                .lineRange(CommentLineRange.create(null, 10))
+                .side(CommentSide.RIGHT)
+                .commitSha("abc123")
+                .parentCommentId(ParentCommentId.create(null))
+                .author(GithubUser.create("reviewer1", 12345L))
+                .githubCreatedAt(GITHUB_CREATED_AT)
+                .githubUpdatedAt(GITHUB_UPDATED_AT)
+                .deleted(false)
+                .build();
+    }
 }
