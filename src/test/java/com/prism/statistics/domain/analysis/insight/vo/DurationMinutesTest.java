@@ -162,4 +162,95 @@ class DurationMinutesTest {
         // then
         assertThat(duration1).isEqualTo(duration2);
     }
+
+    @Test
+    void 종료_시각이_null이면_예외가_발생한다() {
+        // given
+        LocalDateTime start = LocalDateTime.now();
+
+        // when & then
+        assertThatThrownBy(() -> DurationMinutes.between(start, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("시작 시각과 종료 시각은 필수입니다.");
+    }
+
+    @Test
+    void null을_더하면_자기_자신을_반환한다() {
+        // given
+        DurationMinutes duration = DurationMinutes.of(60);
+
+        // when
+        DurationMinutes result = duration.add(null);
+
+        // then
+        assertThat(result).isEqualTo(duration);
+    }
+
+    @Test
+    void null을_빼면_자기_자신을_반환한다() {
+        // given
+        DurationMinutes duration = DurationMinutes.of(60);
+
+        // when
+        DurationMinutes result = duration.subtract(null);
+
+        // then
+        assertThat(result).isEqualTo(duration);
+    }
+
+    @Test
+    void Zero가_아니면_isZero는_false를_반환한다() {
+        // given
+        DurationMinutes duration = DurationMinutes.of(1);
+
+        // then
+        assertThat(duration.isZero()).isFalse();
+    }
+
+    @Test
+    void 같은_객체는_동등하다() {
+        // given
+        DurationMinutes duration = DurationMinutes.of(60);
+
+        // then
+        assertThat(duration).isEqualTo(duration);
+    }
+
+    @Test
+    void null과는_동등하지_않다() {
+        // given
+        DurationMinutes duration = DurationMinutes.of(60);
+
+        // then
+        assertThat(duration).isNotEqualTo(null);
+    }
+
+    @Test
+    void 다른_타입과는_동등하지_않다() {
+        // given
+        DurationMinutes duration = DurationMinutes.of(60);
+
+        // then
+        assertThat(duration).isNotEqualTo("60");
+    }
+
+    @Test
+    void 값이_다르면_동등하지_않다() {
+        // given
+        DurationMinutes duration1 = DurationMinutes.of(60);
+        DurationMinutes duration2 = DurationMinutes.of(30);
+
+        // then
+        assertThat(duration1).isNotEqualTo(duration2);
+    }
+
+    @Test
+    void 같은_값이면_같은_해시코드를_반환한다() {
+        // given
+        DurationMinutes duration1 = DurationMinutes.of(60);
+        DurationMinutes duration2 = DurationMinutes.of(60);
+
+        // then
+        assertThat(duration1.hashCode()).isEqualTo(duration2.hashCode());
+    }
 }
