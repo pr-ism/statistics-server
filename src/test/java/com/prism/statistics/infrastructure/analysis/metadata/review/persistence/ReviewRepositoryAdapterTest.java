@@ -135,9 +135,54 @@ class ReviewRepositoryAdapterTest {
         );
     }
 
+    @Test
+    void pullRequestId가_없는_리뷰에_backfill한다() {
+        // given
+        Long githubPullRequestId = 500L;
+        Review review1 = createReview(501L, githubPullRequestId);
+        Review review2 = createReview(502L, githubPullRequestId);
+        reviewRepositoryAdapter.saveOrFind(review1);
+        reviewRepositoryAdapter.saveOrFind(review2);
+
+        Long pullRequestId = 1L;
+
+        // when
+        long updated = reviewRepositoryAdapter.backfillPullRequestId(githubPullRequestId, pullRequestId);
+
+        // then
+        assertAll(
+                () -> assertThat(updated).isEqualTo(2L),
+                () -> assertThat(jpaReviewRepository.findAll())
+                        .allMatch(r -> pullRequestId.equals(r.getPullRequestId()))
+        );
+    }
+
+    @Test
+    void pullRequestId가_이미_있는_리뷰는_backfill하지_않는다() {
+        // given
+        Long githubPullRequestId = 600L;
+        Review review = createReview(601L, githubPullRequestId);
+        review.assignPullRequestId(99L);
+        reviewRepositoryAdapter.saveOrFind(review);
+
+        // when
+        long updated = reviewRepositoryAdapter.backfillPullRequestId(githubPullRequestId, 1L);
+
+        // then
+        Review result = jpaReviewRepository.findByGithubReviewId(601L).orElseThrow();
+        assertAll(
+                () -> assertThat(updated).isEqualTo(0L),
+                () -> assertThat(result.getPullRequestId()).isEqualTo(99L)
+        );
+    }
+
     private Review createReview(Long githubReviewId) {
+        return createReview(githubReviewId, 1L);
+    }
+
+    private Review createReview(Long githubReviewId, Long githubPullRequestId) {
         return Review.builder()
-                .githubPullRequestId(1L)
+                .githubPullRequestId(githubPullRequestId)
                 .githubReviewId(githubReviewId)
                 .reviewer(GithubUser.create("reviewer", 12345L))
                 .reviewState(ReviewState.APPROVED)
