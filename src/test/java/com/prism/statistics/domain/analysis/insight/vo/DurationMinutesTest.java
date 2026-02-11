@@ -154,6 +154,27 @@ class DurationMinutesTest {
     }
 
     @Test
+    void 크기를_비교하는_다양한_상황을_검증한다() {
+        // given
+        DurationMinutes a = DurationMinutes.of(10);
+        DurationMinutes b = DurationMinutes.of(5);
+        DurationMinutes c = DurationMinutes.of(10);
+
+        // when & then
+        assertAll(
+                // isGreaterThan 검증
+                () -> assertThat(a.isGreaterThan(b)).isTrue(),
+                () -> assertThat(b.isGreaterThan(a)).isFalse(),
+                () -> assertThat(a.isGreaterThan(c)).isFalse(),
+
+                // isLessThan 검증
+                () -> assertThat(b.isLessThan(a)).isTrue(),
+                () -> assertThat(a.isLessThan(b)).isFalse(),
+                () -> assertThat(a.isLessThan(c)).isFalse()
+        );
+    }
+    
+    @Test
     void 동등성을_비교한다() {
         // given
         DurationMinutes duration1 = DurationMinutes.of(60);
