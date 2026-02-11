@@ -9,4 +9,6 @@ public interface ReviewRepository {
     Review saveOrFind(Review review);
 
     Optional<Review> findByGithubReviewId(Long githubReviewId);
+
+    Optional<Long> findIdByGithubReviewId(Long githubReviewId);
 }
