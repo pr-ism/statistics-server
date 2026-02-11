@@ -316,15 +316,67 @@ class ReviewCommentRepositoryAdapterTest {
         }
     }
 
+    @Test
+    void reviewId가_없는_댓글에_backfill한다() {
+        // given
+        Long githubReviewId = 900L;
+        ReviewComment comment1 = createReviewComment(901L, githubReviewId);
+        ReviewComment comment2 = createReviewComment(902L, githubReviewId);
+        reviewCommentRepositoryAdapter.saveOrFind(comment1);
+        reviewCommentRepositoryAdapter.saveOrFind(comment2);
+
+        Long reviewId = 1L;
+
+        // when
+        long updated = reviewCommentRepositoryAdapter.backfillReviewId(githubReviewId, reviewId);
+
+        // then
+        ReviewComment result1 = jpaReviewCommentRepository.findByGithubCommentId(901L).orElseThrow();
+        ReviewComment result2 = jpaReviewCommentRepository.findByGithubCommentId(902L).orElseThrow();
+        assertAll(
+                () -> assertThat(updated).isEqualTo(2L),
+                () -> assertThat(result1.getReviewId()).isEqualTo(reviewId),
+                () -> assertThat(result2.getReviewId()).isEqualTo(reviewId)
+        );
+    }
+
+    @Test
+    void reviewId가_이미_있는_댓글은_backfill하지_않는다() {
+        // given
+        Long githubReviewId = 1000L;
+        ReviewComment comment = createReviewComment(1001L, githubReviewId);
+        comment.assignReviewId(99L);
+        reviewCommentRepositoryAdapter.saveOrFind(comment);
+
+        // when
+        long updated = reviewCommentRepositoryAdapter.backfillReviewId(githubReviewId, 1L);
+
+        // then
+        ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(1001L).orElseThrow();
+        assertAll(
+                () -> assertThat(updated).isEqualTo(0L),
+                () -> assertThat(result.getReviewId()).isEqualTo(99L)
+        );
+    }
+
     private ReviewComment createReviewComment(Long githubCommentId) {
         LocalDateTime githubCreatedAt = LocalDateTime.of(2024, 1, 15, 10, 0);
-        return createReviewComment(githubCommentId, githubCreatedAt);
+        return createReviewComment(githubCommentId, 100L, githubCreatedAt);
+    }
+
+    private ReviewComment createReviewComment(Long githubCommentId, Long githubReviewId) {
+        LocalDateTime githubCreatedAt = LocalDateTime.of(2024, 1, 15, 10, 0);
+        return createReviewComment(githubCommentId, githubReviewId, githubCreatedAt);
     }
 
     private ReviewComment createReviewComment(Long githubCommentId, LocalDateTime githubTime) {
+        return createReviewComment(githubCommentId, 100L, githubTime);
+    }
+
+    private ReviewComment createReviewComment(Long githubCommentId, Long githubReviewId, LocalDateTime githubTime) {
         return ReviewComment.builder()
                 .githubCommentId(githubCommentId)
-                .githubReviewId(100L)
+                .githubReviewId(githubReviewId)
                 .body("코드 리뷰 댓글입니다.")
                 .path("src/main/java/Example.java")
                 .lineRange(CommentLineRange.create(null, 10))

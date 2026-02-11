@@ -1,20 +1,19 @@
 package com.prism.statistics.infrastructure.analysis.metadata.review.persistence;
 
-import static com.prism.statistics.domain.analysis.metadata.review.QReviewComment.reviewComment;
-
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewCommentRepository;
-import com.prism.statistics.infrastructure.common.MysqlDuplicateKeyDetector;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewCommentNotFoundException;
+import com.prism.statistics.infrastructure.common.MysqlDuplicateKeyDetector;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+
+import static com.prism.statistics.domain.analysis.metadata.review.QReviewComment.reviewComment;
 
 @Repository
 @RequiredArgsConstructor
