@@ -173,7 +173,35 @@ class DurationMinutesTest {
                 () -> assertThat(a.isLessThan(c)).isFalse()
         );
     }
-    
+
+    @Test
+    void 한_시간이_다른_시간보다_큰지_비교한다() {
+        // given
+        DurationMinutes a = DurationMinutes.of(10);
+        DurationMinutes b = DurationMinutes.of(5);
+
+        // then
+        assertAll(
+                () -> assertThat(a.isGreaterThan(b)).as("10분은 5분보다 크다").isTrue(),
+                () -> assertThat(b.isGreaterThan(a)).as("5분은 10분보다 클 수 없다").isFalse(),
+                () -> assertThat(a.isGreaterThan(a)).as("같은 시간끼리는 더 클 수 없다").isFalse()
+        );
+    }
+
+    @Test
+    void 한_시간이_다른_시간보다_작은지_비교한다() {
+        // given
+        DurationMinutes a = DurationMinutes.of(3);
+        DurationMinutes b = DurationMinutes.of(8);
+
+        // then
+        assertAll(
+                () -> assertThat(a.isLessThan(b)).as("3분은 8분보다 작다").isTrue(),
+                () -> assertThat(b.isLessThan(a)).as("8분은 3분보다 작을 수 없다").isFalse(),
+                () -> assertThat(a.isLessThan(a)).as("같은 시간끼리는 더 작을 수 없다").isFalse()
+        );
+    }
+
     @Test
     void 동등성을_비교한다() {
         // given
