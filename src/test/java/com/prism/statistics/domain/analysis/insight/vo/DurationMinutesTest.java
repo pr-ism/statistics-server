@@ -162,12 +162,9 @@ class DurationMinutesTest {
 
         // when & then
         assertAll(
-                // isGreaterThan 검증
                 () -> assertThat(a.isGreaterThan(b)).isTrue(),
                 () -> assertThat(b.isGreaterThan(a)).isFalse(),
                 () -> assertThat(a.isGreaterThan(c)).isFalse(),
-
-                // isLessThan 검증
                 () -> assertThat(b.isLessThan(a)).isTrue(),
                 () -> assertThat(a.isLessThan(b)).isFalse(),
                 () -> assertThat(a.isLessThan(c)).isFalse()
@@ -182,9 +179,9 @@ class DurationMinutesTest {
 
         // then
         assertAll(
-                () -> assertThat(a.isGreaterThan(b)).as("10분은 5분보다 크다").isTrue(),
-                () -> assertThat(b.isGreaterThan(a)).as("5분은 10분보다 클 수 없다").isFalse(),
-                () -> assertThat(a.isGreaterThan(a)).as("같은 시간끼리는 더 클 수 없다").isFalse()
+                () -> assertThat(a.isGreaterThan(b)).isTrue(),
+                () -> assertThat(b.isGreaterThan(a)).isFalse(),
+                () -> assertThat(a.isGreaterThan(a)).isFalse()
         );
     }
 
@@ -196,9 +193,9 @@ class DurationMinutesTest {
 
         // then
         assertAll(
-                () -> assertThat(a.isLessThan(b)).as("3분은 8분보다 작다").isTrue(),
-                () -> assertThat(b.isLessThan(a)).as("8분은 3분보다 작을 수 없다").isFalse(),
-                () -> assertThat(a.isLessThan(a)).as("같은 시간끼리는 더 작을 수 없다").isFalse()
+                () -> assertThat(a.isLessThan(b)).isTrue(),
+                () -> assertThat(b.isLessThan(a)).isFalse(),
+                () -> assertThat(a.isLessThan(a)).isFalse()
         );
     }
 
@@ -224,27 +221,25 @@ class DurationMinutesTest {
     }
 
     @Test
-    void null을_더하면_자기_자신을_반환한다() {
+    void null을_더하면_예외가_발생한다() {
         // given
         DurationMinutes duration = DurationMinutes.of(60);
 
-        // when
-        DurationMinutes result = duration.add(null);
-
-        // then
-        assertThat(result).isEqualTo(duration);
+        // when & then
+        assertThatThrownBy(() -> duration.add(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("더할 대상은 null일 수 없습니다.");
     }
 
     @Test
-    void null을_빼면_자기_자신을_반환한다() {
+    void null을_빼면_예외가_발생한다() {
         // given
         DurationMinutes duration = DurationMinutes.of(60);
 
-        // when
-        DurationMinutes result = duration.subtract(null);
-
-        // then
-        assertThat(result).isEqualTo(duration);
+        // when & then
+        assertThatThrownBy(() -> duration.subtract(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("뺄 대상은 null일 수 없습니다.");
     }
 
     @Test
