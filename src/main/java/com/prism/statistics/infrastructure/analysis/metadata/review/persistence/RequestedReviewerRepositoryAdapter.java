@@ -83,4 +83,17 @@ public class RequestedReviewerRepositoryAdapter implements RequestedReviewerRepo
                 )
                 .execute();
     }
+
+    @Override
+    @Transactional
+    public long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId) {
+        return queryFactory
+                .update(requestedReviewer)
+                .set(requestedReviewer.pullRequestId, pullRequestId)
+                .where(
+                        requestedReviewer.githubPullRequestId.eq(githubPullRequestId),
+                        requestedReviewer.pullRequestId.isNull()
+                )
+                .execute();
+    }
 }

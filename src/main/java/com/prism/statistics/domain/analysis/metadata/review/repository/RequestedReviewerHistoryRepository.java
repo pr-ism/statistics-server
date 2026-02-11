@@ -5,4 +5,6 @@ import com.prism.statistics.domain.analysis.metadata.review.history.RequestedRev
 public interface RequestedReviewerHistoryRepository {
 
     RequestedReviewerHistory save(RequestedReviewerHistory requestedReviewerHistory);
+
+    long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId);
 }

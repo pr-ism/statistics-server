@@ -11,4 +11,6 @@ public interface ReviewRepository {
     Optional<Review> findByGithubReviewId(Long githubReviewId);
 
     Optional<Long> findIdByGithubReviewId(Long githubReviewId);
+
+    long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId);
 }

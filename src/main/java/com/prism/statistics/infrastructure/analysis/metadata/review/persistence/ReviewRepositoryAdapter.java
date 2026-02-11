@@ -53,4 +53,17 @@ public class ReviewRepositoryAdapter implements ReviewRepository {
                         .fetchOne()
         );
     }
+
+    @Override
+    @Transactional
+    public long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId) {
+        return queryFactory
+                .update(review)
+                .set(review.pullRequestId, pullRequestId)
+                .where(
+                        review.githubPullRequestId.eq(githubPullRequestId),
+                        review.pullRequestId.isNull()
+                )
+                .execute();
+    }
 }
