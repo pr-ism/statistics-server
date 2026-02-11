@@ -255,4 +255,38 @@ class DurationMinutesTest {
         // then
         assertThat(duration.isZero()).isFalse();
     }
+
+    @Test
+    void 시작과_종료_시각이_같으면_0분이다() {
+        // given
+        LocalDateTime time = LocalDateTime.of(2024, 1, 1, 10, 0);
+
+        // when
+        DurationMinutes duration = DurationMinutes.between(time, time);
+
+        // then
+        assertThat(duration.isZero()).isTrue();
+    }
+
+    @Test
+    void isGreaterThan의_비교_대상이_null이면_예외가_발생한다() {
+        // given
+        DurationMinutes duration = DurationMinutes.of(10);
+
+        // when & then
+        assertThatThrownBy(() -> duration.isGreaterThan(null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("비교 대상은 null일 수 없습니다.");
+    }
+
+    @Test
+    void isLessThan의_비교_대상이_null이면_예외가_발생한다() {
+        // given
+        DurationMinutes duration = DurationMinutes.of(10);
+
+        // when & then
+        assertThatThrownBy(() -> duration.isLessThan(null))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("비교 대상은 null일 수 없습니다.");
+    }
 }
