@@ -1,15 +1,15 @@
 package com.prism.statistics.domain.analysis.insight.vo;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Objects;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@EqualsAndHashCode
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DurationMinutes {
@@ -17,7 +17,6 @@ public class DurationMinutes {
     private static final long MINUTES_PER_HOUR = 60;
     private static final long MINUTES_PER_DAY = 1440;
 
-    @Column(nullable = false)
     private long minutes;
 
     public static DurationMinutes of(long minutes) {
@@ -88,30 +87,18 @@ public class DurationMinutes {
     }
 
     public boolean isGreaterThan(DurationMinutes other) {
+        if (other == null) {
+            throw new IllegalArgumentException("비교 대상은 null일 수 없습니다.");
+        }
+
         return this.minutes > other.minutes;
     }
 
     public boolean isLessThan(DurationMinutes other) {
+        if (other == null) {
+            throw new IllegalArgumentException("비교 대상은 null일 수 없습니다.");
+        }
+        
         return this.minutes < other.minutes;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) {
-            return true;
-        }
-
-        if (object == null || getClass() != object.getClass()) {
-            return false;
-        }
-
-        DurationMinutes that = (DurationMinutes) object;
-
-        return minutes == that.minutes;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(minutes);
     }
 }
