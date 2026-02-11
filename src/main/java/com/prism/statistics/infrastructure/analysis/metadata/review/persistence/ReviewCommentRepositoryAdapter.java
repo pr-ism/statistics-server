@@ -10,6 +10,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -78,6 +79,19 @@ public class ReviewCommentRepositoryAdapter implements ReviewCommentRepository {
                         reviewComment.githubCommentId.eq(githubCommentId),
                         reviewComment.githubUpdatedAt.lt(updatedAt),
                         reviewComment.deleted.isFalse()
+                )
+                .execute();
+    }
+
+    @Override
+    @Transactional
+    public long backfillReviewId(Long githubReviewId, Long reviewId) {
+        return queryFactory
+                .update(reviewComment)
+                .set(reviewComment.reviewId, reviewId)
+                .where(
+                        reviewComment.githubReviewId.eq(githubReviewId),
+                        reviewComment.reviewId.isNull()
                 )
                 .execute();
     }
