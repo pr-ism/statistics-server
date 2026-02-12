@@ -1,7 +1,6 @@
 package com.prism.statistics.application.analysis.metadata.review.event.listener;
 
 import com.prism.statistics.application.analysis.metadata.review.event.ReviewSavedEvent;
-import com.prism.statistics.domain.analysis.metadata.review.Review;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewCommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,7 +18,6 @@ public class ReviewSavedEventListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void backfillReviewId(ReviewSavedEvent event) {
-        Review review = event.review();
-        reviewCommentRepository.backfillReviewId(review.getGithubReviewId(), review.getId());
+        reviewCommentRepository.backfillReviewId(event.githubReviewId(), event.reviewId());
     }
 }

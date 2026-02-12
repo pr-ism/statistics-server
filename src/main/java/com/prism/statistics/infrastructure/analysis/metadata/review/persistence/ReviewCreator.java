@@ -21,7 +21,7 @@ public class ReviewCreator {
     public Review saveNew(Review review) {
         Review saved = jpaReviewRepository.save(review);
         entityManager.flush();
-        eventPublisher.publishEvent(new ReviewSavedEvent(saved));
+        eventPublisher.publishEvent(new ReviewSavedEvent(saved.getGithubReviewId(), saved.getId()));
         return saved;
     }
 }
