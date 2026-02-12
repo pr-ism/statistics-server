@@ -62,7 +62,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                     .requestMatchers("/docs/index.html").permitAll()
-                    .requestMatchers("/webhook/**").permitAll()
+                    .requestMatchers("/collect/**").permitAll()
                     .anyRequest().authenticated()
             )
             .exceptionHandling(handler -> handler
