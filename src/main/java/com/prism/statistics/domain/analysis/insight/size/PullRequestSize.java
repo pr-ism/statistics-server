@@ -66,6 +66,7 @@ public class PullRequestSize extends BaseTimeEntity {
             BigDecimal fileChangeDiversity,
             SizeScoreWeight weight
     ) {
+        validateWeight(weight);
         BigDecimal sizeScore = weight.calculateScore(additionCount, deletionCount, changedFileCount);
         SizeGrade sizeGrade = SizeGrade.fromScore(sizeScore);
 
