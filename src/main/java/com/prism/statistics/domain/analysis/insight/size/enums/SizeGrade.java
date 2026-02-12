@@ -1,6 +1,7 @@
 package com.prism.statistics.domain.analysis.insight.size.enums;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public enum SizeGrade {
 
@@ -36,7 +37,7 @@ public enum SizeGrade {
         if (score == null) {
             throw new IllegalArgumentException("점수는 필수입니다.");
         }
-        return fromScore(score.intValue());
+        return fromScore(score.setScale(0, RoundingMode.HALF_UP).intValue());
     }
 
     public static SizeGrade fromScore(int score) {
@@ -56,6 +57,16 @@ public enum SizeGrade {
     public static SizeGrade fromScoreWithThresholds(int score, int[] thresholds) {
         if (thresholds == null || thresholds.length != 4) {
             throw new IllegalArgumentException("임계값 배열은 4개 요소가 필요합니다.");
+        }
+
+        if (score < 0) {
+            throw new IllegalArgumentException("점수는 0보다 작을 수 없습니다.");
+        }
+
+        for (int i = 0; i < thresholds.length; i++) {
+            if (thresholds[i] <= thresholds[i - 1]) {
+                throw new IllegalArgumentException("임계값은 오름차순이어야 합니다.");
+            }
         }
 
         if (score < thresholds[0]) {
