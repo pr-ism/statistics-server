@@ -63,7 +63,7 @@ public enum SizeGrade {
             throw new IllegalArgumentException("점수는 0보다 작을 수 없습니다.");
         }
 
-        for (int i = 0; i < thresholds.length; i++) {
+        for (int i = 1; i < thresholds.length; i++) {
             if (thresholds[i] <= thresholds[i - 1]) {
                 throw new IllegalArgumentException("임계값은 오름차순이어야 합니다.");
             }
