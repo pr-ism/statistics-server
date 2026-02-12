@@ -135,6 +135,10 @@ public class PullRequestLifecycle extends BaseTimeEntity {
             DurationMinutes finalActiveWork,
             boolean closedWithoutReview
     ) {
+        if (totalLifespan == null) {
+            throw new IllegalArgumentException("종료 시 실질 작업 기간은 필수입니다.");
+        }
+
         validateActiveWork(finalActiveWork);
         this.timeToMerge = timeToMerge;
         this.totalLifespan = totalLifespan;
