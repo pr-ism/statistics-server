@@ -2,11 +2,13 @@ package com.prism.statistics.domain.analysis.insight.size.repository;
 
 import com.prism.statistics.domain.analysis.insight.size.PullRequestSize;
 import com.prism.statistics.domain.analysis.insight.size.enums.SizeGrade;
+
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PullRequestSizeRepository extends JpaRepository<PullRequestSize, Long> {
+public interface PullRequestSizeRepository {
+
+    PullRequestSize save(PullRequestSize size);
 
     Optional<PullRequestSize> findByPullRequestId(Long pullRequestId);
 
