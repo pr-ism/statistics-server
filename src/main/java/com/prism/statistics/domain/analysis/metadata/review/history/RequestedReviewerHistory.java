@@ -57,7 +57,6 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
         );
     }
 
-    @Builder
     private RequestedReviewerHistory(
             Long githubPullRequestId,
             String headCommitSha,

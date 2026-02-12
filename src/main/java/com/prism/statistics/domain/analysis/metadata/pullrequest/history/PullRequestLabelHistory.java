@@ -83,7 +83,6 @@ public class PullRequestLabelHistory extends CreatedAtEntity {
         }
     }
 
-    @Builder
     private PullRequestLabelHistory(
             Long githubPullRequestId,
             String headCommitSha,

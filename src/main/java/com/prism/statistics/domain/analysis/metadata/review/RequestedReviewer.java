@@ -52,7 +52,6 @@ public class RequestedReviewer extends CreatedAtEntity {
         );
     }
 
-    @Builder
     private RequestedReviewer(
             Long githubPullRequestId,
             String headCommitSha,

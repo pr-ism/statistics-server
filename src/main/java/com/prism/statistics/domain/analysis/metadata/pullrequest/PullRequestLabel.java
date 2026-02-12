@@ -69,7 +69,6 @@ public class PullRequestLabel extends CreatedAtEntity {
         }
     }
 
-    @Builder
     private PullRequestLabel(
             Long githubPullRequestId,
             String headCommitSha,
