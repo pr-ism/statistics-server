@@ -181,10 +181,10 @@ class PullRequestSizeTest {
         );
 
         // when
-        PullRequestSize recalculated = original.recalculateWithWeight(newWeight);
+        original.recalculateWithWeight(newWeight);
 
         // then
-        assertThat(recalculated.getSizeScore()).isEqualByComparingTo(new BigDecimal("400"));
+        assertThat(original.getSizeScore()).isEqualByComparingTo(new BigDecimal("400"));
     }
 
     @Test
