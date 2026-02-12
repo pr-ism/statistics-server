@@ -88,6 +88,10 @@ public class PullRequestSize extends BaseTimeEntity {
             int deletedCount,
             int renamedCount
     ) {
+        if (addedCount < 0 || modifiedCount < 0 || deletedCount < 0 || renamedCount < 0) {
+            throw new IllegalArgumentException("파일 변경 수는 0보다 작을 수 없습니다.");
+        }
+
         int total = addedCount + modifiedCount + deletedCount + renamedCount;
         if (total == 0) {
             return BigDecimal.ZERO;
@@ -161,15 +165,11 @@ public class PullRequestSize extends BaseTimeEntity {
         this.changedFileCount = changedFileCount;
     }
 
-    public PullRequestSize recalculateWithWeight(SizeScoreWeight newWeight) {
-        return createWithWeight(
-                this.pullRequestId,
-                this.additionCount,
-                this.deletionCount,
-                this.changedFileCount,
-                this.fileChangeDiversity,
-                newWeight
-        );
+    public void recalculateWithWeight(SizeScoreWeight newWeight) {
+        validateWeight(newWeight);
+        this.weight = newWeight;
+        this.sizeScore = newWeight.calculateScore(additionCount, deletionCount, changedFileCount);
+        this.sizeGrade = SizeGrade.fromScore(this.sizeScore);
     }
 
     public int getTotalChanges() {
