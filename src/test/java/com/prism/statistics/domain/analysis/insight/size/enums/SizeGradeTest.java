@@ -75,7 +75,10 @@ class SizeGradeTest {
                 () -> assertThat(SizeGrade.fromScoreWithThresholds(49, customThresholds)).isEqualTo(SizeGrade.S),
                 () -> assertThat(SizeGrade.fromScoreWithThresholds(199, customThresholds)).isEqualTo(SizeGrade.M),
                 () -> assertThat(SizeGrade.fromScoreWithThresholds(499, customThresholds)).isEqualTo(SizeGrade.L),
-                () -> assertThat(SizeGrade.fromScoreWithThresholds(500, customThresholds)).isEqualTo(SizeGrade.XL)
+                () -> assertThat(SizeGrade.fromScoreWithThresholds(500, customThresholds)).isEqualTo(SizeGrade.XL),
+                () -> assertThat(SizeGrade.fromScoreWithThresholds(5, customThresholds)).isEqualTo(SizeGrade.S),
+                () -> assertThat(SizeGrade.fromScoreWithThresholds(50, customThresholds)).isEqualTo(SizeGrade.M),
+                () -> assertThat(SizeGrade.fromScoreWithThresholds(200, customThresholds)).isEqualTo(SizeGrade.L)
         );
     }
 
