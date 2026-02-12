@@ -135,6 +135,7 @@ public class PullRequestLifecycle extends BaseTimeEntity {
             DurationMinutes finalActiveWork,
             boolean closedWithoutReview
     ) {
+        validateActiveWork(finalActiveWork);
         this.timeToMerge = timeToMerge;
         this.totalLifespan = totalLifespan;
         this.activeWork = finalActiveWork;
@@ -146,6 +147,8 @@ public class PullRequestLifecycle extends BaseTimeEntity {
             int newStateChangeCount,
             boolean isReopened
     ) {
+        validateActiveWork(currentActiveWork);
+        validateStateChangeCount(newStateChangeCount);
         this.activeWork = currentActiveWork;
         this.stateChangeCount = newStateChangeCount;
         if (isReopened) {
