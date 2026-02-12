@@ -5,6 +5,7 @@ import com.prism.statistics.application.analysis.metadata.pullrequest.dto.reques
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.PullRequestData;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestDraftCreatedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
+import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSavedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent.CommitData;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
@@ -46,6 +47,7 @@ public class PullRequestOpenedService {
 
         PullRequest savedPullRequest = savePullRequest(projectId, pullRequestData);
 
+        publishPullRequestSavedEvent(savedPullRequest);
         publishPullRequestOpenCreatedEvent(savedPullRequest, projectId, pullRequestData, request);
     }
 
@@ -71,6 +73,12 @@ public class PullRequestOpenedService {
                 .build();
 
         return pullRequestRepository.save(pullRequest);
+    }
+
+    private void publishPullRequestSavedEvent(PullRequest savedPullRequest) {
+        eventPublisher.publishEvent(new PullRequestSavedEvent(
+                savedPullRequest.getGithubPullRequestId(), savedPullRequest.getId()
+        ));
     }
 
     private void publishPullRequestOpenCreatedEvent(

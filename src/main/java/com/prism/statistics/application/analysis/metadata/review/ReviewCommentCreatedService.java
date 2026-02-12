@@ -2,8 +2,10 @@ package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentCreatedRequest;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
+import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
+import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewRepository;
 import com.prism.statistics.domain.analysis.metadata.review.enums.CommentSide;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewCommentRepository;
 import com.prism.statistics.domain.analysis.metadata.review.vo.CommentLineRange;
@@ -20,6 +22,7 @@ public class ReviewCommentCreatedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
+    private final ReviewRepository reviewRepository;
     private final ReviewCommentRepository reviewCommentRepository;
 
     public void createReviewComment(String apiKey, ReviewCommentCreatedRequest request) {
@@ -39,7 +42,7 @@ public class ReviewCommentCreatedService {
         LocalDateTime createdAt = localDateTimeConverter.toLocalDateTime(request.createdAt());
         LocalDateTime updatedAt = localDateTimeConverter.toLocalDateTime(request.updatedAt());
 
-        return ReviewComment.builder()
+        ReviewComment reviewComment = ReviewComment.builder()
                 .githubCommentId(request.githubCommentId())
                 .githubReviewId(request.githubReviewId())
                 .body(request.body())
@@ -48,11 +51,15 @@ public class ReviewCommentCreatedService {
                 .side(CommentSide.from(request.side()))
                 .commitSha(request.commitSha())
                 .parentCommentId(ParentCommentId.create(request.inReplyToId()))
-                .authorMention(request.author().login())
-                .authorGithubUid(request.author().id())
+                .author(GithubUser.create(request.author().login(), request.author().id()))
                 .githubCreatedAt(createdAt)
                 .githubUpdatedAt(updatedAt)
                 .deleted(false)
                 .build();
+
+        reviewRepository.findIdByGithubReviewId(request.githubReviewId())
+                .ifPresent(id -> reviewComment.assignReviewId(id));
+
+        return reviewComment;
     }
 }

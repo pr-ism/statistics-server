@@ -86,8 +86,8 @@ class ReviewCommentCreatedServiceTest {
                 () -> assertThat(comment.getSide()).isEqualTo(CommentSide.RIGHT),
                 () -> assertThat(comment.getCommitSha()).isEqualTo("abc123sha"),
                 () -> assertThat(comment.getParentCommentId().hasParent()).isFalse(),
-                () -> assertThat(comment.getAuthorMention()).isEqualTo(authorLogin),
-                () -> assertThat(comment.getAuthorGithubUid()).isEqualTo(authorId),
+                () -> assertThat(comment.getAuthor().getUserName()).isEqualTo(authorLogin),
+                () -> assertThat(comment.getAuthor().getUserId()).isEqualTo(authorId),
                 () -> assertThat(comment.getGithubCreatedAt()).isEqualTo(EXPECTED_CREATED_AT),
                 () -> assertThat(comment.getGithubUpdatedAt()).isEqualTo(EXPECTED_CREATED_AT),
                 () -> assertThat(comment.isDeleted()).isFalse()
@@ -169,6 +169,34 @@ class ReviewCommentCreatedServiceTest {
         // then
         ReviewComment comment = jpaReviewCommentRepository.findAll().get(0);
         assertThat(comment.getSide()).isEqualTo(CommentSide.LEFT);
+    }
+
+    @Sql("/sql/webhook/insert_project_and_review.sql")
+    @Test
+    void Review가_존재하면_reviewId가_할당된다() {
+        // given
+        ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(100L);
+
+        // when
+        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+
+        // then
+        ReviewComment comment = jpaReviewCommentRepository.findAll().getFirst();
+        assertThat(comment.getReviewId()).isEqualTo(1L);
+    }
+
+    @Sql("/sql/webhook/insert_project.sql")
+    @Test
+    void Review가_없으면_reviewId가_null이다() {
+        // given
+        ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(100L);
+
+        // when
+        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+
+        // then
+        ReviewComment comment = jpaReviewCommentRepository.findAll().getFirst();
+        assertThat(comment.getReviewId()).isNull();
     }
 
     @Sql("/sql/webhook/insert_project.sql")

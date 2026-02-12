@@ -83,4 +83,17 @@ public class PullRequestLabelRepositoryAdapter implements PullRequestLabelReposi
                 githubPullRequestId, labelName
         );
     }
+
+    @Override
+    @Transactional
+    public long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId) {
+        return queryFactory
+                .update(pullRequestLabel)
+                .set(pullRequestLabel.pullRequestId, pullRequestId)
+                .where(
+                        pullRequestLabel.githubPullRequestId.eq(githubPullRequestId),
+                        pullRequestLabel.pullRequestId.isNull()
+                )
+                .execute();
+    }
 }

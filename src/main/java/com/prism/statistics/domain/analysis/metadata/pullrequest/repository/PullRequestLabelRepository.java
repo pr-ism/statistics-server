@@ -15,4 +15,6 @@ public interface PullRequestLabelRepository {
     long deleteLabel(Long pullRequestId, String labelName);
 
     long deleteLabelByGithubId(Long githubPullRequestId, String labelName);
+
+    long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId);
 }

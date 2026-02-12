@@ -6,6 +6,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullReq
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestLabelAction;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestLabelHistoryRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestLabelRepository;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class PullRequestLabelRemovedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
     private final ProjectRepository projectRepository;
+    private final PullRequestRepository pullRequestRepository;
     private final PullRequestLabelRepository pullRequestLabelRepository;
     private final PullRequestLabelHistoryRepository pullRequestLabelHistoryRepository;
 
@@ -41,12 +43,15 @@ public class PullRequestLabelRemovedService {
 
         PullRequestLabelHistory pullRequestLabelHistory = PullRequestLabelHistory.create(
                 githubPullRequestId,
-                null,
                 headCommitSha,
                 labelName,
                 PullRequestLabelAction.REMOVED,
                 unlabeledAt
         );
+
+        pullRequestRepository.findIdByGithubId(githubPullRequestId)
+                .ifPresent(id -> pullRequestLabelHistory.assignPullRequestId(id));
+
         pullRequestLabelHistoryRepository.save(pullRequestLabelHistory);
     }
 

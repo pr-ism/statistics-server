@@ -15,4 +15,6 @@ public interface RequestedReviewerRepository {
     long delete(Long pullRequestId, Long githubUid);
 
     long deleteByGithubId(Long githubPullRequestId, Long userId);
+
+    long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId);
 }

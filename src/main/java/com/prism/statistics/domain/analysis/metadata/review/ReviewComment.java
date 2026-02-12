@@ -1,5 +1,6 @@
 package com.prism.statistics.domain.analysis.metadata.review;
 
+import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.common.CreatedAtEntity;
 import com.prism.statistics.domain.analysis.metadata.review.enums.CommentSide;
 import com.prism.statistics.domain.analysis.metadata.review.vo.CommentLineRange;
@@ -43,15 +44,20 @@ public class ReviewComment extends CreatedAtEntity {
     @Embedded
     private ParentCommentId parentCommentId;
 
-    private String authorMention;
-
-    private Long authorGithubUid;
+    @Embedded
+    private GithubUser author;
 
     private LocalDateTime githubCreatedAt;
 
     private LocalDateTime githubUpdatedAt;
 
     private boolean deleted;
+
+    public void assignReviewId(Long reviewId) {
+        if (this.reviewId == null) {
+            this.reviewId = reviewId;
+        }
+    }
 
     @Builder
     private ReviewComment(
@@ -63,13 +69,12 @@ public class ReviewComment extends CreatedAtEntity {
             CommentSide side,
             String commitSha,
             ParentCommentId parentCommentId,
-            String authorMention,
-            Long authorGithubUid,
+            GithubUser author,
             LocalDateTime githubCreatedAt,
             LocalDateTime githubUpdatedAt,
             boolean deleted
     ) {
-        validateFields(githubCommentId, githubReviewId, body, path, lineRange, side, commitSha, authorMention, authorGithubUid, githubCreatedAt, githubUpdatedAt);
+        validateFields(githubCommentId, githubReviewId, body, path, lineRange, side, commitSha, author, githubCreatedAt, githubUpdatedAt);
 
         this.githubCommentId = githubCommentId;
         this.githubReviewId = githubReviewId;
@@ -79,8 +84,7 @@ public class ReviewComment extends CreatedAtEntity {
         this.side = side;
         this.commitSha = commitSha;
         this.parentCommentId = parentCommentId;
-        this.authorMention = authorMention;
-        this.authorGithubUid = authorGithubUid;
+        this.author = author;
         this.githubCreatedAt = githubCreatedAt;
         this.githubUpdatedAt = githubUpdatedAt;
         this.deleted = deleted;
@@ -94,8 +98,7 @@ public class ReviewComment extends CreatedAtEntity {
             CommentLineRange lineRange,
             CommentSide side,
             String commitSha,
-            String authorMention,
-            Long authorGithubUid,
+            GithubUser author,
             LocalDateTime githubCreatedAt,
             LocalDateTime githubUpdatedAt
     ) {
@@ -106,8 +109,7 @@ public class ReviewComment extends CreatedAtEntity {
         validateLineRange(lineRange);
         validateSide(side);
         validateCommitSha(commitSha);
-        validateAuthorMention(authorMention);
-        validateAuthorGithubUid(authorGithubUid);
+        validateAuthor(author);
         validateGithubCreatedAt(githubCreatedAt);
         validateGithubUpdatedAt(githubUpdatedAt);
         validateCreatedAtEqualsUpdatedAt(githubCreatedAt, githubUpdatedAt);
@@ -155,27 +157,21 @@ public class ReviewComment extends CreatedAtEntity {
         }
     }
 
-    private void validateAuthorMention(String authorMention) {
-        if (authorMention == null || authorMention.isBlank()) {
-            throw new IllegalArgumentException("작성자 멘션은 필수입니다.");
-        }
-    }
-
-    private void validateAuthorGithubUid(Long authorGithubUid) {
-        if (authorGithubUid == null) {
-            throw new IllegalArgumentException("작성자 GitHub UID는 필수입니다.");
+    private void validateAuthor(GithubUser author) {
+        if (author == null) {
+            throw new IllegalArgumentException("작성자는 필수입니다.");
         }
     }
 
     private void validateGithubCreatedAt(LocalDateTime githubCreatedAt) {
         if (githubCreatedAt == null) {
-            throw new IllegalArgumentException("GitHub 생성 시각은 필수입니다.");
+            throw new IllegalArgumentException("GitHub 댓글 생성 시각은 필수입니다.");
         }
     }
 
     private void validateGithubUpdatedAt(LocalDateTime githubUpdatedAt) {
         if (githubUpdatedAt == null) {
-            throw new IllegalArgumentException("GitHub 수정 시각은 필수입니다.");
+            throw new IllegalArgumentException("GitHub 댓글 수정 시각은 필수입니다.");
         }
     }
 

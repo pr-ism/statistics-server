@@ -30,22 +30,13 @@ public class RequestedReviewer extends CreatedAtEntity {
 
     private LocalDateTime requestedAt;
 
-    public static RequestedReviewer create(
-            Long githubPullRequestId,
-            String headCommitSha,
-            GithubUser reviewer,
-            LocalDateTime requestedAt
-    ) {
-        return RequestedReviewer.builder()
-                .githubPullRequestId(githubPullRequestId)
-                .headCommitSha(headCommitSha)
-                .reviewer(reviewer)
-                .requestedAt(requestedAt)
-                .build();
+    public void assignPullRequestId(Long pullRequestId) {
+        if (this.pullRequestId == null) {
+            this.pullRequestId = pullRequestId;
+        }
     }
 
-    @Builder
-    private RequestedReviewer(
+    public static RequestedReviewer create(
             Long githubPullRequestId,
             String headCommitSha,
             GithubUser reviewer,
@@ -53,13 +44,27 @@ public class RequestedReviewer extends CreatedAtEntity {
     ) {
         validateFields(githubPullRequestId, headCommitSha, reviewer, requestedAt);
 
+        return new RequestedReviewer(
+                githubPullRequestId,
+                headCommitSha,
+                reviewer,
+                requestedAt
+        );
+    }
+
+    private RequestedReviewer(
+            Long githubPullRequestId,
+            String headCommitSha,
+            GithubUser reviewer,
+            LocalDateTime requestedAt
+    ) {
         this.githubPullRequestId = githubPullRequestId;
         this.headCommitSha = headCommitSha;
         this.reviewer = reviewer;
         this.requestedAt = requestedAt;
     }
 
-    private void validateFields(
+    private static void validateFields(
             Long githubPullRequestId,
             String headCommitSha,
             GithubUser reviewer,
@@ -71,25 +76,25 @@ public class RequestedReviewer extends CreatedAtEntity {
         validateRequestedAt(requestedAt);
     }
 
-    private void validateGithubPullRequestId(Long githubPullRequestId) {
+    private static void validateGithubPullRequestId(Long githubPullRequestId) {
         if (githubPullRequestId == null) {
             throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
         }
     }
 
-    private void validateHeadCommitSha(String headCommitSha) {
+    private static void validateHeadCommitSha(String headCommitSha) {
         if (headCommitSha == null || headCommitSha.isBlank()) {
             throw new IllegalArgumentException("Head Commit SHA는 필수입니다.");
         }
     }
 
-    private void validateReviewer(GithubUser reviewer) {
+    private static void validateReviewer(GithubUser reviewer) {
         if (reviewer == null) {
             throw new IllegalArgumentException("리뷰어는 필수입니다.");
         }
     }
 
-    private void validateRequestedAt(LocalDateTime requestedAt) {
+    private static void validateRequestedAt(LocalDateTime requestedAt) {
         if (requestedAt == null) {
             throw new IllegalArgumentException("리뷰어 요청 시각은 필수입니다.");
         }

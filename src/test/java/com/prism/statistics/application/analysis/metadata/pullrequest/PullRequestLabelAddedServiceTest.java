@@ -77,6 +77,7 @@ class PullRequestLabelAddedServiceTest {
         PullRequestLabel pullRequestLabel = jpaPullRequestLabelRepository.findAll().getFirst();
         assertAll(
                 () -> assertThat(pullRequestLabel.getGithubPullRequestId()).isEqualTo(TEST_GITHUB_PULL_REQUEST_ID),
+                () -> assertThat(pullRequestLabel.getPullRequestId()).isEqualTo(1L),
                 () -> assertThat(pullRequestLabel.getHeadCommitSha()).isEqualTo(TEST_HEAD_COMMIT_SHA),
                 () -> assertThat(pullRequestLabel.getLabelName()).isEqualTo(labelName)
         );
@@ -96,7 +97,8 @@ class PullRequestLabelAddedServiceTest {
         PullRequestLabelHistory pullRequestLabelHistory = jpaPullRequestLabelHistoryRepository.findAll().getFirst();
         assertAll(
                 () -> assertThat(pullRequestLabelHistory.getLabelName()).isEqualTo(labelName),
-                () -> assertThat(pullRequestLabelHistory.getAction()).isEqualTo(PullRequestLabelAction.ADDED)
+                () -> assertThat(pullRequestLabelHistory.getAction()).isEqualTo(PullRequestLabelAction.ADDED),
+                () -> assertThat(pullRequestLabelHistory.getPullRequestId()).isEqualTo(1L)
         );
     }
 

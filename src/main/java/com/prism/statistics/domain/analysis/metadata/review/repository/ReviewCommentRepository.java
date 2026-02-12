@@ -16,4 +16,6 @@ public interface ReviewCommentRepository {
     long updateBodyIfLatest(Long githubCommentId, String body, LocalDateTime updatedAt);
 
     long softDeleteIfLatest(Long githubCommentId, LocalDateTime updatedAt);
+
+    long backfillReviewId(Long githubReviewId, Long reviewId);
 }

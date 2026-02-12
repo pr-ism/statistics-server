@@ -64,4 +64,16 @@ public class PullRequestRepositoryAdapter implements PullRequestRepository {
                 .orderBy(pullRequest.pullRequestNumber.desc())
                 .fetch();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Long> findIdByGithubId(Long githubPullRequestId) {
+        return Optional.ofNullable(
+                queryFactory
+                        .select(pullRequest.id)
+                        .from(pullRequest)
+                        .where(pullRequest.githubPullRequestId.eq(githubPullRequestId))
+                        .fetchOne()
+        );
+    }
 }

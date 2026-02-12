@@ -106,6 +106,35 @@ class RequestedReviewerHistoryTest {
     }
 
     @Test
+    void assignPullRequestId로_pullRequestId를_할당한다() {
+        // given
+        RequestedReviewerHistory history = RequestedReviewerHistory.create(
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, REVIEWER, ReviewerAction.REQUESTED, CHANGED_AT
+        );
+
+        // when
+        history.assignPullRequestId(1L);
+
+        // then
+        assertThat(history.getPullRequestId()).isEqualTo(1L);
+    }
+
+    @Test
+    void pullRequestId가_이미_할당되어_있으면_덮어쓰지_않는다() {
+        // given
+        RequestedReviewerHistory history = RequestedReviewerHistory.create(
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, REVIEWER, ReviewerAction.REQUESTED, CHANGED_AT
+        );
+        history.assignPullRequestId(1L);
+
+        // when
+        history.assignPullRequestId(999L);
+
+        // then
+        assertThat(history.getPullRequestId()).isEqualTo(1L);
+    }
+
+    @Test
     void 변경_시각이_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> RequestedReviewerHistory.create(

@@ -115,6 +115,23 @@ class ReviewSubmittedServiceTest {
         );
     }
 
+    @Sql("/sql/webhook/insert_project_and_pull_request.sql")
+    @Test
+    void PullRequest가_존재하면_pullRequestId가_할당된다() {
+        // given
+        ReviewSubmittedRequest request = createReviewSubmittedRequest(
+                1001L, 123, 100L, "reviewer1", 12345L,
+                "approved", "abc123sha", "LGTM", 0
+        );
+
+        // when
+        reviewSubmittedService.submitReview(TEST_API_KEY, request);
+
+        // then
+        Review review = jpaReviewRepository.findAll().getFirst();
+        assertThat(review.getPullRequestId()).isEqualTo(1L);
+    }
+
     @Sql("/sql/webhook/insert_project.sql")
     @Test
     void 중복_리뷰_제출_시_저장되지_않는다() {
