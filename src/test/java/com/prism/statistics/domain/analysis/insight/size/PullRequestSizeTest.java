@@ -89,6 +89,39 @@ class PullRequestSizeTest {
     }
 
     @Test
+    void 삭제_라인_수가_음수이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestSize.create(1L, 100, -1, 5, BigDecimal.ZERO))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("삭제 라인 수는 0보다 작을 수 없습니다.");
+    }
+
+    @Test
+    void 변경_파일_수가_음수이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestSize.create(1L, 100, 50, -1, BigDecimal.ZERO))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("변경 파일 수는 0보다 작을 수 없습니다.");
+    }
+
+    @Test
+    void 파일_변경_다양도가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestSize.create(1L, 100, 50, 5, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("파일 변경 다양도는 필수입니다.");
+    }
+
+    @Test
+    void 가중치가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestSize.createWithWeight(
+                1L, 100, 50, 5, new BigDecimal("0.5"), null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("가중치는 필수입니다.");
+    }
+
+    @Test
     void 파일_변경_다양도가_음수이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> PullRequestSize.create(1L, 100, 50, 5, new BigDecimal("-0.1")))

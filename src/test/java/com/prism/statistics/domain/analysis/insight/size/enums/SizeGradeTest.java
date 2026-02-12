@@ -105,7 +105,18 @@ class SizeGradeTest {
                 () -> assertThat(SizeGrade.XS.getDescription()).isEqualTo("Extra Small"),
                 () -> assertThat(SizeGrade.XS.getMinScore()).isZero(),
                 () -> assertThat(SizeGrade.XS.getMaxScore()).isEqualTo(10),
-                () -> assertThat(SizeGrade.XL.getDescription()).isEqualTo("Extra Large")
+                () -> assertThat(SizeGrade.S.getDescription()).isEqualTo("Small"),
+                () -> assertThat(SizeGrade.S.getMinScore()).isEqualTo(10),
+                () -> assertThat(SizeGrade.S.getMaxScore()).isEqualTo(100),
+                () -> assertThat(SizeGrade.M.getDescription()).isEqualTo("Medium"),
+                () -> assertThat(SizeGrade.M.getMinScore()).isEqualTo(100),
+                () -> assertThat(SizeGrade.M.getMaxScore()).isEqualTo(300),
+                () -> assertThat(SizeGrade.L.getDescription()).isEqualTo("Large"),
+                () -> assertThat(SizeGrade.L.getMinScore()).isEqualTo(300),
+                () -> assertThat(SizeGrade.L.getMaxScore()).isEqualTo(1000),
+                () -> assertThat(SizeGrade.XL.getDescription()).isEqualTo("Extra Large"),
+                () -> assertThat(SizeGrade.XL.getMinScore()).isEqualTo(1000),
+                () -> assertThat(SizeGrade.XL.getMaxScore()).isEqualTo(Integer.MAX_VALUE)
         );
     }
 }

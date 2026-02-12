@@ -137,4 +137,35 @@ class SizeScoreWeightTest {
         // then
         assertThat(weight1).isNotEqualTo(weight2);
     }
+
+    @Test
+    void 동일한_가중치는_같은_해시코드를_가진다() {
+        // given
+        SizeScoreWeight weight1 = SizeScoreWeight.of(BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE);
+        SizeScoreWeight weight2 = SizeScoreWeight.of(BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE);
+
+        // then
+        assertThat(weight1.hashCode()).isEqualTo(weight2.hashCode());
+    }
+
+    @Test
+    void 기본_가중치는_DEFAULT_상수와_동일하다() {
+        // when
+        SizeScoreWeight weight = SizeScoreWeight.defaultWeight();
+
+        // then
+        assertThat(weight).isSameAs(SizeScoreWeight.DEFAULT);
+    }
+
+    @Test
+    void 모든_값이_0인_가중치로_점수를_계산하면_0이다() {
+        // given
+        SizeScoreWeight weight = SizeScoreWeight.of(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+
+        // when
+        BigDecimal score = weight.calculateScore(100, 50, 5);
+
+        // then
+        assertThat(score).isEqualByComparingTo(BigDecimal.ZERO);
+    }
 }

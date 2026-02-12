@@ -190,4 +190,74 @@ class PullRequestLifecycleTest {
                 () -> assertThat(lifecycleWithoutChanges.hasStateChanges()).isFalse()
         );
     }
+
+    @Test
+    void 리뷰_없이_종료된_경우를_업데이트한다() {
+        // given
+        PullRequestLifecycle lifecycle = PullRequestLifecycle.createInProgress(
+                1L,
+                LocalDateTime.of(2024, 1, 1, 10, 0),
+                DurationMinutes.of(60L),
+                0,
+                false
+        );
+        DurationMinutes totalLifespan = DurationMinutes.of(180L);
+        DurationMinutes finalActiveWork = DurationMinutes.of(100L);
+
+        // when
+        lifecycle.updateOnClose(null, totalLifespan, finalActiveWork, true);
+
+        // then
+        assertAll(
+                () -> assertThat(lifecycle.isClosedWithoutReview()).isTrue(),
+                () -> assertThat(lifecycle.isMerged()).isFalse(),
+                () -> assertThat(lifecycle.isClosed()).isTrue()
+        );
+    }
+
+    @Test
+    void 상태_변경_시_재오픈이_아니면_재오픈_상태가_유지된다() {
+        // given
+        PullRequestLifecycle lifecycle = PullRequestLifecycle.createInProgress(
+                1L,
+                LocalDateTime.of(2024, 1, 1, 10, 0),
+                DurationMinutes.of(60L),
+                1,
+                false
+        );
+        DurationMinutes newActiveWork = DurationMinutes.of(90L);
+
+        // when
+        lifecycle.updateOnStateChange(newActiveWork, 2, false);
+
+        // then
+        assertAll(
+                () -> assertThat(lifecycle.getActiveWork()).isEqualTo(newActiveWork),
+                () -> assertThat(lifecycle.getStateChangeCount()).isEqualTo(2),
+                () -> assertThat(lifecycle.isReopened()).isFalse()
+        );
+    }
+
+    @Test
+    void 재오픈된_PR_생명주기를_생성한다() {
+        // given
+        Long pullRequestId = 1L;
+        LocalDateTime reviewReadyAt = LocalDateTime.of(2024, 1, 1, 10, 0);
+        DurationMinutes activeWork = DurationMinutes.of(60L);
+
+        // when
+        PullRequestLifecycle lifecycle = PullRequestLifecycle.createInProgress(
+                pullRequestId,
+                reviewReadyAt,
+                activeWork,
+                3,
+                true
+        );
+
+        // then
+        assertAll(
+                () -> assertThat(lifecycle.isReopened()).isTrue(),
+                () -> assertThat(lifecycle.getStateChangeCount()).isEqualTo(3)
+        );
+    }
 }
