@@ -47,10 +47,7 @@ public class PullRequestOpenedService {
 
         PullRequest savedPullRequest = savePullRequest(projectId, pullRequestData);
 
-        eventPublisher.publishEvent(new PullRequestSavedEvent(
-                savedPullRequest.getGithubPullRequestId(), savedPullRequest.getId()
-        ));
-
+        publishPullRequestSavedEvent(savedPullRequest);
         publishPullRequestOpenCreatedEvent(savedPullRequest, projectId, pullRequestData, request);
     }
 
@@ -76,6 +73,12 @@ public class PullRequestOpenedService {
                 .build();
 
         return pullRequestRepository.save(pullRequest);
+    }
+
+    private void publishPullRequestSavedEvent(PullRequest savedPullRequest) {
+        eventPublisher.publishEvent(new PullRequestSavedEvent(
+                savedPullRequest.getGithubPullRequestId(), savedPullRequest.getId()
+        ));
     }
 
     private void publishPullRequestOpenCreatedEvent(
