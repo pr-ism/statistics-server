@@ -25,9 +25,9 @@ class PullRequestTimingTest {
 
         // then
         assertAll(
-                () -> assertThat(pullRequestTiming.getPullRequestCreatedAt()).isEqualTo(createdAt),
-                () -> assertThat(pullRequestTiming.getMergedAt()).isNull(),
-                () -> assertThat(pullRequestTiming.getClosedAt()).isNull()
+                () -> assertThat(pullRequestTiming.getGithubCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getGithubMergedAt()).isNull(),
+                () -> assertThat(pullRequestTiming.getGithubClosedAt()).isNull()
         );
     }
 
@@ -49,9 +49,9 @@ class PullRequestTimingTest {
 
         // then
         assertAll(
-                () -> assertThat(pullRequestTiming.getPullRequestCreatedAt()).isEqualTo(createdAt),
-                () -> assertThat(pullRequestTiming.getMergedAt()).isNull(),
-                () -> assertThat(pullRequestTiming.getClosedAt()).isNull()
+                () -> assertThat(pullRequestTiming.getGithubCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getGithubMergedAt()).isNull(),
+                () -> assertThat(pullRequestTiming.getGithubClosedAt()).isNull()
         );
     }
 
@@ -73,9 +73,9 @@ class PullRequestTimingTest {
 
         // then
         assertAll(
-                () -> assertThat(pullRequestTiming.getPullRequestCreatedAt()).isEqualTo(createdAt),
-                () -> assertThat(pullRequestTiming.getMergedAt()).isNull(),
-                () -> assertThat(pullRequestTiming.getClosedAt()).isNull()
+                () -> assertThat(pullRequestTiming.getGithubCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getGithubMergedAt()).isNull(),
+                () -> assertThat(pullRequestTiming.getGithubClosedAt()).isNull()
         );
     }
 
@@ -98,9 +98,9 @@ class PullRequestTimingTest {
 
         // then
         assertAll(
-                () -> assertThat(pullRequestTiming.getPullRequestCreatedAt()).isEqualTo(createdAt),
-                () -> assertThat(pullRequestTiming.getMergedAt()).isEqualTo(mergedAt),
-                () -> assertThat(pullRequestTiming.getClosedAt()).isEqualTo(mergedAt)
+                () -> assertThat(pullRequestTiming.getGithubCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getGithubMergedAt()).isEqualTo(mergedAt),
+                () -> assertThat(pullRequestTiming.getGithubClosedAt()).isEqualTo(mergedAt)
         );
     }
 
@@ -149,9 +149,9 @@ class PullRequestTimingTest {
 
         // then
         assertAll(
-                () -> assertThat(pullRequestTiming.getPullRequestCreatedAt()).isEqualTo(createdAt),
-                () -> assertThat(pullRequestTiming.getMergedAt()).isNull(),
-                () -> assertThat(pullRequestTiming.getClosedAt()).isEqualTo(closedAt)
+                () -> assertThat(pullRequestTiming.getGithubCreatedAt()).isEqualTo(createdAt),
+                () -> assertThat(pullRequestTiming.getGithubMergedAt()).isNull(),
+                () -> assertThat(pullRequestTiming.getGithubClosedAt()).isEqualTo(closedAt)
         );
     }
 

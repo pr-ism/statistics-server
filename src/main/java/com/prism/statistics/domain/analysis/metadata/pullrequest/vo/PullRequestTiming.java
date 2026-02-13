@@ -16,73 +16,73 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PullRequestTiming {
 
-    private LocalDateTime pullRequestCreatedAt;
+    private LocalDateTime githubCreatedAt;
 
-    private LocalDateTime mergedAt;
+    private LocalDateTime githubMergedAt;
 
-    private LocalDateTime closedAt;
+    private LocalDateTime githubClosedAt;
 
-    public static PullRequestTiming createOpen(LocalDateTime pullRequestCreatedAt) {
-        validateCreatedAt(pullRequestCreatedAt);
-        return new PullRequestTiming(pullRequestCreatedAt, null, null);
+    public static PullRequestTiming createOpen(LocalDateTime githubCreatedAt) {
+        validateCreatedAt(githubCreatedAt);
+        return new PullRequestTiming(githubCreatedAt, null, null);
     }
 
-    public static PullRequestTiming createDraft(LocalDateTime pullRequestCreatedAt) {
-        validateCreatedAt(pullRequestCreatedAt);
-        return new PullRequestTiming(pullRequestCreatedAt, null, null);
+    public static PullRequestTiming createDraft(LocalDateTime githubCreatedAt) {
+        validateCreatedAt(githubCreatedAt);
+        return new PullRequestTiming(githubCreatedAt, null, null);
     }
 
-    public static PullRequestTiming createReopened(LocalDateTime pullRequestCreatedAt) {
-        validateCreatedAt(pullRequestCreatedAt);
-        return new PullRequestTiming(pullRequestCreatedAt, null, null);
+    public static PullRequestTiming createReopened(LocalDateTime githubCreatedAt) {
+        validateCreatedAt(githubCreatedAt);
+        return new PullRequestTiming(githubCreatedAt, null, null);
     }
 
-    public static PullRequestTiming createMerged(LocalDateTime pullRequestCreatedAt, LocalDateTime mergedAt) {
-        validateCreatedAt(pullRequestCreatedAt);
-        validateMergedAt(pullRequestCreatedAt, mergedAt);
-        return new PullRequestTiming(pullRequestCreatedAt, mergedAt, mergedAt);
+    public static PullRequestTiming createMerged(LocalDateTime githubCreatedAt, LocalDateTime githubMergedAt) {
+        validateCreatedAt(githubCreatedAt);
+        validateMergedAt(githubCreatedAt, githubMergedAt);
+        return new PullRequestTiming(githubCreatedAt, githubMergedAt, githubMergedAt);
     }
 
-    public static PullRequestTiming createClosed(LocalDateTime pullRequestCreatedAt, LocalDateTime closedAt) {
-        validateCreatedAt(pullRequestCreatedAt);
-        validateClosedAt(pullRequestCreatedAt, closedAt);
-        return new PullRequestTiming(pullRequestCreatedAt, null, closedAt);
+    public static PullRequestTiming createClosed(LocalDateTime githubCreatedAt, LocalDateTime githubClosedAt) {
+        validateCreatedAt(githubCreatedAt);
+        validateClosedAt(githubCreatedAt, githubClosedAt);
+        return new PullRequestTiming(githubCreatedAt, null, githubClosedAt);
     }
 
-    private static void validateCreatedAt(LocalDateTime pullRequestCreatedAt) {
-        if (pullRequestCreatedAt == null) {
+    private static void validateCreatedAt(LocalDateTime githubCreatedAt) {
+        if (githubCreatedAt == null) {
             throw new IllegalArgumentException("PullRequest 생성 시각은 필수입니다.");
         }
     }
 
-    private static void validateMergedAt(LocalDateTime pullRequestCreatedAt, LocalDateTime mergedAt) {
-        if (mergedAt == null) {
+    private static void validateMergedAt(LocalDateTime githubCreatedAt, LocalDateTime githubMergedAt) {
+        if (githubMergedAt == null) {
             throw new IllegalArgumentException("병합 시각은 필수입니다.");
         }
-        if (pullRequestCreatedAt.isAfter(mergedAt)) {
+        if (githubCreatedAt.isAfter(githubMergedAt)) {
             throw new IllegalArgumentException("병합 시각은 생성 시각 이후여야 합니다.");
         }
     }
 
-    private static void validateClosedAt(LocalDateTime pullRequestCreatedAt, LocalDateTime closedAt) {
-        if (closedAt == null) {
+    private static void validateClosedAt(LocalDateTime githubCreatedAt, LocalDateTime githubClosedAt) {
+        if (githubClosedAt == null) {
             throw new IllegalArgumentException("종료 시각은 필수입니다.");
         }
-        if (pullRequestCreatedAt.isAfter(closedAt)) {
+        if (githubCreatedAt.isAfter(githubClosedAt)) {
             throw new IllegalArgumentException("종료 시각은 생성 시각 이후여야 합니다.");
         }
     }
 
-    private PullRequestTiming(LocalDateTime pullRequestCreatedAt, LocalDateTime mergedAt, LocalDateTime closedAt) {
-        this.pullRequestCreatedAt = pullRequestCreatedAt;
-        this.mergedAt = mergedAt;
-        this.closedAt = closedAt;
+    private PullRequestTiming(LocalDateTime githubCreatedAt, LocalDateTime githubMergedAt, LocalDateTime githubClosedAt) {
+        this.githubCreatedAt = githubCreatedAt;
+        this.githubMergedAt = githubMergedAt;
+        this.githubClosedAt = githubClosedAt;
     }
 
     public long calculateMergeTimeMinutes() {
-        if (mergedAt == null) {
+        if (githubMergedAt == null) {
             throw new IllegalStateException("병합되지 않은 PullRequest입니다.");
         }
-        return Duration.between(pullRequestCreatedAt, mergedAt).toMinutes();
+        return Duration.between(githubCreatedAt, githubMergedAt).toMinutes();
     }
 }
