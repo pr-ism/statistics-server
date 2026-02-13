@@ -23,7 +23,7 @@ public class PullRequestFileHistoryEventListener {
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(PullRequestOpenCreatedEvent event) {
         List<PullRequestFileHistory> pullRequestFileHistories = event.files().stream()
-                .map(file -> toPullRequestFileHistory(event.pullRequestId(), event.headCommitSha(), file, event.pullRequestCreatedAt()))
+                .map(file -> toPullRequestFileHistory(event.pullRequestId(), event.headCommitSha(), file, event.githubCreatedAt()))
                 .toList();
 
         pullRequestFileHistoryRepository.saveAll(pullRequestFileHistories);

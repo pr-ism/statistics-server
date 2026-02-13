@@ -52,7 +52,7 @@ public class PullRequestOpenedService {
     }
 
     private PullRequest savePullRequest(Long projectId, PullRequestData pullRequestData) {
-        LocalDateTime pullRequestCreatedAt = localDateTimeConverter.toLocalDateTime(pullRequestData.createdAt());
+        LocalDateTime githubCreatedAt = localDateTimeConverter.toLocalDateTime(pullRequestData.createdAt());
 
         PullRequest pullRequest = PullRequest.builder()
                 .githubPullRequestId(pullRequestData.githubPullRequestId())
@@ -69,7 +69,7 @@ public class PullRequestOpenedService {
                         pullRequestData.deletions()
                 ))
                 .commitCount(pullRequestData.commits().totalCount())
-                .timing(PullRequestTiming.createOpen(pullRequestCreatedAt))
+                .timing(PullRequestTiming.createOpen(githubCreatedAt))
                 .build();
 
         return pullRequestRepository.save(pullRequest);
@@ -87,7 +87,7 @@ public class PullRequestOpenedService {
             PullRequestData pullRequestData,
             PullRequestOpenedRequest request
     ) {
-        LocalDateTime pullRequestCreatedAt = localDateTimeConverter.toLocalDateTime(pullRequestData.createdAt());
+        LocalDateTime githubCreatedAt = localDateTimeConverter.toLocalDateTime(pullRequestData.createdAt());
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(
                 pullRequestData.changedFiles(),
                 pullRequestData.additions(),
@@ -105,7 +105,7 @@ public class PullRequestOpenedService {
                 PullRequestState.OPEN,
                 pullRequestChangeStats,
                 pullRequestData.commits().totalCount(),
-                pullRequestCreatedAt,
+                githubCreatedAt,
                 request.files(),
                 commits
         );

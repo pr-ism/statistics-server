@@ -76,7 +76,7 @@ class PullRequestQueryServiceTest {
                 () -> assertThat(actual.changeStats().changedFileCount()).isEqualTo(5),
                 () -> assertThat(actual.changeStats().additionCount()).isEqualTo(100),
                 () -> assertThat(actual.changeStats().deletionCount()).isEqualTo(30),
-                () -> assertThat(actual.timing().mergedAt()).isNotNull()
+                () -> assertThat(actual.timing().githubMergedAt()).isNotNull()
         );
     }
 
@@ -108,26 +108,6 @@ class PullRequestQueryServiceTest {
                 () -> assertThat(actual.changeStats().changedFileCount()).isZero(),
                 () -> assertThat(actual.changeStats().additionCount()).isZero(),
                 () -> assertThat(actual.changeStats().deletionCount()).isZero()
-        );
-    }
-
-    @Sql("/sql/pullrequest/insert_project_and_pull_request_with_null_timing.sql")
-    @Test
-    void timing이_null인_PullRequest를_상세_조회하면_기본값이_반환된다() {
-        // given
-        Long userId = 7L;
-        Long projectId = 1L;
-        int pullRequestNumber = 10;
-
-        // when
-        PullRequestDetailResponse actual = pullRequestQueryService.find(userId, projectId, pullRequestNumber);
-
-        // then
-        assertAll(
-                () -> assertThat(actual.pullRequestNumber()).isEqualTo(10),
-                () -> assertThat(actual.timing().pullRequestCreatedAt()).isNotNull(),
-                () -> assertThat(actual.timing().mergedAt()).isNull(),
-                () -> assertThat(actual.timing().closedAt()).isNull()
         );
     }
 

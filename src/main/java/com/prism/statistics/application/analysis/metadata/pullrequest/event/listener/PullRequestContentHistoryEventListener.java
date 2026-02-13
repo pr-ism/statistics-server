@@ -21,7 +21,7 @@ public class PullRequestContentHistoryEventListener {
                 event.headCommitSha(),
                 event.changeStats(),
                 event.commitCount(),
-                event.pullRequestCreatedAt()
+                event.githubCreatedAt()
         );
 
         pullRequestContentHistoryRepository.save(pullRequestContentHistory);
