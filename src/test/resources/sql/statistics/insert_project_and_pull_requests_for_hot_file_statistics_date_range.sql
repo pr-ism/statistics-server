@@ -2,19 +2,19 @@ INSERT INTO projects (id, created_at, updated_at, name, api_key, user_id)
 VALUES (1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '테스트 프로젝트', 'test-api-key', 7);
 
 -- PR1: 2024-01-10
-INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, pull_request_created_at, merged_at, closed_at)
+INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, github_created_at, github_merged_at, github_closed_at)
 VALUES (1, CURRENT_TIMESTAMP, 1001, 1, 'author1', 1, 10, 'sha001', '1월 초 PR', 'MERGED', 'https://github.com/test/repo/pull/10', 2, 100, 40, 2, '2024-01-10 09:00:00', '2024-01-12 15:00:00', '2024-01-12 15:00:00');
 
 -- PR2: 2024-01-20
-INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, pull_request_created_at)
+INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, github_created_at)
 VALUES (2, CURRENT_TIMESTAMP, 1002, 1, 'author2', 2, 20, 'sha002', '1월 중순 PR', 'OPEN', 'https://github.com/test/repo/pull/20', 3, 150, 50, 3, '2024-01-20 10:00:00');
 
 -- PR3: 2024-02-15
-INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, pull_request_created_at, merged_at, closed_at)
+INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, github_created_at, github_merged_at, github_closed_at)
 VALUES (3, CURRENT_TIMESTAMP, 1003, 1, 'author1', 1, 30, 'sha003', '2월 PR', 'MERGED', 'https://github.com/test/repo/pull/30', 2, 200, 80, 4, '2024-02-15 14:00:00', '2024-02-16 10:00:00', '2024-02-16 10:00:00');
 
 -- PR4: 2024-03-01
-INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, pull_request_created_at, merged_at, closed_at)
+INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, github_created_at, github_merged_at, github_closed_at)
 VALUES (4, CURRENT_TIMESTAMP, 1004, 1, 'author2', 2, 40, 'sha004', '3월 PR', 'MERGED', 'https://github.com/test/repo/pull/40', 2, 120, 60, 2, '2024-03-01 08:00:00', '2024-03-02 12:00:00', '2024-03-02 12:00:00');
 
 -- PR1 파일 (2024-01-10): Application.java(MODIFIED), README.md(ADDED)

@@ -67,9 +67,9 @@ CREATE TABLE IF NOT EXISTS pull_requests (
     addition_count INT,
     deletion_count INT,
     commit_count INT,
-    pull_request_created_at TIMESTAMP,
-    merged_at TIMESTAMP,
-    closed_at TIMESTAMP,
+    github_created_at TIMESTAMP,
+    github_merged_at TIMESTAMP,
+    github_closed_at TIMESTAMP,
     CONSTRAINT uq_pull_requests_github_pull_request_id UNIQUE (github_pull_request_id)
 );
 
