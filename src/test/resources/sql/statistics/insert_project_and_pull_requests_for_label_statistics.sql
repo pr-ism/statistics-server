@@ -13,17 +13,17 @@ VALUES (3, CURRENT_TIMESTAMP, 1003, 1, 'author1', 1, 30, 'sha003', '두 번째 �
 INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, github_created_at, github_merged_at, github_closed_at)
 VALUES (4, CURRENT_TIMESTAMP, 1004, 1, 'author2', 2, 40, 'sha004', '리팩토링 PR', 'MERGED', 'https://github.com/test/repo/pull/40', 6, 200, 180, 2, '2024-02-01 08:00:00', '2024-02-02 12:00:00', '2024-02-02 12:00:00');
 
-INSERT INTO pull_request_labels (id, created_at, github_pull_request_id, pull_request_id, head_commit_sha, label_name, labeled_at)
+INSERT INTO pull_request_labels (id, created_at, github_pull_request_id, pull_request_id, head_commit_sha, label_name, github_labeled_at)
 VALUES (1, CURRENT_TIMESTAMP, 1001, 1, 'sha001', 'bug', '2024-01-15 10:00:00');
 
-INSERT INTO pull_request_labels (id, created_at, github_pull_request_id, pull_request_id, head_commit_sha, label_name, labeled_at)
+INSERT INTO pull_request_labels (id, created_at, github_pull_request_id, pull_request_id, head_commit_sha, label_name, github_labeled_at)
 VALUES (2, CURRENT_TIMESTAMP, 1002, 2, 'sha002', 'feature', '2024-01-10 09:00:00');
 
-INSERT INTO pull_request_labels (id, created_at, github_pull_request_id, pull_request_id, head_commit_sha, label_name, labeled_at)
+INSERT INTO pull_request_labels (id, created_at, github_pull_request_id, pull_request_id, head_commit_sha, label_name, github_labeled_at)
 VALUES (3, CURRENT_TIMESTAMP, 1003, 3, 'sha003', 'bug', '2024-01-20 14:00:00');
 
-INSERT INTO pull_request_labels (id, created_at, github_pull_request_id, pull_request_id, head_commit_sha, label_name, labeled_at)
+INSERT INTO pull_request_labels (id, created_at, github_pull_request_id, pull_request_id, head_commit_sha, label_name, github_labeled_at)
 VALUES (4, CURRENT_TIMESTAMP, 1004, 4, 'sha004', 'refactor', '2024-02-01 08:00:00');
 
-INSERT INTO pull_request_labels (id, created_at, github_pull_request_id, pull_request_id, head_commit_sha, label_name, labeled_at)
+INSERT INTO pull_request_labels (id, created_at, github_pull_request_id, pull_request_id, head_commit_sha, label_name, github_labeled_at)
 VALUES (5, CURRENT_TIMESTAMP, 1002, 2, 'sha002', 'enhancement', '2024-01-10 09:30:00');

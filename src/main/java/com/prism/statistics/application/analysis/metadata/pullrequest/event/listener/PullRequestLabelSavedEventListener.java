@@ -28,7 +28,7 @@ public class PullRequestLabelSavedEventListener {
                 label.getHeadCommitSha(),
                 label.getLabelName(),
                 PullRequestLabelAction.ADDED,
-                label.getLabeledAt()
+                label.getGithubLabeledAt()
         );
 
         history.assignPullRequestId(label.getPullRequestId());
