@@ -11,7 +11,6 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -66,20 +65,24 @@ public class PullRequestSize extends BaseTimeEntity {
             BigDecimal fileChangeDiversity,
             SizeScoreWeight weight
     ) {
+        validatePullRequestId(pullRequestId);
+        validateCounts(additionCount, deletionCount, changedFileCount);
+        validateFileChangeDiversity(fileChangeDiversity);
         validateWeight(weight);
+
         BigDecimal sizeScore = weight.calculateScore(additionCount, deletionCount, changedFileCount);
         SizeGrade sizeGrade = SizeGrade.fromScore(sizeScore);
 
-        return PullRequestSize.builder()
-                .pullRequestId(pullRequestId)
-                .sizeScore(sizeScore)
-                .weight(weight)
-                .sizeGrade(sizeGrade)
-                .fileChangeDiversity(fileChangeDiversity)
-                .additionCount(additionCount)
-                .deletionCount(deletionCount)
-                .changedFileCount(changedFileCount)
-                .build();
+        return new PullRequestSize(
+                pullRequestId,
+                sizeScore,
+                weight,
+                sizeGrade,
+                fileChangeDiversity,
+                additionCount,
+                deletionCount,
+                changedFileCount
+        );
     }
 
     public static BigDecimal calculateFileChangeDiversity(
@@ -140,7 +143,6 @@ public class PullRequestSize extends BaseTimeEntity {
         }
     }
 
-    @Builder
     private PullRequestSize(
             Long pullRequestId,
             BigDecimal sizeScore,
@@ -151,10 +153,6 @@ public class PullRequestSize extends BaseTimeEntity {
             int deletionCount,
             int changedFileCount
     ) {
-        validatePullRequestId(pullRequestId);
-        validateCounts(additionCount, deletionCount, changedFileCount);
-        validateFileChangeDiversity(fileChangeDiversity);
-        validateWeight(weight);
         this.pullRequestId = pullRequestId;
         this.sizeScore = sizeScore;
         this.weight = weight;
