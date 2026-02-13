@@ -17,4 +17,6 @@ public interface PullRequestSizeRepository {
     List<PullRequestSize> findBySizeGrade(SizeGrade sizeGrade);
 
     List<PullRequestSize> findBySizeGradeIn(List<SizeGrade> sizeGrades);
+
+    List<PullRequestSize> findAllByProjectId(Long projectId);
 }
