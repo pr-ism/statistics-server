@@ -2,7 +2,9 @@ package com.prism.statistics.domain.analysis.insight.size.enums;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import lombok.Getter;
 
+@Getter
 public enum SizeGrade {
 
     XS("Extra Small", 0, 10),
@@ -19,18 +21,6 @@ public enum SizeGrade {
         this.description = description;
         this.minScore = minScore;
         this.maxScore = maxScore;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public int getMinScore() {
-        return minScore;
-    }
-
-    public int getMaxScore() {
-        return maxScore;
     }
 
     public static SizeGrade fromScore(BigDecimal score) {
