@@ -58,7 +58,7 @@ public record PullRequestDetailResponse(
             pullRequest.getLink(),
             pullRequest.getCommitCount(),
             PullRequestChangeStatsResponse.from(Objects.requireNonNullElse(pullRequestChangeStats, PullRequestChangeStats.EMPTY)),
-            PullRequestTimingResponse.from(pullRequest.getTimingOrDefault())
+            PullRequestTimingResponse.from(pullRequest.getTiming())
         );
     }
 }
