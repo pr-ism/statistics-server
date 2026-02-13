@@ -27,16 +27,16 @@ class PullRequestLifecycleTest {
         boolean closedWithoutReview = false;
 
         // when
-        PullRequestLifecycle lifecycle = PullRequestLifecycle.create(
-                pullRequestId,
-                reviewReadyAt,
-                timeToMerge,
-                totalLifespan,
-                activeWork,
-                stateChangeCount,
-                reopened,
-                closedWithoutReview
-        );
+        PullRequestLifecycle lifecycle = PullRequestLifecycle.builder()
+                .pullRequestId(pullRequestId)
+                .reviewReadyAt(reviewReadyAt)
+                .timeToMerge(timeToMerge)
+                .totalLifespan(totalLifespan)
+                .activeWork(activeWork)
+                .stateChangeCount(stateChangeCount)
+                .reopened(reopened)
+                .closedWithoutReview(closedWithoutReview)
+                .build();
 
         // then
         assertAll(
@@ -83,8 +83,12 @@ class PullRequestLifecycleTest {
         DurationMinutes activeWork = DurationMinutes.of(60L);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestLifecycle.create(
-                null, reviewReadyAt, null, null, activeWork, 0, false, false))
+        assertThatThrownBy(() -> PullRequestLifecycle.builder()
+                .pullRequestId(null)
+                .reviewReadyAt(reviewReadyAt)
+                .activeWork(activeWork)
+                .stateChangeCount(0)
+                .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Pull Request ID는 필수입니다.");
     }
@@ -95,8 +99,12 @@ class PullRequestLifecycleTest {
         DurationMinutes activeWork = DurationMinutes.of(60L);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestLifecycle.create(
-                1L, null, null, null, activeWork, 0, false, false))
+        assertThatThrownBy(() -> PullRequestLifecycle.builder()
+                .pullRequestId(1L)
+                .reviewReadyAt(null)
+                .activeWork(activeWork)
+                .stateChangeCount(0)
+                .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("리뷰 가능 시점은 필수입니다.");
     }
@@ -107,8 +115,12 @@ class PullRequestLifecycleTest {
         LocalDateTime reviewReadyAt = LocalDateTime.now();
 
         // when & then
-        assertThatThrownBy(() -> PullRequestLifecycle.create(
-                1L, reviewReadyAt, null, null, null, 0, false, false))
+        assertThatThrownBy(() -> PullRequestLifecycle.builder()
+                .pullRequestId(1L)
+                .reviewReadyAt(reviewReadyAt)
+                .activeWork(null)
+                .stateChangeCount(0)
+                .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("활성 작업 시간은 필수입니다.");
     }
@@ -120,8 +132,12 @@ class PullRequestLifecycleTest {
         DurationMinutes activeWork = DurationMinutes.of(60L);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestLifecycle.create(
-                1L, reviewReadyAt, null, null, activeWork, -1, false, false))
+        assertThatThrownBy(() -> PullRequestLifecycle.builder()
+                .pullRequestId(1L)
+                .reviewReadyAt(reviewReadyAt)
+                .activeWork(activeWork)
+                .stateChangeCount(-1)
+                .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("상태 변경 횟수는 0보다 작을 수 없습니다.");
     }
