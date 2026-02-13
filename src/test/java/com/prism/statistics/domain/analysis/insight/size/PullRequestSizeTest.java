@@ -193,7 +193,7 @@ class PullRequestSizeTest {
         PullRequestSize size = PullRequestSize.create(1L, 100, 50, 5, BigDecimal.ZERO);
 
         // when
-        int totalChanges = size.getTotalChanges();
+        int totalChanges = size.calculateTotalChanges();
 
         // then
         assertThat(totalChanges).isEqualTo(150);
