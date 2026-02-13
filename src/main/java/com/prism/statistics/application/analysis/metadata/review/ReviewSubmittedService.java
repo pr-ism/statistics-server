@@ -42,7 +42,7 @@ public class ReviewSubmittedService {
 
     private Review createReview(ReviewSubmittedRequest request) {
         ReviewState state = ReviewState.from(request.state());
-        LocalDateTime submittedAt = localDateTimeConverter.toLocalDateTime(request.submittedAt());
+        LocalDateTime githubSubmittedAt = localDateTimeConverter.toLocalDateTime(request.submittedAt());
 
         GithubUser reviewer = GithubUser.create(request.reviewer().login(), request.reviewer().id());
 
@@ -54,7 +54,7 @@ public class ReviewSubmittedService {
                 .headCommitSha(request.commitSha())
                 .body(request.body())
                 .commentCount(request.commentCount())
-                .submittedAt(submittedAt)
+                .githubSubmittedAt(githubSubmittedAt)
                 .build();
     }
 }

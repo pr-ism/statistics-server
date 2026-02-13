@@ -20,7 +20,7 @@ import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class ReviewTest {
 
-    private static final LocalDateTime SUBMITTED_AT = LocalDateTime.of(2024, 1, 15, 10, 0);
+    private static final LocalDateTime GITHUB_SUBMITTED_AT = LocalDateTime.of(2024, 1, 15, 10, 0);
     private static final GithubUser REVIEWER = GithubUser.create("reviewer1", 12345L);
 
     @Test
@@ -34,7 +34,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // then
@@ -47,7 +47,7 @@ class ReviewTest {
                 () -> assertThat(review.getHeadCommitSha()).isEqualTo("abc123"),
                 () -> assertThat(review.getBody().getValue()).isEqualTo("LGTM"),
                 () -> assertThat(review.getCommentCount()).isEqualTo(3),
-                () -> assertThat(review.getSubmittedAt()).isEqualTo(SUBMITTED_AT)
+                () -> assertThat(review.getGithubSubmittedAt()).isEqualTo(GITHUB_SUBMITTED_AT)
         );
     }
 
@@ -62,7 +62,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body("수정이 필요합니다.")
                 .commentCount(2)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // then
@@ -83,7 +83,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body("질문이 있습니다.")
                 .commentCount(1)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // then
@@ -104,7 +104,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("GitHub PullRequest ID는 필수입니다.");
@@ -121,7 +121,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("GitHub Review ID는 필수입니다.");
@@ -138,7 +138,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("리뷰어는 필수입니다.");
@@ -155,7 +155,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("리뷰 상태는 필수입니다.");
@@ -172,7 +172,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(null)
+                .githubSubmittedAt(null)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("리뷰 제출 시각은 필수입니다.");
@@ -189,7 +189,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body(null)
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // then
@@ -207,7 +207,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body(null)
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // then
@@ -227,7 +227,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body(body)
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("리뷰 본문은 필수입니다.");
@@ -246,7 +246,7 @@ class ReviewTest {
                 .headCommitSha(headCommitSha)
                 .body("LGTM")
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("헤드 커밋 SHA는 필수입니다.");
@@ -263,7 +263,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(-1)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("댓글 수는 0 이상이어야 합니다.");
@@ -280,7 +280,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // when
@@ -301,7 +301,7 @@ class ReviewTest {
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
         review.assignPullRequestId(1L);
 

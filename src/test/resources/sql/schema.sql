@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS pull_request_labels (
     pull_request_id BIGINT,
     head_commit_sha VARCHAR(255),
     label_name VARCHAR(255),
-    labeled_at TIMESTAMP,
+    github_labeled_at TIMESTAMP,
     CONSTRAINT uq_pull_request_labels UNIQUE (github_pull_request_id, label_name)
 );
 
@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     head_commit_sha VARCHAR(255) NOT NULL,
     body TEXT,
     comment_count INT NOT NULL,
-    submitted_at TIMESTAMP NOT NULL,
+    github_submitted_at TIMESTAMP NOT NULL,
     CONSTRAINT uq_reviews_github_review_id UNIQUE (github_review_id)
 );
 

@@ -189,7 +189,7 @@ class ReviewRepositoryAdapterTest {
                 .headCommitSha("abc123sha")
                 .body("LGTM")
                 .commentCount(0)
-                .submittedAt(LocalDateTime.now())
+                .githubSubmittedAt(LocalDateTime.now())
                 .build();
     }
 }
