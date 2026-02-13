@@ -153,6 +153,7 @@ CREATE TABLE IF NOT EXISTS requested_reviewers (
     created_at TIMESTAMP NOT NULL,
     pull_request_id BIGINT,
     github_pull_request_id BIGINT NOT NULL,
+    pull_request_number INT NOT NULL,
     head_commit_sha VARCHAR(255),
     user_name VARCHAR(255),
     user_id BIGINT,

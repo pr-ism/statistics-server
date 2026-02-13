@@ -23,6 +23,8 @@ public class RequestedReviewer extends CreatedAtEntity {
 
     private Long githubPullRequestId;
 
+    private int pullRequestNumber;
+
     private String headCommitSha;
 
     @Embedded
@@ -38,14 +40,16 @@ public class RequestedReviewer extends CreatedAtEntity {
 
     public static RequestedReviewer create(
             Long githubPullRequestId,
+            int pullRequestNumber,
             String headCommitSha,
             GithubUser reviewer,
             LocalDateTime githubRequestedAt
     ) {
-        validateFields(githubPullRequestId, headCommitSha, reviewer, githubRequestedAt);
+        validateFields(githubPullRequestId, pullRequestNumber, headCommitSha, reviewer, githubRequestedAt);
 
         return new RequestedReviewer(
                 githubPullRequestId,
+                pullRequestNumber,
                 headCommitSha,
                 reviewer,
                 githubRequestedAt
@@ -54,11 +58,13 @@ public class RequestedReviewer extends CreatedAtEntity {
 
     private RequestedReviewer(
             Long githubPullRequestId,
+            int pullRequestNumber,
             String headCommitSha,
             GithubUser reviewer,
             LocalDateTime githubRequestedAt
     ) {
         this.githubPullRequestId = githubPullRequestId;
+        this.pullRequestNumber = pullRequestNumber;
         this.headCommitSha = headCommitSha;
         this.reviewer = reviewer;
         this.githubRequestedAt = githubRequestedAt;
@@ -66,14 +72,22 @@ public class RequestedReviewer extends CreatedAtEntity {
 
     private static void validateFields(
             Long githubPullRequestId,
+            int pullRequestNumber,
             String headCommitSha,
             GithubUser reviewer,
             LocalDateTime githubRequestedAt
     ) {
         validateGithubPullRequestId(githubPullRequestId);
+        validatePullRequestNumber(pullRequestNumber);
         validateHeadCommitSha(headCommitSha);
         validateReviewer(reviewer);
         validateRequestedAt(githubRequestedAt);
+    }
+
+    private static void validatePullRequestNumber(int pullRequestNumber) {
+        if (pullRequestNumber <= 0) {
+            throw new IllegalArgumentException("PullRequest 번호는 양수여야 합니다.");
+        }
     }
 
     private static void validateGithubPullRequestId(Long githubPullRequestId) {
