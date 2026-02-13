@@ -276,4 +276,44 @@ class PullRequestLifecycleTest {
                 () -> assertThat(lifecycle.getStateChangeCount()).isEqualTo(3)
         );
     }
+
+    @Test
+    void PR_종료_시_실질_작업_기간이_null이면_예외가_발생한다() {
+        PullRequestLifecycle lifecycle = PullRequestLifecycle.createInProgress(
+                1L, LocalDateTime.of(2024, 1, 1, 10, 0), DurationMinutes.of(60L), 1, false);
+
+        assertThatThrownBy(() -> lifecycle.updateOnClose(null, null, DurationMinutes.of(100L), false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("종료 시 실질 작업 기간은 필수입니다.");
+    }
+
+    @Test
+    void PR_종료_시_활성_작업_시간이_null이면_예외가_발생한다() {
+        PullRequestLifecycle lifecycle = PullRequestLifecycle.createInProgress(
+                1L, LocalDateTime.of(2024, 1, 1, 10, 0), DurationMinutes.of(60L), 1, false);
+
+        assertThatThrownBy(() -> lifecycle.updateOnClose(null, DurationMinutes.of(180L), null, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("활성 작업 시간은 필수입니다.");
+    }
+
+    @Test
+    void 상태_변경_시_활성_작업_시간이_null이면_예외가_발생한다() {
+        PullRequestLifecycle lifecycle = PullRequestLifecycle.createInProgress(
+                1L, LocalDateTime.of(2024, 1, 1, 10, 0), DurationMinutes.of(60L), 1, false);
+
+        assertThatThrownBy(() -> lifecycle.updateOnStateChange(null, 2, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("활성 작업 시간은 필수입니다.");
+    }
+
+    @Test
+    void 상태_변경_시_횟수가_음수이면_예외가_발생한다() {
+        PullRequestLifecycle lifecycle = PullRequestLifecycle.createInProgress(
+                1L, LocalDateTime.of(2024, 1, 1, 10, 0), DurationMinutes.of(60L), 1, false);
+
+        assertThatThrownBy(() -> lifecycle.updateOnStateChange(DurationMinutes.of(90L), -1, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("상태 변경 횟수는 0보다 작을 수 없습니다.");
+    }
 }
