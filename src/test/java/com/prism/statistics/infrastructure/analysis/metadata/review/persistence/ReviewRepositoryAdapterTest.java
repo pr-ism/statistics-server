@@ -183,6 +183,7 @@ class ReviewRepositoryAdapterTest {
     private Review createReview(Long githubReviewId, Long githubPullRequestId) {
         return Review.builder()
                 .githubPullRequestId(githubPullRequestId)
+                .pullRequestNumber(1)
                 .githubReviewId(githubReviewId)
                 .reviewer(GithubUser.create("reviewer", 12345L))
                 .reviewState(ReviewState.APPROVED)

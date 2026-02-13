@@ -48,6 +48,7 @@ public class ReviewSubmittedService {
 
         return Review.builder()
                 .githubPullRequestId(request.githubPullRequestId())
+                .pullRequestNumber(request.pullRequestNumber())
                 .githubReviewId(request.githubReviewId())
                 .reviewer(reviewer)
                 .reviewState(state)

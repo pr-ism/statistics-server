@@ -35,6 +35,7 @@ public class ReviewerAddedService {
 
         RequestedReviewer requestedReviewer = RequestedReviewer.create(
                 request.githubPullRequestId(),
+                request.pullRequestNumber(),
                 request.headCommitSha(),
                 reviewer,
                 githubRequestedAt

@@ -177,6 +177,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     created_at TIMESTAMP NOT NULL,
     pull_request_id BIGINT,
     github_pull_request_id BIGINT NOT NULL,
+    pull_request_number INT NOT NULL,
     github_review_id BIGINT NOT NULL,
     user_name VARCHAR(255) NOT NULL,
     user_id BIGINT NOT NULL,

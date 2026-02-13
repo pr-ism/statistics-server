@@ -28,6 +28,7 @@ class ReviewTest {
         // when
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
@@ -41,6 +42,7 @@ class ReviewTest {
         assertAll(
                 () -> assertThat(review.getPullRequestId()).isNull(),
                 () -> assertThat(review.getGithubPullRequestId()).isEqualTo(1L),
+                () -> assertThat(review.getPullRequestNumber()).isEqualTo(1),
                 () -> assertThat(review.getGithubReviewId()).isEqualTo(100L),
                 () -> assertThat(review.getReviewer()).isEqualTo(REVIEWER),
                 () -> assertThat(review.getReviewState()).isEqualTo(ReviewState.APPROVED),
@@ -56,6 +58,7 @@ class ReviewTest {
         // when
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.CHANGES_REQUESTED)
@@ -77,6 +80,7 @@ class ReviewTest {
         // when
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.COMMENTED)
@@ -94,10 +98,29 @@ class ReviewTest {
     }
 
     @Test
+    void PullRequest_번호가_0이하이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> Review.builder()
+                .githubPullRequestId(1L)
+                .pullRequestNumber(0)
+                .githubReviewId(100L)
+                .reviewer(REVIEWER)
+                .reviewState(ReviewState.APPROVED)
+                .headCommitSha("abc123")
+                .body("LGTM")
+                .commentCount(3)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
+                .build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("PullRequest 번호는 양수여야 합니다.");
+    }
+
+    @Test
     void GitHub_PullRequest_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(null)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
@@ -115,6 +138,7 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(null)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
@@ -132,6 +156,7 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(null)
                 .reviewState(ReviewState.APPROVED)
@@ -149,6 +174,7 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(null)
@@ -166,6 +192,7 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
@@ -183,6 +210,7 @@ class ReviewTest {
         // when
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
@@ -201,6 +229,7 @@ class ReviewTest {
         // when
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.CHANGES_REQUESTED)
@@ -221,6 +250,7 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.COMMENTED)
@@ -240,6 +270,7 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
@@ -257,6 +288,7 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
@@ -274,6 +306,7 @@ class ReviewTest {
         // given
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
@@ -295,6 +328,7 @@ class ReviewTest {
         // given
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
