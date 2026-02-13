@@ -73,4 +73,8 @@ public enum SizeGrade {
         }
         return XL;
     }
+
+    public boolean isLargeOrAbove() {
+        return this == L || this == XL;
+    }
 }

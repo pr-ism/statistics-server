@@ -170,12 +170,12 @@ public class PullRequestSize extends BaseTimeEntity {
         this.sizeGrade = SizeGrade.fromScore(this.sizeScore);
     }
 
-    public int getTotalChanges() {
+    public int calculateTotalChanges() {
         return additionCount + deletionCount;
     }
 
     public boolean isLargeOrAbove() {
-        return sizeGrade == SizeGrade.L || sizeGrade == SizeGrade.XL;
+        return sizeGrade.isLargeOrAbove();
     }
 
     public boolean hasHighDiversity() {
