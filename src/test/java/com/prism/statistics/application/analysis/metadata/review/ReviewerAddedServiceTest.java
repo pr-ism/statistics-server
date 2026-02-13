@@ -87,7 +87,7 @@ class ReviewerAddedServiceTest {
                 () -> assertThat(requestedReviewer.getHeadCommitSha()).isEqualTo(TEST_HEAD_COMMIT_SHA),
                 () -> assertThat(requestedReviewer.getReviewer().getUserName()).isEqualTo(githubMention),
                 () -> assertThat(requestedReviewer.getReviewer().getUserId()).isEqualTo(githubUid),
-                () -> assertThat(requestedReviewer.getRequestedAt()).isEqualTo(EXPECTED_REQUESTED_AT)
+                () -> assertThat(requestedReviewer.getGithubRequestedAt()).isEqualTo(EXPECTED_REQUESTED_AT)
         );
     }
 

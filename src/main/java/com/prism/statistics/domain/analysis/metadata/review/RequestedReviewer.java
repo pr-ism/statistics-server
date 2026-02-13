@@ -28,7 +28,7 @@ public class RequestedReviewer extends CreatedAtEntity {
     @Embedded
     private GithubUser reviewer;
 
-    private LocalDateTime requestedAt;
+    private LocalDateTime githubRequestedAt;
 
     public void assignPullRequestId(Long pullRequestId) {
         if (this.pullRequestId == null) {
@@ -40,15 +40,15 @@ public class RequestedReviewer extends CreatedAtEntity {
             Long githubPullRequestId,
             String headCommitSha,
             GithubUser reviewer,
-            LocalDateTime requestedAt
+            LocalDateTime githubRequestedAt
     ) {
-        validateFields(githubPullRequestId, headCommitSha, reviewer, requestedAt);
+        validateFields(githubPullRequestId, headCommitSha, reviewer, githubRequestedAt);
 
         return new RequestedReviewer(
                 githubPullRequestId,
                 headCommitSha,
                 reviewer,
-                requestedAt
+                githubRequestedAt
         );
     }
 
@@ -56,24 +56,24 @@ public class RequestedReviewer extends CreatedAtEntity {
             Long githubPullRequestId,
             String headCommitSha,
             GithubUser reviewer,
-            LocalDateTime requestedAt
+            LocalDateTime githubRequestedAt
     ) {
         this.githubPullRequestId = githubPullRequestId;
         this.headCommitSha = headCommitSha;
         this.reviewer = reviewer;
-        this.requestedAt = requestedAt;
+        this.githubRequestedAt = githubRequestedAt;
     }
 
     private static void validateFields(
             Long githubPullRequestId,
             String headCommitSha,
             GithubUser reviewer,
-            LocalDateTime requestedAt
+            LocalDateTime githubRequestedAt
     ) {
         validateGithubPullRequestId(githubPullRequestId);
         validateHeadCommitSha(headCommitSha);
         validateReviewer(reviewer);
-        validateRequestedAt(requestedAt);
+        validateRequestedAt(githubRequestedAt);
     }
 
     private static void validateGithubPullRequestId(Long githubPullRequestId) {
@@ -94,8 +94,8 @@ public class RequestedReviewer extends CreatedAtEntity {
         }
     }
 
-    private static void validateRequestedAt(LocalDateTime requestedAt) {
-        if (requestedAt == null) {
+    private static void validateRequestedAt(LocalDateTime githubRequestedAt) {
+        if (githubRequestedAt == null) {
             throw new IllegalArgumentException("리뷰어 요청 시각은 필수입니다.");
         }
     }

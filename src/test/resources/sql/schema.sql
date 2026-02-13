@@ -156,7 +156,7 @@ CREATE TABLE IF NOT EXISTS requested_reviewers (
     head_commit_sha VARCHAR(255),
     user_name VARCHAR(255),
     user_id BIGINT,
-    requested_at TIMESTAMP,
+    github_requested_at TIMESTAMP,
     CONSTRAINT uq_requested_reviewers UNIQUE (github_pull_request_id, user_id)
 );
 

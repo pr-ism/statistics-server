@@ -31,13 +31,13 @@ public class ReviewerAddedService {
 
     private RequestedReviewer createRequestedReviewer(ReviewerAddedRequest request) {
         GithubUser reviewer = GithubUser.create(request.reviewer().login(), request.reviewer().id());
-        LocalDateTime requestedAt = localDateTimeConverter.toLocalDateTime(request.requestedAt());
+        LocalDateTime githubRequestedAt = localDateTimeConverter.toLocalDateTime(request.requestedAt());
 
         RequestedReviewer requestedReviewer = RequestedReviewer.create(
                 request.githubPullRequestId(),
                 request.headCommitSha(),
                 reviewer,
-                requestedAt
+                githubRequestedAt
         );
 
         pullRequestRepository.findIdByGithubId(request.githubPullRequestId())
