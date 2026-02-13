@@ -15,6 +15,7 @@ public class PullRequestLifecycleRepositoryAdapter implements PullRequestLifecyc
     private final JpaPullRequestLifecycleRepository jpaPullRequestLifecycleRepository;
 
     @Override
+    @Transactional
     public PullRequestLifecycle save(PullRequestLifecycle lifecycle) {
         return jpaPullRequestLifecycleRepository.save(lifecycle);
     }
