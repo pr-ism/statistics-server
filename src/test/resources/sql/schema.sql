@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS pull_request_state_histories (
     head_commit_sha VARCHAR(255),
     previous_state VARCHAR(50),
     new_state VARCHAR(50),
-    changed_at TIMESTAMP
+    github_changed_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS pull_request_content_histories (
@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS pull_request_content_histories (
     addition_count INT,
     deletion_count INT,
     commit_count INT,
-    changed_at TIMESTAMP
+    github_changed_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS pull_request_file_histories (
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS pull_request_file_histories (
     change_type VARCHAR(50),
     additions INT,
     deletions INT,
-    changed_at TIMESTAMP
+    github_changed_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS pull_request_labels (
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS pull_request_label_histories (
     head_commit_sha VARCHAR(255),
     label_name VARCHAR(255),
     action VARCHAR(50),
-    changed_at TIMESTAMP
+    github_changed_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS requested_reviewers (
@@ -169,7 +169,7 @@ CREATE TABLE IF NOT EXISTS requested_reviewer_histories (
     user_name VARCHAR(255),
     user_id BIGINT,
     action VARCHAR(50),
-    changed_at TIMESTAMP
+    github_changed_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS reviews (

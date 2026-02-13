@@ -113,7 +113,7 @@ class ReviewerAddedServiceTest {
                 () -> assertThat(history.getReviewer().getUserName()).isEqualTo(githubMention),
                 () -> assertThat(history.getReviewer().getUserId()).isEqualTo(githubUid),
                 () -> assertThat(history.getAction()).isEqualTo(ReviewerAction.REQUESTED),
-                () -> assertThat(history.getChangedAt()).isEqualTo(EXPECTED_REQUESTED_AT)
+                () -> assertThat(history.getGithubChangedAt()).isEqualTo(EXPECTED_REQUESTED_AT)
         );
     }
 

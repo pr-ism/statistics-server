@@ -16,7 +16,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestC
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class PullRequestContentHistoryTest {
 
-    private static final LocalDateTime CHANGED_AT = LocalDateTime.of(2024, 1, 15, 10, 0);
+    private static final LocalDateTime GITHUB_CHANGED_AT = LocalDateTime.of(2024, 1, 15, 10, 0);
     private static final String HEAD_COMMIT_SHA = "abc123";
 
     @Test
@@ -25,7 +25,7 @@ class PullRequestContentHistoryTest {
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
 
         // when
-        PullRequestContentHistory history = PullRequestContentHistory.create(1L, HEAD_COMMIT_SHA, pullRequestChangeStats, 3, CHANGED_AT);
+        PullRequestContentHistory history = PullRequestContentHistory.create(1L, HEAD_COMMIT_SHA, pullRequestChangeStats, 3, GITHUB_CHANGED_AT);
 
         // then
         assertAll(
@@ -33,7 +33,7 @@ class PullRequestContentHistoryTest {
                 () -> assertThat(history.getHeadCommitSha()).isEqualTo(HEAD_COMMIT_SHA),
                 () -> assertThat(history.getChangeStats()).isEqualTo(pullRequestChangeStats),
                 () -> assertThat(history.getCommitCount()).isEqualTo(3),
-                () -> assertThat(history.getChangedAt()).isEqualTo(CHANGED_AT)
+                () -> assertThat(history.getGithubChangedAt()).isEqualTo(GITHUB_CHANGED_AT)
         );
     }
 
@@ -43,7 +43,7 @@ class PullRequestContentHistoryTest {
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestContentHistory.create(null, HEAD_COMMIT_SHA, pullRequestChangeStats, 3, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestContentHistory.create(null, HEAD_COMMIT_SHA, pullRequestChangeStats, 3, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PullRequest ID는 필수입니다.");
     }
@@ -54,7 +54,7 @@ class PullRequestContentHistoryTest {
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, null, pullRequestChangeStats, 3, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, null, pullRequestChangeStats, 3, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Head Commit SHA는 필수입니다.");
     }
@@ -65,7 +65,7 @@ class PullRequestContentHistoryTest {
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, "  ", pullRequestChangeStats, 3, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, "  ", pullRequestChangeStats, 3, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Head Commit SHA는 필수입니다.");
     }
@@ -73,7 +73,7 @@ class PullRequestContentHistoryTest {
     @Test
     void 변경된_값이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, HEAD_COMMIT_SHA, null, 3, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, HEAD_COMMIT_SHA, null, 3, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 내역은 필수입니다.");
     }
@@ -84,7 +84,7 @@ class PullRequestContentHistoryTest {
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(5, 100, 50);
 
         // when & then
-        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, HEAD_COMMIT_SHA, pullRequestChangeStats, -1, CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestContentHistory.create(1L, HEAD_COMMIT_SHA, pullRequestChangeStats, -1, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("커밋 수는 0보다 작을 수 없습니다.");
     }
