@@ -26,21 +26,21 @@ public class PullRequestContentHistory extends CreatedAtEntity {
 
     private int commitCount;
 
-    private LocalDateTime changedAt;
+    private LocalDateTime githubChangedAt;
 
     public static PullRequestContentHistory create(
             Long pullRequestId,
             String headCommitSha,
             PullRequestChangeStats changeStats,
             int commitCount,
-            LocalDateTime changedAt
+            LocalDateTime githubChangedAt
     ) {
         validatePullRequestId(pullRequestId);
         validateHeadCommitSha(headCommitSha);
         validateChangeStats(changeStats);
         validateCommitCount(commitCount);
-        validateChangedAt(changedAt);
-        return new PullRequestContentHistory(pullRequestId, headCommitSha, changeStats, commitCount, changedAt);
+        validateChangedAt(githubChangedAt);
+        return new PullRequestContentHistory(pullRequestId, headCommitSha, changeStats, commitCount, githubChangedAt);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
@@ -67,8 +67,8 @@ public class PullRequestContentHistory extends CreatedAtEntity {
         }
     }
 
-    private static void validateChangedAt(LocalDateTime changedAt) {
-        if (changedAt == null) {
+    private static void validateChangedAt(LocalDateTime githubChangedAt) {
+        if (githubChangedAt == null) {
             throw new IllegalArgumentException("변경 시각은 필수입니다.");
         }
     }
@@ -78,12 +78,12 @@ public class PullRequestContentHistory extends CreatedAtEntity {
             String headCommitSha,
             PullRequestChangeStats changeStats,
             int commitCount,
-            LocalDateTime changedAt
+            LocalDateTime githubChangedAt
     ) {
         this.pullRequestId = pullRequestId;
         this.headCommitSha = headCommitSha;
         this.changeStats = changeStats;
         this.commitCount = commitCount;
-        this.changedAt = changedAt;
+        this.githubChangedAt = githubChangedAt;
     }
 }

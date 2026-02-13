@@ -29,14 +29,14 @@ public class PullRequestFileHistoryEventListener {
         pullRequestFileHistoryRepository.saveAll(pullRequestFileHistories);
     }
 
-    private PullRequestFileHistory toPullRequestFileHistory(Long pullRequestId, String headCommitSha, FileData file, LocalDateTime changedAt) {
+    private PullRequestFileHistory toPullRequestFileHistory(Long pullRequestId, String headCommitSha, FileData file, LocalDateTime githubChangedAt) {
         return PullRequestFileHistory.create(
                 pullRequestId,
                 headCommitSha,
                 file.filename(),
                 FileChangeType.fromGitHubStatus(file.status()),
                 FileChanges.create(file.additions(), file.deletions()),
-                changedAt
+                githubChangedAt
         );
     }
 }
