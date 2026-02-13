@@ -14,6 +14,7 @@ public class ProjectSizeWeightSettingRepositoryAdapter implements ProjectSizeWei
     private final JpaProjectSizeWeightSettingRepository jpaProjectSizeWeightSettingRepository;
 
     @Override
+    @Transactional
     public ProjectSizeWeightSetting save(ProjectSizeWeightSetting setting) {
         return jpaProjectSizeWeightSettingRepository.save(setting);
     }
