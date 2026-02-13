@@ -41,28 +41,6 @@ public class PullRequestLifecycle extends BaseTimeEntity {
 
     private boolean closedWithoutReview;
 
-    public static PullRequestLifecycle create(
-            Long pullRequestId,
-            LocalDateTime reviewReadyAt,
-            DurationMinutes timeToMerge,
-            DurationMinutes totalLifespan,
-            DurationMinutes activeWork,
-            int stateChangeCount,
-            boolean reopened,
-            boolean closedWithoutReview
-    ) {
-        return PullRequestLifecycle.builder()
-                .pullRequestId(pullRequestId)
-                .reviewReadyAt(reviewReadyAt)
-                .timeToMerge(timeToMerge)
-                .totalLifespan(totalLifespan)
-                .activeWork(activeWork)
-                .stateChangeCount(stateChangeCount)
-                .reopened(reopened)
-                .closedWithoutReview(closedWithoutReview)
-                .build();
-    }
-
     public static PullRequestLifecycle createInProgress(
             Long pullRequestId,
             LocalDateTime reviewReadyAt,
@@ -79,25 +57,25 @@ public class PullRequestLifecycle extends BaseTimeEntity {
                 .build();
     }
 
-    private static void validatePullRequestId(Long pullRequestId) {
+    private void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
             throw new IllegalArgumentException("Pull Request ID는 필수입니다.");
         }
     }
 
-    private static void validateReviewReadyAt(LocalDateTime reviewReadyAt) {
+    private void validateReviewReadyAt(LocalDateTime reviewReadyAt) {
         if (reviewReadyAt == null) {
             throw new IllegalArgumentException("리뷰 가능 시점은 필수입니다.");
         }
     }
 
-    private static void validateActiveWork(DurationMinutes activeWork) {
+    private void validateActiveWork(DurationMinutes activeWork) {
         if (activeWork == null) {
             throw new IllegalArgumentException("활성 작업 시간은 필수입니다.");
         }
     }
 
-    private static void validateStateChangeCount(int stateChangeCount) {
+    private void validateStateChangeCount(int stateChangeCount) {
         if (stateChangeCount < 0) {
             throw new IllegalArgumentException("상태 변경 횟수는 0보다 작을 수 없습니다.");
         }
