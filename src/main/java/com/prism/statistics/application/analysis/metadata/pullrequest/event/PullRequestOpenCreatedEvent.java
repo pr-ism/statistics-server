@@ -14,7 +14,7 @@ public record PullRequestOpenCreatedEvent(
         PullRequestState initialState,
         PullRequestChangeStats changeStats,
         int commitCount,
-        LocalDateTime pullRequestCreatedAt,
+        LocalDateTime githubCreatedAt,
         List<FileData> files,
         List<CommitData> commits
 ) {
