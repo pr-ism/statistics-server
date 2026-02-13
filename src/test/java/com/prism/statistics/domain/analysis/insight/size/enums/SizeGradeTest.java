@@ -8,26 +8,32 @@ import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class SizeGradeTest {
 
+    static Stream<Arguments> 점수별_등급() {
+        return Stream.of(
+                Arguments.of(0, SizeGrade.XS),
+                Arguments.of(9, SizeGrade.XS),
+                Arguments.of(10, SizeGrade.S),
+                Arguments.of(99, SizeGrade.S),
+                Arguments.of(100, SizeGrade.M),
+                Arguments.of(299, SizeGrade.M),
+                Arguments.of(300, SizeGrade.L),
+                Arguments.of(999, SizeGrade.L),
+                Arguments.of(1000, SizeGrade.XL),
+                Arguments.of(5000, SizeGrade.XL)
+        );
+    }
+
     @ParameterizedTest
-    @CsvSource({
-            "0, XS",
-            "9, XS",
-            "10, S",
-            "99, S",
-            "100, M",
-            "299, M",
-            "300, L",
-            "999, L",
-            "1000, XL",
-            "5000, XL"
-    })
+    @MethodSource("점수별_등급")
     void 점수에_따라_등급을_반환한다(int score, SizeGrade expected) {
         // when
         SizeGrade grade = SizeGrade.fromScore(score);
