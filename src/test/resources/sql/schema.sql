@@ -67,9 +67,9 @@ CREATE TABLE IF NOT EXISTS pull_requests (
     addition_count INT,
     deletion_count INT,
     commit_count INT,
-    pull_request_created_at TIMESTAMP,
-    merged_at TIMESTAMP,
-    closed_at TIMESTAMP,
+    github_created_at TIMESTAMP,
+    github_merged_at TIMESTAMP,
+    github_closed_at TIMESTAMP,
     CONSTRAINT uq_pull_requests_github_pull_request_id UNIQUE (github_pull_request_id)
 );
 
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS pull_request_state_histories (
     head_commit_sha VARCHAR(255),
     previous_state VARCHAR(50),
     new_state VARCHAR(50),
-    changed_at TIMESTAMP
+    github_changed_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS pull_request_content_histories (
@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS pull_request_content_histories (
     addition_count INT,
     deletion_count INT,
     commit_count INT,
-    changed_at TIMESTAMP
+    github_changed_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS pull_request_file_histories (
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS pull_request_file_histories (
     change_type VARCHAR(50),
     additions INT,
     deletions INT,
-    changed_at TIMESTAMP
+    github_changed_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS pull_request_labels (
@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS pull_request_labels (
     pull_request_id BIGINT,
     head_commit_sha VARCHAR(255),
     label_name VARCHAR(255),
-    labeled_at TIMESTAMP,
+    github_labeled_at TIMESTAMP,
     CONSTRAINT uq_pull_request_labels UNIQUE (github_pull_request_id, label_name)
 );
 
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS pull_request_label_histories (
     head_commit_sha VARCHAR(255),
     label_name VARCHAR(255),
     action VARCHAR(50),
-    changed_at TIMESTAMP
+    github_changed_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS requested_reviewers (
@@ -153,10 +153,11 @@ CREATE TABLE IF NOT EXISTS requested_reviewers (
     created_at TIMESTAMP NOT NULL,
     pull_request_id BIGINT,
     github_pull_request_id BIGINT NOT NULL,
+    pull_request_number INT NOT NULL,
     head_commit_sha VARCHAR(255),
     user_name VARCHAR(255),
     user_id BIGINT,
-    requested_at TIMESTAMP,
+    github_requested_at TIMESTAMP,
     CONSTRAINT uq_requested_reviewers UNIQUE (github_pull_request_id, user_id)
 );
 
@@ -169,7 +170,7 @@ CREATE TABLE IF NOT EXISTS requested_reviewer_histories (
     user_name VARCHAR(255),
     user_id BIGINT,
     action VARCHAR(50),
-    changed_at TIMESTAMP
+    github_changed_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS reviews (
@@ -177,6 +178,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     created_at TIMESTAMP NOT NULL,
     pull_request_id BIGINT,
     github_pull_request_id BIGINT NOT NULL,
+    pull_request_number INT NOT NULL,
     github_review_id BIGINT NOT NULL,
     user_name VARCHAR(255) NOT NULL,
     user_id BIGINT NOT NULL,
@@ -184,7 +186,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     head_commit_sha VARCHAR(255) NOT NULL,
     body TEXT,
     comment_count INT NOT NULL,
-    submitted_at TIMESTAMP NOT NULL,
+    github_submitted_at TIMESTAMP NOT NULL,
     CONSTRAINT uq_reviews_github_review_id UNIQUE (github_review_id)
 );
 

@@ -28,7 +28,7 @@ public class RequestedReviewerSavedEventListener {
                 reviewer.getHeadCommitSha(),
                 reviewer.getReviewer(),
                 ReviewerAction.REQUESTED,
-                reviewer.getRequestedAt()
+                reviewer.getGithubRequestedAt()
         );
 
         history.assignPullRequestId(reviewer.getPullRequestId());

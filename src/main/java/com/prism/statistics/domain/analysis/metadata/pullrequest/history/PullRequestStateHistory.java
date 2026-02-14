@@ -28,33 +28,33 @@ public class PullRequestStateHistory extends CreatedAtEntity {
     @Enumerated(EnumType.STRING)
     private PullRequestState newState;
 
-    private LocalDateTime changedAt;
+    private LocalDateTime githubChangedAt;
 
     public static PullRequestStateHistory create(
             Long pullRequestId,
             String headCommitSha,
             PullRequestState previousState,
             PullRequestState newState,
-            LocalDateTime changedAt
+            LocalDateTime githubChangedAt
     ) {
         validatePullRequestId(pullRequestId);
         validateHeadCommitSha(headCommitSha);
         validateNewState(newState);
-        validateChangedAt(changedAt);
-        return new PullRequestStateHistory(pullRequestId, headCommitSha, previousState, newState, changedAt);
+        validateChangedAt(githubChangedAt);
+        return new PullRequestStateHistory(pullRequestId, headCommitSha, previousState, newState, githubChangedAt);
     }
 
     public static PullRequestStateHistory createInitial(
             Long pullRequestId,
             String headCommitSha,
             PullRequestState initialState,
-            LocalDateTime changedAt
+            LocalDateTime githubChangedAt
     ) {
         validatePullRequestId(pullRequestId);
         validateHeadCommitSha(headCommitSha);
         validateNewState(initialState);
-        validateChangedAt(changedAt);
-        return new PullRequestStateHistory(pullRequestId, headCommitSha, null, initialState, changedAt);
+        validateChangedAt(githubChangedAt);
+        return new PullRequestStateHistory(pullRequestId, headCommitSha, null, initialState, githubChangedAt);
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
@@ -75,8 +75,8 @@ public class PullRequestStateHistory extends CreatedAtEntity {
         }
     }
 
-    private static void validateChangedAt(LocalDateTime changedAt) {
-        if (changedAt == null) {
+    private static void validateChangedAt(LocalDateTime githubChangedAt) {
+        if (githubChangedAt == null) {
             throw new IllegalArgumentException("변경 시각은 필수입니다.");
         }
     }
@@ -86,13 +86,13 @@ public class PullRequestStateHistory extends CreatedAtEntity {
             String headCommitSha,
             PullRequestState previousState,
             PullRequestState newState,
-            LocalDateTime changedAt
+            LocalDateTime githubChangedAt
     ) {
         this.pullRequestId = pullRequestId;
         this.headCommitSha = headCommitSha;
         this.previousState = previousState;
         this.newState = newState;
-        this.changedAt = changedAt;
+        this.githubChangedAt = githubChangedAt;
     }
 
     public boolean isInitialState() {

@@ -39,7 +39,7 @@ public class TrendStatisticsQueryService {
 
         Map<LocalDate, List<TrendStatisticsDto>> grouped = dtos.stream()
                 .collect(Collectors.groupingBy(
-                        dto -> period.periodStartOf(dto.pullRequestCreatedAt().toLocalDate())
+                        dto -> period.periodStartOf(dto.githubCreatedAt().toLocalDate())
                 ));
 
         List<LocalDate> allPeriods = period.generatePeriodStarts(request.startDate(), request.endDate());

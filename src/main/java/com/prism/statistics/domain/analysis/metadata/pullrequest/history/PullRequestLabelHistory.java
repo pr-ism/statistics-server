@@ -30,21 +30,21 @@ public class PullRequestLabelHistory extends CreatedAtEntity {
     @Enumerated(EnumType.STRING)
     private PullRequestLabelAction action;
 
-    private LocalDateTime changedAt;
+    private LocalDateTime githubChangedAt;
 
     public static PullRequestLabelHistory create(
             Long githubPullRequestId,
             String headCommitSha,
             String labelName,
             PullRequestLabelAction action,
-            LocalDateTime changedAt
+            LocalDateTime githubChangedAt
     ) {
         validateGithubPullRequestId(githubPullRequestId);
         validateHeadCommitSha(headCommitSha);
         validateLabelName(labelName);
         validateAction(action);
-        validateChangedAt(changedAt);
-        return new PullRequestLabelHistory(githubPullRequestId, headCommitSha, labelName, action, changedAt);
+        validateChangedAt(githubChangedAt);
+        return new PullRequestLabelHistory(githubPullRequestId, headCommitSha, labelName, action, githubChangedAt);
     }
 
     public void assignPullRequestId(Long pullRequestId) {
@@ -77,8 +77,8 @@ public class PullRequestLabelHistory extends CreatedAtEntity {
         }
     }
 
-    private static void validateChangedAt(LocalDateTime changedAt) {
-        if (changedAt == null) {
+    private static void validateChangedAt(LocalDateTime githubChangedAt) {
+        if (githubChangedAt == null) {
             throw new IllegalArgumentException("변경 시각은 필수입니다.");
         }
     }
@@ -88,12 +88,12 @@ public class PullRequestLabelHistory extends CreatedAtEntity {
             String headCommitSha,
             String labelName,
             PullRequestLabelAction action,
-            LocalDateTime changedAt
+            LocalDateTime githubChangedAt
     ) {
         this.githubPullRequestId = githubPullRequestId;
         this.headCommitSha = headCommitSha;
         this.labelName = labelName;
         this.action = action;
-        this.changedAt = changedAt;
+        this.githubChangedAt = githubChangedAt;
     }
 }

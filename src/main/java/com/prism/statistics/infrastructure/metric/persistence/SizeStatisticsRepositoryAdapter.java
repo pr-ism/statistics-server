@@ -77,7 +77,7 @@ public class SizeStatisticsRepositoryAdapter implements SizeStatisticsRepository
             return null;
         }
 
-        return pullRequest.timing.pullRequestCreatedAt.goe(startDate.atStartOfDay());
+        return pullRequest.timing.githubCreatedAt.goe(startDate.atStartOfDay());
     }
 
     private BooleanExpression ltEndDate(LocalDate endDate) {
@@ -85,6 +85,6 @@ public class SizeStatisticsRepositoryAdapter implements SizeStatisticsRepository
             return null;
         }
 
-        return pullRequest.timing.pullRequestCreatedAt.lt(endDate.plusDays(1).atStartOfDay());
+        return pullRequest.timing.githubCreatedAt.lt(endDate.plusDays(1).atStartOfDay());
     }
 }

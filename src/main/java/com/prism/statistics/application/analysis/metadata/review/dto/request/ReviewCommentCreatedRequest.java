@@ -13,8 +13,7 @@ public record ReviewCommentCreatedRequest(
         String commitSha,
         Long inReplyToId,
         CommentAuthorData author,
-        Instant createdAt,
-        Instant updatedAt
+        Instant createdAt
 ) {
 
     public record CommentAuthorData(

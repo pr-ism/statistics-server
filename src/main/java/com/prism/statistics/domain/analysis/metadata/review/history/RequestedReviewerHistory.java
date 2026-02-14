@@ -33,7 +33,7 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
     @Enumerated(EnumType.STRING)
     private ReviewerAction action;
 
-    private LocalDateTime changedAt;
+    private LocalDateTime githubChangedAt;
 
     public void assignPullRequestId(Long pullRequestId) {
         if (this.pullRequestId == null) {
@@ -46,14 +46,14 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
             String headCommitSha,
             GithubUser reviewer,
             ReviewerAction action,
-            LocalDateTime changedAt
+            LocalDateTime githubChangedAt
     ) {
         return new RequestedReviewerHistory(
                 githubPullRequestId,
                 headCommitSha,
                 reviewer,
                 action,
-                changedAt
+                githubChangedAt
         );
     }
 
@@ -62,15 +62,15 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
             String headCommitSha,
             GithubUser reviewer,
             ReviewerAction action,
-            LocalDateTime changedAt
+            LocalDateTime githubChangedAt
     ) {
-        validateFields(githubPullRequestId, headCommitSha, reviewer, action, changedAt);
+        validateFields(githubPullRequestId, headCommitSha, reviewer, action, githubChangedAt);
 
         this.githubPullRequestId = githubPullRequestId;
         this.headCommitSha = headCommitSha;
         this.reviewer = reviewer;
         this.action = action;
-        this.changedAt = changedAt;
+        this.githubChangedAt = githubChangedAt;
     }
 
     private static void validateFields(
@@ -78,13 +78,13 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
             String headCommitSha,
             GithubUser reviewer,
             ReviewerAction action,
-            LocalDateTime changedAt
+            LocalDateTime githubChangedAt
     ) {
         validateGithubPullRequestId(githubPullRequestId);
         validateHeadCommitSha(headCommitSha);
         validateReviewer(reviewer);
         validateAction(action);
-        validateChangedAt(changedAt);
+        validateChangedAt(githubChangedAt);
     }
 
     private static void validateGithubPullRequestId(Long githubPullRequestId) {
@@ -111,8 +111,8 @@ public class RequestedReviewerHistory extends CreatedAtEntity {
         }
     }
 
-    private static void validateChangedAt(LocalDateTime changedAt) {
-        if (changedAt == null) {
+    private static void validateChangedAt(LocalDateTime githubChangedAt) {
+        if (githubChangedAt == null) {
             throw new IllegalArgumentException("변경 시각은 필수입니다.");
         }
     }

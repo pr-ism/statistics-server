@@ -33,15 +33,15 @@ public record PullRequestDetailResponse(
     }
 
     public record PullRequestTimingResponse(
-            LocalDateTime pullRequestCreatedAt,
-            LocalDateTime mergedAt,
-            LocalDateTime closedAt
+            LocalDateTime githubCreatedAt,
+            LocalDateTime githubMergedAt,
+            LocalDateTime githubClosedAt
     ) {
         public static PullRequestTimingResponse from(PullRequestTiming pullRequestTiming) {
             return new PullRequestTimingResponse(
-                    pullRequestTiming.getPullRequestCreatedAt(),
-                    pullRequestTiming.getMergedAt(),
-                    pullRequestTiming.getClosedAt()
+                    pullRequestTiming.getGithubCreatedAt(),
+                    pullRequestTiming.getGithubMergedAt(),
+                    pullRequestTiming.getGithubClosedAt()
             );
         }
     }
@@ -58,7 +58,7 @@ public record PullRequestDetailResponse(
             pullRequest.getLink(),
             pullRequest.getCommitCount(),
             PullRequestChangeStatsResponse.from(Objects.requireNonNullElse(pullRequestChangeStats, PullRequestChangeStats.EMPTY)),
-            PullRequestTimingResponse.from(pullRequest.getTimingOrDefault())
+            PullRequestTimingResponse.from(pullRequest.getTiming())
         );
     }
 }

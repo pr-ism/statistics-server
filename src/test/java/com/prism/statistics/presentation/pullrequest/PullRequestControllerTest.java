@@ -124,7 +124,7 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                 .andExpect(jsonPath("$.changeStats.changedFileCount").value(5))
                 .andExpect(jsonPath("$.changeStats.additionCount").value(100))
                 .andExpect(jsonPath("$.changeStats.deletionCount").value(30))
-                .andExpect(jsonPath("$.timing.mergedAt").exists());
+                .andExpect(jsonPath("$.timing.githubMergedAt").exists());
 
         pull_request_상세_조회_문서화(resultActions);
     }
@@ -152,9 +152,9 @@ class PullRequestControllerTest extends CommonControllerSliceTestSupport {
                                 fieldWithPath("changeStats.additionCount").description("추가된 라인 수"),
                                 fieldWithPath("changeStats.deletionCount").description("삭제된 라인 수"),
                                 fieldWithPath("timing").description("시간 정보"),
-                                fieldWithPath("timing.pullRequestCreatedAt").description("PR 생성 시각"),
-                                fieldWithPath("timing.mergedAt").description("병합 시각").optional(),
-                                fieldWithPath("timing.closedAt").description("종료 시각").optional()
+                                fieldWithPath("timing.githubCreatedAt").description("PR 생성 시각"),
+                                fieldWithPath("timing.githubMergedAt").description("병합 시각").optional(),
+                                fieldWithPath("timing.githubClosedAt").description("종료 시각").optional()
                         )
                 )
         );

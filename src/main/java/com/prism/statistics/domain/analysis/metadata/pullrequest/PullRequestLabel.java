@@ -24,19 +24,19 @@ public class PullRequestLabel extends CreatedAtEntity {
 
     private String labelName;
 
-    private LocalDateTime labeledAt;
+    private LocalDateTime githubLabeledAt;
 
     public static PullRequestLabel create(
             Long githubPullRequestId,
             String headCommitSha,
             String labelName,
-            LocalDateTime labeledAt
+            LocalDateTime githubLabeledAt
     ) {
         validateGithubPullRequestId(githubPullRequestId);
         validateHeadCommitSha(headCommitSha);
         validateLabelName(labelName);
-        validateLabeledAt(labeledAt);
-        return new PullRequestLabel(githubPullRequestId, headCommitSha, labelName, labeledAt);
+        validateLabeledAt(githubLabeledAt);
+        return new PullRequestLabel(githubPullRequestId, headCommitSha, labelName, githubLabeledAt);
     }
 
     public void assignPullRequestId(Long pullRequestId) {
@@ -63,8 +63,8 @@ public class PullRequestLabel extends CreatedAtEntity {
         }
     }
 
-    private static void validateLabeledAt(LocalDateTime labeledAt) {
-        if (labeledAt == null) {
+    private static void validateLabeledAt(LocalDateTime githubLabeledAt) {
+        if (githubLabeledAt == null) {
             throw new IllegalArgumentException("라벨 추가 시각은 필수입니다.");
         }
     }
@@ -73,11 +73,11 @@ public class PullRequestLabel extends CreatedAtEntity {
             Long githubPullRequestId,
             String headCommitSha,
             String labelName,
-            LocalDateTime labeledAt
+            LocalDateTime githubLabeledAt
     ) {
         this.githubPullRequestId = githubPullRequestId;
         this.headCommitSha = headCommitSha;
         this.labelName = labelName;
-        this.labeledAt = labeledAt;
+        this.githubLabeledAt = githubLabeledAt;
     }
 }

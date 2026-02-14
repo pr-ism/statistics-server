@@ -39,8 +39,7 @@ public class ReviewCommentCreatedService {
     }
 
     private ReviewComment createReviewComment(ReviewCommentCreatedRequest request) {
-        LocalDateTime createdAt = localDateTimeConverter.toLocalDateTime(request.createdAt());
-        LocalDateTime updatedAt = localDateTimeConverter.toLocalDateTime(request.updatedAt());
+        LocalDateTime githubCreatedAt = localDateTimeConverter.toLocalDateTime(request.createdAt());
 
         ReviewComment reviewComment = ReviewComment.builder()
                 .githubCommentId(request.githubCommentId())
@@ -52,8 +51,8 @@ public class ReviewCommentCreatedService {
                 .commitSha(request.commitSha())
                 .parentCommentId(ParentCommentId.create(request.inReplyToId()))
                 .author(GithubUser.create(request.author().login(), request.author().id()))
-                .githubCreatedAt(createdAt)
-                .githubUpdatedAt(updatedAt)
+                .githubCreatedAt(githubCreatedAt)
+                .githubUpdatedAt(githubCreatedAt)
                 .deleted(false)
                 .build();
 

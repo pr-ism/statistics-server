@@ -28,7 +28,7 @@ public class TrendStatisticsRepositoryAdapter implements TrendStatisticsReposito
     ) {
         return queryFactory
                 .select(Projections.constructor(TrendStatisticsDto.class,
-                        pullRequest.timing.pullRequestCreatedAt,
+                        pullRequest.timing.githubCreatedAt,
                         pullRequest.changeStats.additionCount,
                         pullRequest.changeStats.deletionCount
                 ))
@@ -46,7 +46,7 @@ public class TrendStatisticsRepositoryAdapter implements TrendStatisticsReposito
             return null;
         }
 
-        return pullRequest.timing.pullRequestCreatedAt.goe(startDate.atStartOfDay());
+        return pullRequest.timing.githubCreatedAt.goe(startDate.atStartOfDay());
     }
 
     private BooleanExpression ltEndDate(LocalDate endDate) {
@@ -54,6 +54,6 @@ public class TrendStatisticsRepositoryAdapter implements TrendStatisticsReposito
             return null;
         }
 
-        return pullRequest.timing.pullRequestCreatedAt.lt(endDate.plusDays(1).atStartOfDay());
+        return pullRequest.timing.githubCreatedAt.lt(endDate.plusDays(1).atStartOfDay());
     }
 }

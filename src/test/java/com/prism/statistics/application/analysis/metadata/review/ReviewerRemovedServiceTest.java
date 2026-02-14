@@ -87,7 +87,7 @@ class ReviewerRemovedServiceTest {
                 () -> assertThat(history.getReviewer().getUserName()).isEqualTo(githubMention),
                 () -> assertThat(history.getReviewer().getUserId()).isEqualTo(githubUid),
                 () -> assertThat(history.getAction()).isEqualTo(ReviewerAction.REMOVED),
-                () -> assertThat(history.getChangedAt()).isEqualTo(EXPECTED_REMOVED_AT),
+                () -> assertThat(history.getGithubChangedAt()).isEqualTo(EXPECTED_REMOVED_AT),
                 () -> assertThat(history.getPullRequestId()).isEqualTo(1L)
         );
     }

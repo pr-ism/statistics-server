@@ -20,7 +20,7 @@ import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class ReviewTest {
 
-    private static final LocalDateTime SUBMITTED_AT = LocalDateTime.of(2024, 1, 15, 10, 0);
+    private static final LocalDateTime GITHUB_SUBMITTED_AT = LocalDateTime.of(2024, 1, 15, 10, 0);
     private static final GithubUser REVIEWER = GithubUser.create("reviewer1", 12345L);
 
     @Test
@@ -28,26 +28,28 @@ class ReviewTest {
         // when
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // then
         assertAll(
                 () -> assertThat(review.getPullRequestId()).isNull(),
                 () -> assertThat(review.getGithubPullRequestId()).isEqualTo(1L),
+                () -> assertThat(review.getPullRequestNumber()).isEqualTo(1),
                 () -> assertThat(review.getGithubReviewId()).isEqualTo(100L),
                 () -> assertThat(review.getReviewer()).isEqualTo(REVIEWER),
                 () -> assertThat(review.getReviewState()).isEqualTo(ReviewState.APPROVED),
                 () -> assertThat(review.getHeadCommitSha()).isEqualTo("abc123"),
                 () -> assertThat(review.getBody().getValue()).isEqualTo("LGTM"),
                 () -> assertThat(review.getCommentCount()).isEqualTo(3),
-                () -> assertThat(review.getSubmittedAt()).isEqualTo(SUBMITTED_AT)
+                () -> assertThat(review.getGithubSubmittedAt()).isEqualTo(GITHUB_SUBMITTED_AT)
         );
     }
 
@@ -56,13 +58,14 @@ class ReviewTest {
         // when
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.CHANGES_REQUESTED)
                 .headCommitSha("abc123")
                 .body("수정이 필요합니다.")
                 .commentCount(2)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // then
@@ -77,13 +80,14 @@ class ReviewTest {
         // when
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.COMMENTED)
                 .headCommitSha("abc123")
                 .body("질문이 있습니다.")
                 .commentCount(1)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // then
@@ -94,17 +98,36 @@ class ReviewTest {
     }
 
     @Test
-    void GitHub_PullRequest_ID가_null이면_예외가_발생한다() {
+    void PullRequest_번호가_0이하이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> Review.builder()
-                .githubPullRequestId(null)
+                .githubPullRequestId(1L)
+                .pullRequestNumber(0)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
+                .build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("PullRequest 번호는 양수여야 합니다.");
+    }
+
+    @Test
+    void GitHub_PullRequest_ID가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> Review.builder()
+                .githubPullRequestId(null)
+                .pullRequestNumber(1)
+                .githubReviewId(100L)
+                .reviewer(REVIEWER)
+                .reviewState(ReviewState.APPROVED)
+                .headCommitSha("abc123")
+                .body("LGTM")
+                .commentCount(3)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("GitHub PullRequest ID는 필수입니다.");
@@ -115,13 +138,14 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(null)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("GitHub Review ID는 필수입니다.");
@@ -132,13 +156,14 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(null)
                 .reviewState(ReviewState.APPROVED)
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("리뷰어는 필수입니다.");
@@ -149,13 +174,14 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(null)
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("리뷰 상태는 필수입니다.");
@@ -166,13 +192,14 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(3)
-                .submittedAt(null)
+                .githubSubmittedAt(null)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("리뷰 제출 시각은 필수입니다.");
@@ -183,13 +210,14 @@ class ReviewTest {
         // when
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
                 .headCommitSha("abc123")
                 .body(null)
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // then
@@ -201,13 +229,14 @@ class ReviewTest {
         // when
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.CHANGES_REQUESTED)
                 .headCommitSha("abc123")
                 .body(null)
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // then
@@ -221,13 +250,14 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.COMMENTED)
                 .headCommitSha("abc123")
                 .body(body)
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("리뷰 본문은 필수입니다.");
@@ -240,13 +270,14 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
                 .headCommitSha(headCommitSha)
                 .body("LGTM")
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("헤드 커밋 SHA는 필수입니다.");
@@ -257,13 +288,14 @@ class ReviewTest {
         // when & then
         assertThatThrownBy(() -> Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(-1)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("댓글 수는 0 이상이어야 합니다.");
@@ -274,13 +306,14 @@ class ReviewTest {
         // given
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
 
         // when
@@ -295,13 +328,14 @@ class ReviewTest {
         // given
         Review review = Review.builder()
                 .githubPullRequestId(1L)
+                .pullRequestNumber(1)
                 .githubReviewId(100L)
                 .reviewer(REVIEWER)
                 .reviewState(ReviewState.APPROVED)
                 .headCommitSha("abc123")
                 .body("LGTM")
                 .commentCount(0)
-                .submittedAt(SUBMITTED_AT)
+                .githubSubmittedAt(GITHUB_SUBMITTED_AT)
                 .build();
         review.assignPullRequestId(1L);
 

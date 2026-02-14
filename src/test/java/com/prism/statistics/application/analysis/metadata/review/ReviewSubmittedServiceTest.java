@@ -77,7 +77,7 @@ class ReviewSubmittedServiceTest {
                 () -> assertThat(review.getHeadCommitSha()).isEqualTo("abc123sha"),
                 () -> assertThat(review.getBody().getValue()).isEqualTo("LGTM"),
                 () -> assertThat(review.getCommentCount()).isEqualTo(3),
-                () -> assertThat(review.getSubmittedAt()).isEqualTo(EXPECTED_SUBMITTED_AT)
+                () -> assertThat(review.getGithubSubmittedAt()).isEqualTo(EXPECTED_SUBMITTED_AT)
         );
     }
 

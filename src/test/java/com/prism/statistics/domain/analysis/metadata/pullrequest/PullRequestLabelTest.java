@@ -19,13 +19,13 @@ class PullRequestLabelTest {
 
     private static final Long GITHUB_PULL_REQUEST_ID = 100L;
     private static final String HEAD_COMMIT_SHA = "abc123";
-    private static final LocalDateTime LABELED_AT = LocalDateTime.of(2024, 1, 15, 10, 0, 0);
+    private static final LocalDateTime GITHUB_LABELED_AT = LocalDateTime.of(2024, 1, 15, 10, 0, 0);
 
     @Test
     void PullRequestLabel을_생성한다() {
         // when
         PullRequestLabel pullRequestLabel = PullRequestLabel.create(
-                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "bug", LABELED_AT
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "bug", GITHUB_LABELED_AT
         );
 
         // then
@@ -34,7 +34,7 @@ class PullRequestLabelTest {
                 () -> assertThat(pullRequestLabel.getPullRequestId()).isNull(),
                 () -> assertThat(pullRequestLabel.getHeadCommitSha()).isEqualTo(HEAD_COMMIT_SHA),
                 () -> assertThat(pullRequestLabel.getLabelName()).isEqualTo("bug"),
-                () -> assertThat(pullRequestLabel.getLabeledAt()).isEqualTo(LABELED_AT)
+                () -> assertThat(pullRequestLabel.getGithubLabeledAt()).isEqualTo(GITHUB_LABELED_AT)
         );
     }
 
@@ -42,7 +42,7 @@ class PullRequestLabelTest {
     void assignPullRequestId로_pullRequestId를_할당한다() {
         // given
         PullRequestLabel pullRequestLabel = PullRequestLabel.create(
-                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "bug", LABELED_AT
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "bug", GITHUB_LABELED_AT
         );
 
         // when
@@ -56,7 +56,7 @@ class PullRequestLabelTest {
     void pullRequestId가_이미_할당되어_있으면_덮어쓰지_않는다() {
         // given
         PullRequestLabel pullRequestLabel = PullRequestLabel.create(
-                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "bug", LABELED_AT
+                GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "bug", GITHUB_LABELED_AT
         );
         pullRequestLabel.assignPullRequestId(1L);
 
@@ -70,7 +70,7 @@ class PullRequestLabelTest {
     @Test
     void GitHub_PullRequest_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestLabel.create(null, HEAD_COMMIT_SHA, "bug", LABELED_AT))
+        assertThatThrownBy(() -> PullRequestLabel.create(null, HEAD_COMMIT_SHA, "bug", GITHUB_LABELED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("GitHub PullRequest ID는 필수입니다.");
     }
@@ -78,7 +78,7 @@ class PullRequestLabelTest {
     @Test
     void Head_Commit_SHA가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestLabel.create(GITHUB_PULL_REQUEST_ID, null, "bug", LABELED_AT))
+        assertThatThrownBy(() -> PullRequestLabel.create(GITHUB_PULL_REQUEST_ID, null, "bug", GITHUB_LABELED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Head Commit SHA는 필수입니다.");
     }
@@ -86,7 +86,7 @@ class PullRequestLabelTest {
     @Test
     void Head_Commit_SHA가_빈_문자열이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestLabel.create(GITHUB_PULL_REQUEST_ID, "  ", "bug", LABELED_AT))
+        assertThatThrownBy(() -> PullRequestLabel.create(GITHUB_PULL_REQUEST_ID, "  ", "bug", GITHUB_LABELED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Head Commit SHA는 필수입니다.");
     }
@@ -96,7 +96,7 @@ class PullRequestLabelTest {
     @ValueSource(strings = " ")
     void 라벨_이름이_null이거나_공백이면_예외가_발생한다(String labelName) {
         // when & then
-        assertThatThrownBy(() -> PullRequestLabel.create(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, labelName, LABELED_AT))
+        assertThatThrownBy(() -> PullRequestLabel.create(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, labelName, GITHUB_LABELED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("라벨 이름은 필수입니다.");
     }

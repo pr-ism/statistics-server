@@ -30,10 +30,10 @@ public class PullRequestLabelAddedService {
 
     private PullRequestLabel createPullRequestLabel(PullRequestLabelAddedRequest request) {
         Long githubPullRequestId = request.githubPullRequestId();
-        LocalDateTime labeledAt = localDateTimeConverter.toLocalDateTime(request.labeledAt());
+        LocalDateTime githubLabeledAt = localDateTimeConverter.toLocalDateTime(request.labeledAt());
 
         PullRequestLabel pullRequestLabel = PullRequestLabel.create(
-                githubPullRequestId, request.headCommitSha(), request.label().name(), labeledAt
+                githubPullRequestId, request.headCommitSha(), request.label().name(), githubLabeledAt
         );
 
         pullRequestRepository.findIdByGithubId(githubPullRequestId)

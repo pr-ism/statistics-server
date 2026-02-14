@@ -1,13 +1,13 @@
 INSERT INTO projects (id, created_at, updated_at, name, api_key, user_id)
 VALUES (1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '테스트 프로젝트', 'test-api-key', 7);
 
-INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, pull_request_created_at)
+INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, github_created_at)
 VALUES (1, CURRENT_TIMESTAMP, 1001, 1, 'author1', 1, 10, 'sha001', '버그 수정 PR', 'OPEN', 'https://github.com/test/repo/pull/10', 3, 100, 40, 2, '2024-01-15 10:00:00');
 
-INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, pull_request_created_at, merged_at, closed_at)
+INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, github_created_at, github_merged_at, github_closed_at)
 VALUES (2, CURRENT_TIMESTAMP, 1002, 1, 'author2', 2, 20, 'sha002', '기능 개발 PR', 'MERGED', 'https://github.com/test/repo/pull/20', 4, 200, 60, 4, '2024-01-20 09:00:00', '2024-01-22 15:00:00', '2024-01-22 15:00:00');
 
-INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, pull_request_created_at, merged_at, closed_at)
+INSERT INTO pull_requests (id, created_at, github_pull_request_id, project_id, user_name, user_id, pull_request_number, head_commit_sha, title, state, link, changed_file_count, addition_count, deletion_count, commit_count, github_created_at, github_merged_at, github_closed_at)
 VALUES (3, CURRENT_TIMESTAMP, 1003, 1, 'author1', 1, 30, 'sha003', '리팩토링 PR', 'MERGED', 'https://github.com/test/repo/pull/30', 2, 150, 80, 3, '2024-02-01 14:00:00', '2024-02-02 10:00:00', '2024-02-02 10:00:00');
 
 -- PR1 파일: Application.java(MODIFIED), README.md(MODIFIED), Config.java(ADDED)

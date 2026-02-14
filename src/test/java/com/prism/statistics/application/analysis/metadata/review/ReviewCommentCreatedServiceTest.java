@@ -262,7 +262,6 @@ class ReviewCommentCreatedServiceTest {
                 commitSha,
                 inReplyToId,
                 new CommentAuthorData(authorLogin, authorId),
-                TEST_CREATED_AT,
                 TEST_CREATED_AT
         );
     }

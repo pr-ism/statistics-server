@@ -26,6 +26,8 @@ public class Review extends CreatedAtEntity {
 
     private Long githubPullRequestId;
 
+    private int pullRequestNumber;
+
     private Long githubReviewId;
 
     @Embedded
@@ -41,7 +43,7 @@ public class Review extends CreatedAtEntity {
 
     private int commentCount;
 
-    private LocalDateTime submittedAt;
+    private LocalDateTime githubSubmittedAt;
 
     public void assignPullRequestId(Long pullRequestId) {
         if (this.pullRequestId == null) {
@@ -52,24 +54,26 @@ public class Review extends CreatedAtEntity {
     @Builder
     private Review(
             Long githubPullRequestId,
+            int pullRequestNumber,
             Long githubReviewId,
             GithubUser reviewer,
             ReviewState reviewState,
             String headCommitSha,
             String body,
             int commentCount,
-            LocalDateTime submittedAt
+            LocalDateTime githubSubmittedAt
     ) {
-        validateFields(githubPullRequestId, githubReviewId, reviewer, reviewState, headCommitSha, commentCount, submittedAt);
+        validateFields(githubPullRequestId, pullRequestNumber, githubReviewId, reviewer, reviewState, headCommitSha, commentCount, githubSubmittedAt);
 
         this.githubPullRequestId = githubPullRequestId;
+        this.pullRequestNumber = pullRequestNumber;
         this.githubReviewId = githubReviewId;
         this.reviewer = reviewer;
         this.reviewState = reviewState;
         this.headCommitSha = headCommitSha;
         this.body = createReviewBody(reviewState, body);
         this.commentCount = commentCount;
-        this.submittedAt = submittedAt;
+        this.githubSubmittedAt = githubSubmittedAt;
     }
 
     private static ReviewBody createReviewBody(ReviewState reviewState, String body) {
@@ -81,25 +85,33 @@ public class Review extends CreatedAtEntity {
 
     private void validateFields(
             Long githubPullRequestId,
+            int pullRequestNumber,
             Long githubReviewId,
             GithubUser reviewer,
             ReviewState reviewState,
             String headCommitSha,
             int commentCount,
-            LocalDateTime submittedAt
+            LocalDateTime githubSubmittedAt
     ) {
         validateGithubPullRequestId(githubPullRequestId);
+        validatePullRequestNumber(pullRequestNumber);
         validateGithubReviewId(githubReviewId);
         validateReviewer(reviewer);
         validateReviewState(reviewState);
         validateHeadCommitSha(headCommitSha);
         validateCommentCount(commentCount);
-        validateSubmittedAt(submittedAt);
+        validateSubmittedAt(githubSubmittedAt);
     }
 
     private void validateGithubPullRequestId(Long githubPullRequestId) {
         if (githubPullRequestId == null) {
             throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
+        }
+    }
+
+    private void validatePullRequestNumber(int pullRequestNumber) {
+        if (pullRequestNumber <= 0) {
+            throw new IllegalArgumentException("PullRequest 번호는 양수여야 합니다.");
         }
     }
 
@@ -133,8 +145,8 @@ public class Review extends CreatedAtEntity {
         }
     }
 
-    private void validateSubmittedAt(LocalDateTime submittedAt) {
-        if (submittedAt == null) {
+    private void validateSubmittedAt(LocalDateTime githubSubmittedAt) {
+        if (githubSubmittedAt == null) {
             throw new IllegalArgumentException("리뷰 제출 시각은 필수입니다.");
         }
     }

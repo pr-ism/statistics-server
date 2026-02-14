@@ -23,20 +23,20 @@ public class PullRequestFileHistoryEventListener {
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(PullRequestOpenCreatedEvent event) {
         List<PullRequestFileHistory> pullRequestFileHistories = event.files().stream()
-                .map(file -> toPullRequestFileHistory(event.pullRequestId(), event.headCommitSha(), file, event.pullRequestCreatedAt()))
+                .map(file -> toPullRequestFileHistory(event.pullRequestId(), event.headCommitSha(), file, event.githubCreatedAt()))
                 .toList();
 
         pullRequestFileHistoryRepository.saveAll(pullRequestFileHistories);
     }
 
-    private PullRequestFileHistory toPullRequestFileHistory(Long pullRequestId, String headCommitSha, FileData file, LocalDateTime changedAt) {
+    private PullRequestFileHistory toPullRequestFileHistory(Long pullRequestId, String headCommitSha, FileData file, LocalDateTime githubChangedAt) {
         return PullRequestFileHistory.create(
                 pullRequestId,
                 headCommitSha,
                 file.filename(),
                 FileChangeType.fromGitHubStatus(file.status()),
                 FileChanges.create(file.additions(), file.deletions()),
-                changedAt
+                githubChangedAt
         );
     }
 }

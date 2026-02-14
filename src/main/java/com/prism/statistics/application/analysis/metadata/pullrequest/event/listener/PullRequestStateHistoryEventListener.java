@@ -20,7 +20,7 @@ public class PullRequestStateHistoryEventListener {
                 event.pullRequestId(),
                 event.headCommitSha(),
                 event.initialState(),
-                event.pullRequestCreatedAt()
+                event.githubCreatedAt()
         );
 
         pullRequestStateHistoryRepository.save(pullRequestStateHistory);
