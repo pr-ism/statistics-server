@@ -118,6 +118,8 @@ public class ReviewResponseTime extends BaseTimeEntity {
     }
 
     public void updateOnApproveAfterChanges(LocalDateTime approvedAt) {
+        validateDateTime(approvedAt, "승인 시각");
+        
         if (this.lastChangesRequestedAt == null) {
             return;
         }

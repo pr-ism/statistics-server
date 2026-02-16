@@ -103,12 +103,15 @@ public class ReviewActivity extends BaseTimeEntity {
     }
 
     public void updateOnNewReview(int newCommentCount) {
+        validateNonNegative(newCommentCount, "신규 코멘트 수");
         this.reviewRoundTrips++;
         this.totalCommentCount += newCommentCount;
         this.commentDensity = calculateCommentDensity(this.totalCommentCount, this.totalAdditions, this.totalDeletions);
     }
 
     public void updateCodeChangesAfterReview(int additions, int deletions) {
+        validateNonNegative(additions, "리뷰 이후 추가 라인 수");
+        validateNonNegative(deletions, "리뷰 이후 삭제 라인 수");
         this.codeAdditionsAfterReview += additions;
         this.codeDeletionsAfterReview += deletions;
     }
