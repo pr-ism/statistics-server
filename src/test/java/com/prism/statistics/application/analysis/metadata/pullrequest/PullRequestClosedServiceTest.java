@@ -139,7 +139,7 @@ class PullRequestClosedServiceTest {
 
         // then
         PullRequestStateHistory history = jpaPullRequestStateHistoryRepository.findAll().getFirst();
-        LocalDateTime expectedMergedAt = LocalDateTime.of(2099, 1, 15, 21, 30, 0);
+        LocalDateTime expectedMergedAt = LocalDateTime.of(2099, 1, 15, 21, 0, 0);
         assertThat(history.getGithubChangedAt()).isEqualTo(expectedMergedAt);
     }
 
