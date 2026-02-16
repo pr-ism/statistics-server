@@ -22,8 +22,8 @@ public class ReviewSession extends CreatedAtEntity {
     private Long pullRequestId;
 
     @Embedded
-    @AttributeOverride(name = "additions", column = @Column(name = "total_additions"))
-    @AttributeOverride(name = "deletions", column = @Column(name = "total_deletions"))
+    @AttributeOverride(name = "userName", column = @Column(name = "reviewer_name"))
+    @AttributeOverride(name = "userId", column = @Column(name = "reviewer_github_id"))
     private GithubUser reviewer;
 
     private LocalDateTime firstActivityAt;
