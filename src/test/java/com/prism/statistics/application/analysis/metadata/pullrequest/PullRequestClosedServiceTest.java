@@ -31,7 +31,7 @@ class PullRequestClosedServiceTest {
 
     private static final String TEST_API_KEY = "test-api-key";
     private static final int TEST_PULL_REQUEST_NUMBER = 123;
-    private static final String TEST_HEAD_COMMIT_SHA = "def456";
+    private static final String TEST_HEAD_COMMIT_SHA = "abc123";
     private static final Instant CLOSED_AT = Instant.parse("2099-01-15T12:00:00Z");
     private static final Instant MERGED_AT = Instant.parse("2099-01-15T12:00:00Z");
 
@@ -176,7 +176,6 @@ class PullRequestClosedServiceTest {
     private PullRequestClosedRequest createClosedRequest() {
         return new PullRequestClosedRequest(
                 TEST_PULL_REQUEST_NUMBER,
-                TEST_HEAD_COMMIT_SHA,
                 false,
                 CLOSED_AT,
                 null
@@ -186,7 +185,6 @@ class PullRequestClosedServiceTest {
     private PullRequestClosedRequest createMergedRequest() {
         return new PullRequestClosedRequest(
                 TEST_PULL_REQUEST_NUMBER,
-                TEST_HEAD_COMMIT_SHA,
                 true,
                 CLOSED_AT,
                 MERGED_AT

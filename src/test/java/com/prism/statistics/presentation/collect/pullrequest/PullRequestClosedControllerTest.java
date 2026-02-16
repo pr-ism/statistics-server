@@ -32,7 +32,6 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
         String payload = """
                 {
                     "pullRequestNumber": 42,
-                    "headCommitSha": "abc123",
                     "isMerged": false,
                     "closedAt": "2024-01-15T12:00:00Z",
                     "mergedAt": null
@@ -59,7 +58,7 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
         String payload = """
                 {
                     "pullRequestNumber": 42,
-                    "headCommitSha": "abc123",
+
                     "isMerged": true,
                     "closedAt": "2024-01-15T12:00:00Z",
                     "mergedAt": "2024-01-15T12:00:00Z"
@@ -97,7 +96,6 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
         String payload = """
                 {
                     "pullRequestNumber": 42,
-                    "headCommitSha": "abc123",
                     "isMerged": false,
                     "closedAt": "2024-01-15T12:00:00Z",
                     "mergedAt": null

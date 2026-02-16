@@ -60,7 +60,7 @@ public class PullRequestClosedService {
     private void publishStateChangedEvent(PullRequest pullRequest, PullRequestClosedRequest request, PullRequestState previousState) {
         eventPublisher.publishEvent(new PullRequestStateChangedEvent(
                 pullRequest.getId(),
-                request.headCommitSha(),
+                pullRequest.getHeadCommitSha(),
                 previousState,
                 pullRequest.getState(),
                 localDateTimeConverter.toLocalDateTime(request.closedAt())

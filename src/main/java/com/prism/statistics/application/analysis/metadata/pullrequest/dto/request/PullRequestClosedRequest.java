@@ -4,7 +4,6 @@ import java.time.Instant;
 
 public record PullRequestClosedRequest(
         int pullRequestNumber,
-        String headCommitSha,
         boolean isMerged,
         Instant closedAt,
         Instant mergedAt
