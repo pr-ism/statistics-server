@@ -176,7 +176,7 @@ class ReviewActivityTest {
         assertAll(
                 () -> assertThat(activity.getCodeAdditionsAfterReview()).isEqualTo(30),
                 () -> assertThat(activity.getCodeDeletionsAfterReview()).isEqualTo(15),
-                () -> assertThat(activity.getTotalCodeChangesAfterReview()).isEqualTo(45)
+                () -> assertThat(activity.calculateTotalCodeChangesAfterReview()).isEqualTo(45)
         );
     }
 
@@ -225,7 +225,7 @@ class ReviewActivityTest {
                 .build();
 
         // when
-        int totalChanges = activity.getTotalChanges();
+        int totalChanges = activity.calculateTotalChanges();
 
         // then
         assertThat(totalChanges).isEqualTo(150);
