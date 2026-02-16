@@ -232,6 +232,39 @@ class PullRequestTest {
                 .hasMessage("병합되지 않은 PullRequest 입니다.");
     }
 
+    @Test
+    void OPEN_상태에서_changeStateToClosed를_호출하면_CLOSED_상태로_변경된다() {
+        // given
+        PullRequest pullRequest = createPullRequest(PullRequestState.OPEN, PullRequestTiming.createOpen(CREATED_AT));
+
+        // when
+        pullRequest.changeStateToClosed(CLOSED_AT);
+
+        // then
+        assertAll(
+                () -> assertThat(pullRequest.getState()).isEqualTo(PullRequestState.CLOSED),
+                () -> assertThat(pullRequest.getTiming().getGithubCreatedAt()).isEqualTo(CREATED_AT),
+                () -> assertThat(pullRequest.getTiming().getGithubClosedAt()).isEqualTo(CLOSED_AT),
+                () -> assertThat(pullRequest.getTiming().getGithubMergedAt()).isNull()
+        );
+    }
+
+    @Test
+    void OPEN_상태에서_changeStateToMerged를_호출하면_MERGED_상태로_변경된다() {
+        // given
+        PullRequest pullRequest = createPullRequest(PullRequestState.OPEN, PullRequestTiming.createOpen(CREATED_AT));
+
+        // when
+        pullRequest.changeStateToMerged(MERGED_AT);
+
+        // then
+        assertAll(
+                () -> assertThat(pullRequest.getState()).isEqualTo(PullRequestState.MERGED),
+                () -> assertThat(pullRequest.getTiming().getGithubCreatedAt()).isEqualTo(CREATED_AT),
+                () -> assertThat(pullRequest.getTiming().getGithubMergedAt()).isEqualTo(MERGED_AT)
+        );
+    }
+
     private PullRequest.PullRequestBuilder defaultBuilder() {
         return PullRequest.builder()
                 .githubPullRequestId(100L)

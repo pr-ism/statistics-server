@@ -41,21 +41,6 @@ public class PullRequestRepositoryAdapter implements PullRequestRepository {
     }
 
     @Override
-    @Transactional
-    public Optional<PullRequest> findWithLock(Long projectId, int pullRequestNumber) {
-        return Optional.ofNullable(
-                queryFactory
-                        .selectFrom(pullRequest)
-                        .where(
-                                pullRequest.projectId.eq(projectId),
-                                pullRequest.pullRequestNumber.eq(pullRequestNumber)
-                        )
-                        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
-                        .fetchOne()
-        );
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<PullRequest> findAllByProjectId(Long projectId) {
         return queryFactory
