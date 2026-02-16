@@ -45,12 +45,17 @@ public class ReviewActivity extends BaseTimeEntity {
     ) {
         return ReviewActivity.builder()
                 .pullRequestId(pullRequestId)
+                .reviewRoundTrips(0)
+                .totalCommentCount(0)
+                .codeAdditionsAfterReview(0)
+                .codeDeletionsAfterReview(0)
+                .additionalReviewerCount(0)
                 .totalAdditions(totalAdditions)
                 .totalDeletions(totalDeletions)
                 .build();
     }
 
-    private static BigDecimal calculateCommentDensity(int commentCount, int additions, int deletions) {
+    private BigDecimal calculateCommentDensity(int commentCount, int additions, int deletions) {
         int totalChanges = additions + deletions;
         if (totalChanges == 0) {
             return BigDecimal.ZERO;
@@ -129,11 +134,11 @@ public class ReviewActivity extends BaseTimeEntity {
         this.commentDensity = calculateCommentDensity(this.totalCommentCount, this.totalAdditions, this.totalDeletions);
     }
 
-    public int getTotalCodeChangesAfterReview() {
+    public int calculateTotalCodeChangesAfterReview() {
         return codeAdditionsAfterReview + codeDeletionsAfterReview;
     }
 
-    public int getTotalChanges() {
+    public int calculateTotalChanges() {
         return totalAdditions + totalDeletions;
     }
 
@@ -146,6 +151,6 @@ public class ReviewActivity extends BaseTimeEntity {
     }
 
     public boolean hasSignificantChangesAfterReview() {
-        return getTotalCodeChangesAfterReview() >= 10;
+        return calculateTotalCodeChangesAfterReview() >= 10;
     }
 }
