@@ -203,7 +203,7 @@ class ReviewSessionTest {
         session.updateOnComment(LocalDateTime.of(2024, 1, 1, 12, 0));
 
         // when
-        int totalActivities = session.getTotalActivities();
+        int totalActivities = session.calculateTotalActivities();
 
         // then
         assertThat(totalActivities).isEqualTo(6);
