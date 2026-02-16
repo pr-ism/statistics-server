@@ -31,7 +31,7 @@ public class PullRequestClosedService {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
                 .orElseThrow(() -> new InvalidApiKeyException());
 
-        PullRequest pullRequest = pullRequestRepository.findWithLock(projectId, request.pullRequestNumber())
+        PullRequest pullRequest = pullRequestRepository.findPullRequest(projectId, request.pullRequestNumber())
                 .orElse(null);
 
         if (pullRequest == null) {
