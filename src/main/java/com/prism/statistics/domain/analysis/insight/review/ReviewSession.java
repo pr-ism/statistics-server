@@ -139,7 +139,7 @@ public class ReviewSession extends CreatedAtEntity {
         return sessionDuration.isZero();
     }
 
-    public int getTotalActivities() {
+    public int calculateTotalActivities() {
         return reviewCount + commentCount;
     }
 
