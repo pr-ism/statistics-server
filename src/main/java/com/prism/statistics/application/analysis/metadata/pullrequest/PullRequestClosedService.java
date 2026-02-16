@@ -31,14 +31,14 @@ public class PullRequestClosedService {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
                 .orElseThrow(() -> new InvalidApiKeyException());
 
-        PullRequest pullRequest = pullRequestRepository.findPullRequest(projectId, request.pullRequestNumber())
-                .orElse(null);
+        pullRequestRepository.findPullRequest(projectId, request.pullRequestNumber())
+                .ifPresentOrElse(
+                        pullRequest -> processClosed(pullRequest, request),
+                        () -> log.warn("PullRequest를 찾을 수 없습니다. pullRequestNumber={}", request.pullRequestNumber())
+                );
+    }
 
-        if (pullRequest == null) {
-            log.warn("PullRequest를 찾을 수 없습니다. pullRequestNumber={}", request.pullRequestNumber());
-            return;
-        }
-
+    private void processClosed(PullRequest pullRequest, PullRequestClosedRequest request) {
         if (pullRequest.isClosed() || pullRequest.isMerged()) {
             log.info("이미 닫힌 PullRequest입니다. pullRequestNumber={}", request.pullRequestNumber());
             return;
