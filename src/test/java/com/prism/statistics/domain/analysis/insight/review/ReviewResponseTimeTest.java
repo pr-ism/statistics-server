@@ -168,6 +168,32 @@ class ReviewResponseTimeTest {
     }
 
     @Test
+    void RC_업데이트_시_null이면_예외가_발생한다() {
+        // given
+        ReviewResponseTime responseTime = ReviewResponseTime.createOnChangesRequested(
+                1L, LocalDateTime.of(2024, 1, 1, 10, 0)
+        );
+
+        // when & then
+        assertThatThrownBy(() -> responseTime.updateOnChangesRequested(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("변경 요청 시각은(는) 필수입니다.");
+    }
+
+    @Test
+    void 커밋_시각이_null이면_예외가_발생한다() {
+        // given
+        ReviewResponseTime responseTime = ReviewResponseTime.createOnChangesRequested(
+                1L, LocalDateTime.of(2024, 1, 1, 10, 0)
+        );
+
+        // when & then
+        assertThatThrownBy(() -> responseTime.updateOnCommitAfterChanges(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("커밋 시각은(는) 필수입니다.");
+    }
+
+    @Test
     void RC가_없으면_커밋_업데이트가_무시된다() {
         // given
         ReviewResponseTime responseTime = ReviewResponseTime.createWithoutChangesRequested(1L);
