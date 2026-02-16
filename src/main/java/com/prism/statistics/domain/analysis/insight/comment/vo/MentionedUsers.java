@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MentionedUsers {
 
-    private static final Pattern MENTION_PATTERN = Pattern.compile("@([a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)");
+    private static final Pattern MENTION_PATTERN = Pattern.compile("(?<![a-zA-Z0-9])@([a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)");
     private static final String SEPARATOR = ",";
 
     private String userNames;
