@@ -117,6 +117,14 @@ public class CommentAnalysis extends CreatedAtEntity {
         this.hasUrl = hasUrl;
     }
 
+    public void updateBody(String body) {
+        this.commentLength = calculateLength(body);
+        this.lineCount = calculateLineCount(body);
+        this.mentionedUsers = MentionedUsers.fromBody(body);
+        this.hasCode = containsCode(body);
+        this.hasUrl = containsUrl(body);
+    }
+
     public boolean hasMentions() {
         return mentionedUsers != null && !mentionedUsers.isEmpty();
     }
