@@ -4,7 +4,6 @@ import com.prism.statistics.domain.analysis.insight.vo.DurationMinutes;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.common.CreatedAtEntity;
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -23,10 +22,8 @@ public class ReviewSession extends CreatedAtEntity {
     private Long pullRequestId;
 
     @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "userName", column = @Column(name = "reviewer_name")),
-            @AttributeOverride(name = "userId", column = @Column(name = "reviewer_github_id"))
-    })
+    @AttributeOverride(name = "additions", column = @Column(name = "total_additions"))
+    @AttributeOverride(name = "deletions", column = @Column(name = "total_deletions"))
     private GithubUser reviewer;
 
     private LocalDateTime firstActivityAt;
