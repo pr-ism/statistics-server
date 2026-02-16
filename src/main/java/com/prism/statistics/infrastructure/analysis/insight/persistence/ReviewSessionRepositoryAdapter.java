@@ -1,7 +1,10 @@
 package com.prism.statistics.infrastructure.analysis.insight.persistence;
 
+import static com.prism.statistics.domain.analysis.insight.review.QReviewSession.reviewSession;
+
 import com.prism.statistics.domain.analysis.insight.review.ReviewSession;
 import com.prism.statistics.domain.analysis.insight.review.repository.ReviewSessionRepository;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +17,7 @@ import java.util.Optional;
 public class ReviewSessionRepositoryAdapter implements ReviewSessionRepository {
 
     private final JpaReviewSessionRepository jpaReviewSessionRepository;
+    private final JPAQueryFactory queryFactory;
 
     @Override
     @Transactional
@@ -29,13 +33,28 @@ public class ReviewSessionRepositoryAdapter implements ReviewSessionRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<ReviewSession> findByPullRequestIdAndReviewerUserId(Long pullRequestId, Long reviewerGithubId) {
-        return jpaReviewSessionRepository.findByPullRequestIdAndReviewerUserId(pullRequestId, reviewerGithubId);
+    public Optional<ReviewSession> findByReviewer(Long pullRequestId, Long reviewerGithubId) {
+        return Optional.ofNullable(
+                queryFactory
+                        .selectFrom(reviewSession)
+                        .where(
+                                reviewSession.pullRequestId.eq(pullRequestId),
+                                reviewSession.reviewer.userId.eq(reviewerGithubId)
+                        )
+                        .fetchOne()
+        );
     }
 
     @Override
     @Transactional(readOnly = true)
-    public boolean existsByPullRequestIdAndReviewerUserId(Long pullRequestId, Long reviewerGithubId) {
-        return jpaReviewSessionRepository.existsByPullRequestIdAndReviewerUserId(pullRequestId, reviewerGithubId);
+    public boolean existsByReviewer(Long pullRequestId, Long reviewerGithubId) {
+        return queryFactory
+                .selectOne()
+                .from(reviewSession)
+                .where(
+                        reviewSession.pullRequestId.eq(pullRequestId),
+                        reviewSession.reviewer.userId.eq(reviewerGithubId)
+                )
+                .fetchFirst() != null;
     }
 }

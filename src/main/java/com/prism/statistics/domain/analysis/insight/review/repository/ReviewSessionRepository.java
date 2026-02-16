@@ -11,7 +11,7 @@ public interface ReviewSessionRepository {
 
     List<ReviewSession> findByPullRequestId(Long pullRequestId);
 
-    Optional<ReviewSession> findByPullRequestIdAndReviewerUserId(Long pullRequestId, Long reviewerGithubId);
+    Optional<ReviewSession> findByReviewer(Long pullRequestId, Long reviewerGithubId);
 
-    boolean existsByPullRequestIdAndReviewerUserId(Long pullRequestId, Long reviewerGithubId);
+    boolean existsByReviewer(Long pullRequestId, Long reviewerGithubId);
 }
