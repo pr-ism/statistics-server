@@ -87,7 +87,15 @@ public class ReviewResponseTime extends BaseTimeEntity {
         this.changesRequestedCount = changesRequestedCount;
     }
 
+    private static void validateDateTime(LocalDateTime dateTime, String fieldName) {
+        if (dateTime == null) {
+            throw new IllegalArgumentException(fieldName + "은(는) 필수입니다.");
+        }
+    }
+
     public void updateOnChangesRequested(LocalDateTime changesRequestedAt) {
+        validateDateTime(changesRequestedAt, "변경 요청 시각");
+
         this.lastChangesRequestedAt = changesRequestedAt;
         this.changesRequestedCount++;
         this.firstCommitAfterChangesAt = null;
@@ -97,6 +105,8 @@ public class ReviewResponseTime extends BaseTimeEntity {
     }
 
     public void updateOnCommitAfterChanges(LocalDateTime committedAt) {
+        validateDateTime(committedAt, "커밋 시각");
+
         if (this.lastChangesRequestedAt == null) {
             return;
         }
