@@ -40,6 +40,12 @@ public class ReviewResponseTime extends BaseTimeEntity {
     public static ReviewResponseTime createWithoutChangesRequested(Long pullRequestId) {
         return ReviewResponseTime.builder()
                 .pullRequestId(pullRequestId)
+                .responseAfterReview(null)
+                .changesResolution(null)
+                .lastChangesRequestedAt(null)
+                .firstCommitAfterChangesAt(null)
+                .firstApproveAfterChangesAt(null)
+                .changesRequestedCount(0)
                 .build();
     }
 
@@ -49,7 +55,11 @@ public class ReviewResponseTime extends BaseTimeEntity {
     ) {
         return ReviewResponseTime.builder()
                 .pullRequestId(pullRequestId)
+                .responseAfterReview(null)
+                .changesResolution(null)
                 .lastChangesRequestedAt(changesRequestedAt)
+                .firstCommitAfterChangesAt(null)
+                .firstApproveAfterChangesAt(null)
                 .changesRequestedCount(1)
                 .build();
     }
@@ -87,7 +97,7 @@ public class ReviewResponseTime extends BaseTimeEntity {
         this.changesRequestedCount = changesRequestedCount;
     }
 
-    private static void validateDateTime(LocalDateTime dateTime, String fieldName) {
+    private void validateDateTime(LocalDateTime dateTime, String fieldName) {
         if (dateTime == null) {
             throw new IllegalArgumentException(fieldName + "은(는) 필수입니다.");
         }
@@ -111,7 +121,7 @@ public class ReviewResponseTime extends BaseTimeEntity {
             return;
         }
 
-        if (this.firstCommitAfterChangesAt == null && committedAt.isAfter(this.lastChangesRequestedAt)) {
+        if (isFirstResponseAfterChanges(this.firstCommitAfterChangesAt, committedAt)) {
             this.firstCommitAfterChangesAt = committedAt;
             this.responseAfterReview = DurationMinutes.between(this.lastChangesRequestedAt, committedAt);
         }
@@ -119,15 +129,19 @@ public class ReviewResponseTime extends BaseTimeEntity {
 
     public void updateOnApproveAfterChanges(LocalDateTime approvedAt) {
         validateDateTime(approvedAt, "승인 시각");
-        
+
         if (this.lastChangesRequestedAt == null) {
             return;
         }
 
-        if (this.firstApproveAfterChangesAt == null && approvedAt.isAfter(this.lastChangesRequestedAt)) {
+        if (isFirstResponseAfterChanges(this.firstApproveAfterChangesAt, approvedAt)) {
             this.firstApproveAfterChangesAt = approvedAt;
             this.changesResolution = DurationMinutes.between(this.lastChangesRequestedAt, approvedAt);
         }
+    }
+
+    private boolean isFirstResponseAfterChanges(LocalDateTime existingRecord, LocalDateTime eventAt) {
+        return existingRecord == null && eventAt.isAfter(this.lastChangesRequestedAt);
     }
 
     public boolean hasChangesRequested() {
