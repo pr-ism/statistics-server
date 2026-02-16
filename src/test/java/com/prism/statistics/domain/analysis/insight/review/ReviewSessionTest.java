@@ -100,7 +100,7 @@ class ReviewSessionTest {
         // when & then
         assertThatThrownBy(() -> ReviewSession.createWithComment(1L, reviewer, activityAt, -1))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("초기 코멘트 수는 0 이상이어야 합니다.");
+                .hasMessage("코멘트 수는 0 이상이어야 합니다.");
     }
 
     @Test

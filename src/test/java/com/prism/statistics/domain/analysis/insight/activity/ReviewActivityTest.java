@@ -111,7 +111,7 @@ class ReviewActivityTest {
                 .reviewRoundTrips(-1)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("리뷰 왕복 횟수는 0보다 작을 수 없습니다.");
+                .hasMessage("값은 0보다 작을 수 없습니다.");
     }
 
     @Test
@@ -139,7 +139,7 @@ class ReviewActivityTest {
         // when & then
         assertThatThrownBy(() -> activity.updateOnNewReview(-1))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("신규 코멘트 수는 0보다 작을 수 없습니다.");
+                .hasMessage("값은 0보다 작을 수 없습니다.");
     }
 
     @Test
@@ -150,7 +150,7 @@ class ReviewActivityTest {
         // when & then
         assertThatThrownBy(() -> activity.updateCodeChangesAfterReview(-1, 10))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("리뷰 이후 추가 라인 수는 0보다 작을 수 없습니다.");
+                .hasMessage("값은 0보다 작을 수 없습니다.");
     }
 
     @Test
@@ -161,7 +161,7 @@ class ReviewActivityTest {
         // when & then
         assertThatThrownBy(() -> activity.updateCodeChangesAfterReview(10, -1))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("리뷰 이후 삭제 라인 수는 0보다 작을 수 없습니다.");
+                .hasMessage("값은 0보다 작을 수 없습니다.");
     }
 
     @Test
