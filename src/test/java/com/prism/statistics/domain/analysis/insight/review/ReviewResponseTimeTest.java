@@ -194,6 +194,19 @@ class ReviewResponseTimeTest {
     }
 
     @Test
+    void 승인_시각이_null이면_예외가_발생한다() {
+        // given
+        ReviewResponseTime responseTime = ReviewResponseTime.createOnChangesRequested(
+                1L, LocalDateTime.of(2024, 1, 1, 10, 0)
+        );
+
+        // when & then
+        assertThatThrownBy(() -> responseTime.updateOnApproveAfterChanges(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("승인 시각은(는) 필수입니다.");
+    }
+
+    @Test
     void RC가_없으면_커밋_업데이트가_무시된다() {
         // given
         ReviewResponseTime responseTime = ReviewResponseTime.createWithoutChangesRequested(1L);

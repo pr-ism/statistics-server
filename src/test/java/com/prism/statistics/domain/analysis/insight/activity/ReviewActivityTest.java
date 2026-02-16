@@ -132,6 +132,39 @@ class ReviewActivityTest {
     }
 
     @Test
+    void 새로운_리뷰_등록_시_코멘트_수가_음수이면_예외가_발생한다() {
+        // given
+        ReviewActivity activity = ReviewActivity.createWithoutReview(1L, 100, 50);
+
+        // when & then
+        assertThatThrownBy(() -> activity.updateOnNewReview(-1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("신규 코멘트 수는 0보다 작을 수 없습니다.");
+    }
+
+    @Test
+    void 리뷰_이후_코드_변경_시_추가_라인이_음수이면_예외가_발생한다() {
+        // given
+        ReviewActivity activity = ReviewActivity.createWithoutReview(1L, 100, 50);
+
+        // when & then
+        assertThatThrownBy(() -> activity.updateCodeChangesAfterReview(-1, 10))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("리뷰 이후 추가 라인 수는 0보다 작을 수 없습니다.");
+    }
+
+    @Test
+    void 리뷰_이후_코드_변경_시_삭제_라인이_음수이면_예외가_발생한다() {
+        // given
+        ReviewActivity activity = ReviewActivity.createWithoutReview(1L, 100, 50);
+
+        // when & then
+        assertThatThrownBy(() -> activity.updateCodeChangesAfterReview(10, -1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("리뷰 이후 삭제 라인 수는 0보다 작을 수 없습니다.");
+    }
+
+    @Test
     void 리뷰_이후_코드_변경_시_업데이트한다() {
         // given
         ReviewActivity activity = ReviewActivity.createWithoutReview(1L, 100, 50);

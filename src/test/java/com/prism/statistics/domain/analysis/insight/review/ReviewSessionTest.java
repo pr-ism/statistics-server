@@ -92,6 +92,31 @@ class ReviewSessionTest {
     }
 
     @Test
+    void 초기_코멘트_수가_음수이면_예외가_발생한다() {
+        // given
+        GithubUser reviewer = GithubUser.create("reviewer", 123L);
+        LocalDateTime activityAt = LocalDateTime.of(2024, 1, 1, 10, 0);
+
+        // when & then
+        assertThatThrownBy(() -> ReviewSession.createWithComment(1L, reviewer, activityAt, -1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("초기 코멘트 수는 0 이상이어야 합니다.");
+    }
+
+    @Test
+    void 리뷰_업데이트_시_코멘트_수가_음수이면_예외가_발생한다() {
+        // given
+        GithubUser reviewer = GithubUser.create("reviewer", 123L);
+        LocalDateTime activityAt = LocalDateTime.of(2024, 1, 1, 10, 0);
+        ReviewSession session = ReviewSession.create(1L, reviewer, activityAt);
+
+        // when & then
+        assertThatThrownBy(() -> session.updateOnReview(LocalDateTime.of(2024, 1, 1, 12, 0), -1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("코멘트 수는 0 이상이어야 합니다.");
+    }
+
+    @Test
     void 새로운_리뷰_등록_시_업데이트한다() {
         // given
         GithubUser reviewer = GithubUser.create("reviewer", 123L);
