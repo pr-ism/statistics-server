@@ -45,16 +45,20 @@ public class PullRequestClosedService {
         }
 
         PullRequestState previousState = pullRequest.getState();
+        LocalDateTime githubChangedAt = changeState(pullRequest, request);
+        publishStateChangedEvent(pullRequest, previousState, githubChangedAt);
+    }
 
+    private LocalDateTime changeState(PullRequest pullRequest, PullRequestClosedRequest request) {
         if (request.isMerged()) {
             LocalDateTime mergedAt = localDateTimeConverter.toLocalDateTime(request.mergedAt());
             pullRequest.changeStateToMerged(mergedAt);
-            publishStateChangedEvent(pullRequest, previousState, mergedAt);
-        } else {
-            LocalDateTime closedAt = localDateTimeConverter.toLocalDateTime(request.closedAt());
-            pullRequest.changeStateToClosed(closedAt);
-            publishStateChangedEvent(pullRequest, previousState, closedAt);
+            return mergedAt;
         }
+
+        LocalDateTime closedAt = localDateTimeConverter.toLocalDateTime(request.closedAt());
+        pullRequest.changeStateToClosed(closedAt);
+        return closedAt;
     }
 
     private void publishStateChangedEvent(PullRequest pullRequest, PullRequestState previousState, LocalDateTime githubChangedAt) {
