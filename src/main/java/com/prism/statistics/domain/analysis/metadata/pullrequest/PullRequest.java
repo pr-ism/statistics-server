@@ -5,6 +5,7 @@ import com.prism.statistics.domain.common.CreatedAtEntity;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestTiming;
+import java.time.LocalDateTime;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -166,6 +167,16 @@ public class PullRequest extends CreatedAtEntity {
         if (timing == null) {
             throw new IllegalArgumentException("시간 정보는 필수입니다.");
         }
+    }
+
+    public void changeStateToClosed(LocalDateTime closedAt) {
+        this.state = PullRequestState.CLOSED;
+        this.timing = PullRequestTiming.createClosed(timing.getGithubCreatedAt(), closedAt);
+    }
+
+    public void changeStateToMerged(LocalDateTime mergedAt) {
+        this.state = PullRequestState.MERGED;
+        this.timing = PullRequestTiming.createMerged(timing.getGithubCreatedAt(), mergedAt);
     }
 
     public boolean isMerged() {
