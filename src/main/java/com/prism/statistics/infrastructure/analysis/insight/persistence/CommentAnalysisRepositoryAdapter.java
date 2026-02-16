@@ -38,4 +38,10 @@ public class CommentAnalysisRepositoryAdapter implements CommentAnalysisReposito
     public boolean existsByReviewCommentId(Long reviewCommentId) {
         return jpaCommentAnalysisRepository.existsByReviewCommentId(reviewCommentId);
     }
+
+    @Override
+    @Transactional
+    public void deleteByReviewCommentId(Long reviewCommentId) {
+        jpaCommentAnalysisRepository.deleteByReviewCommentId(reviewCommentId);
+    }
 }

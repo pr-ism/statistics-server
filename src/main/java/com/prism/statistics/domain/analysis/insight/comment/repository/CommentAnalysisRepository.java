@@ -14,4 +14,6 @@ public interface CommentAnalysisRepository {
     List<CommentAnalysis> findByPullRequestId(Long pullRequestId);
 
     boolean existsByReviewCommentId(Long reviewCommentId);
+
+    void deleteByReviewCommentId(Long reviewCommentId);
 }

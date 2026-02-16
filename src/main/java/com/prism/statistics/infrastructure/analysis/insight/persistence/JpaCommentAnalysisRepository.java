@@ -13,4 +13,6 @@ public interface JpaCommentAnalysisRepository extends ListCrudRepository<Comment
     List<CommentAnalysis> findByPullRequestId(Long pullRequestId);
 
     boolean existsByReviewCommentId(Long reviewCommentId);
+
+    void deleteByReviewCommentId(Long reviewCommentId);
 }
