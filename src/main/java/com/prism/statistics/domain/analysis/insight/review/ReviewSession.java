@@ -63,9 +63,7 @@ public class ReviewSession extends CreatedAtEntity {
         validateReviewer(reviewer);
         validateActivityAt(firstActivityAt);
 
-        if (initialCommentCount < 0) {
-            throw new IllegalArgumentException("초기 코멘트 수는 0 이상이어야 합니다.");
-        }
+        validateNonNegativeCommentCount(initialCommentCount);
 
         return new ReviewSession(
                 pullRequestId, reviewer, firstActivityAt, firstActivityAt,
@@ -91,6 +89,12 @@ public class ReviewSession extends CreatedAtEntity {
         }
     }
 
+    private static void validateNonNegativeCommentCount(int commentCount) {
+        if (commentCount < 0) {
+            throw new IllegalArgumentException("코멘트 수는 0 이상이어야 합니다.");
+        }
+    }
+
     private ReviewSession(
             Long pullRequestId,
             GithubUser reviewer,
@@ -111,11 +115,8 @@ public class ReviewSession extends CreatedAtEntity {
 
     public void updateOnReview(LocalDateTime reviewedAt, int newCommentCount) {
         validateActivityAt(reviewedAt);
+        validateNonNegativeCommentCount(newCommentCount);
         updateLastActivity(reviewedAt);
-
-        if (newCommentCount < 0) {
-            throw new IllegalArgumentException("코멘트 수는 0 이상이어야 합니다.");
-        }
 
         this.reviewCount++;
         this.commentCount += newCommentCount;
