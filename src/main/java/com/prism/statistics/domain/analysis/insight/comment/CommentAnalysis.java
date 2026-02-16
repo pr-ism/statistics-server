@@ -5,6 +5,7 @@ import com.prism.statistics.domain.common.CreatedAtEntity;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "comment_analyses")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CommentAnalysis extends CreatedAtEntity {
+
+    private static final Pattern INLINE_CODE_PATTERN = Pattern.compile("`[^`]+`");
+    private static final Pattern URL_PATTERN = Pattern.compile("https?://[^\\s]+");
 
     private Long reviewCommentId;
 
@@ -26,7 +30,7 @@ public class CommentAnalysis extends CreatedAtEntity {
     @Embedded
     private MentionedUsers mentionedUsers;
 
-    private boolean hasCodeBlock;
+    private boolean hasCode;
 
     private boolean hasUrl;
 
@@ -41,7 +45,7 @@ public class CommentAnalysis extends CreatedAtEntity {
         int commentLength = calculateLength(body);
         int lineCount = calculateLineCount(body);
         MentionedUsers mentionedUsers = MentionedUsers.fromBody(body);
-        boolean hasCodeBlock = containsCodeBlock(body);
+        boolean hasCode = containsCode(body);
         boolean hasUrl = containsUrl(body);
 
         return new CommentAnalysis(
@@ -50,7 +54,7 @@ public class CommentAnalysis extends CreatedAtEntity {
                 commentLength,
                 lineCount,
                 mentionedUsers,
-                hasCodeBlock,
+                hasCode,
                 hasUrl
         );
     }
@@ -69,18 +73,18 @@ public class CommentAnalysis extends CreatedAtEntity {
         return body.split("\r?\n").length;
     }
 
-    private static boolean containsCodeBlock(String body) {
+    private static boolean containsCode(String body) {
         if (body == null) {
             return false;
         }
-        return body.contains("```") || body.matches(".*`[^`]+`.*");
+        return body.contains("```") || INLINE_CODE_PATTERN.matcher(body).find();
     }
 
     private static boolean containsUrl(String body) {
         if (body == null) {
             return false;
         }
-        return body.matches(".*https?://[^\\s]+.*");
+        return URL_PATTERN.matcher(body).find();
     }
 
     private static void validateReviewCommentId(Long reviewCommentId) {
@@ -101,7 +105,7 @@ public class CommentAnalysis extends CreatedAtEntity {
             int commentLength,
             int lineCount,
             MentionedUsers mentionedUsers,
-            boolean hasCodeBlock,
+            boolean hasCode,
             boolean hasUrl
     ) {
         this.reviewCommentId = reviewCommentId;
@@ -109,7 +113,7 @@ public class CommentAnalysis extends CreatedAtEntity {
         this.commentLength = commentLength;
         this.lineCount = lineCount;
         this.mentionedUsers = mentionedUsers;
-        this.hasCodeBlock = hasCodeBlock;
+        this.hasCode = hasCode;
         this.hasUrl = hasUrl;
     }
 
@@ -130,6 +134,6 @@ public class CommentAnalysis extends CreatedAtEntity {
     }
 
     public boolean isRichComment() {
-        return hasCodeBlock || hasUrl;
+        return hasCode || hasUrl;
     }
 }
