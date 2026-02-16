@@ -30,7 +30,7 @@ class CommentAnalysisTest {
                 () -> assertThat(analysis.getLineCount()).isEqualTo(4),
                 () -> assertThat(analysis.hasMentions()).isTrue(),
                 () -> assertThat(analysis.getMentionCount()).isEqualTo(1),
-                () -> assertThat(analysis.isHasCodeBlock()).isTrue()
+                () -> assertThat(analysis.isHasCode()).isTrue()
         );
     }
 
@@ -83,7 +83,7 @@ class CommentAnalysisTest {
     }
 
     @Test
-    void 코드_블록_포함_여부를_감지한다() {
+    void 코드_포함_여부를_감지한다() {
         // given
         String withTripleBacktick = "```\ncode\n```";
         String withInlineCode = "Use `console.log()` here";
@@ -95,10 +95,34 @@ class CommentAnalysisTest {
 
         // then
         assertAll(
-                () -> assertThat(withBlock.isHasCodeBlock()).isTrue(),
-                () -> assertThat(withInline.isHasCodeBlock()).isTrue(),
-                () -> assertThat(noCode.isHasCodeBlock()).isFalse()
+                () -> assertThat(withBlock.isHasCode()).isTrue(),
+                () -> assertThat(withInline.isHasCode()).isTrue(),
+                () -> assertThat(noCode.isHasCode()).isFalse()
         );
+    }
+
+    @Test
+    void 멀티라인_본문에서_인라인_코드를_감지한다() {
+        // given
+        String body = "First line\nUse `console.log()` here\nLast line";
+
+        // when
+        CommentAnalysis analysis = CommentAnalysis.create(1L, 1L, body);
+
+        // then
+        assertThat(analysis.isHasCode()).isTrue();
+    }
+
+    @Test
+    void 멀티라인_본문에서_URL을_감지한다() {
+        // given
+        String body = "First line\nCheck https://example.com\nLast line";
+
+        // when
+        CommentAnalysis analysis = CommentAnalysis.create(1L, 1L, body);
+
+        // then
+        assertThat(analysis.isHasUrl()).isTrue();
     }
 
     @Test
