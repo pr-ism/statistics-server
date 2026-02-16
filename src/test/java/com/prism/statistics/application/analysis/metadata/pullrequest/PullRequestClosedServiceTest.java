@@ -22,6 +22,7 @@ import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @IntegrationTest
 @RecordApplicationEvents
@@ -125,6 +126,21 @@ class PullRequestClosedServiceTest {
                 () -> assertThat(history.getNewState()).isEqualTo(PullRequestState.MERGED),
                 () -> assertThat(history.getHeadCommitSha()).isEqualTo(TEST_HEAD_COMMIT_SHA)
         );
+    }
+
+    @Sql("/sql/webhook/insert_project_and_pull_request.sql")
+    @Test
+    void Pull_Request_merged_이벤트를_처리하면_StateHistory에_mergedAt이_기록된다() {
+        // given
+        PullRequestClosedRequest request = createMergedRequest();
+
+        // when
+        pullRequestClosedService.closePullRequest(TEST_API_KEY, request);
+
+        // then
+        PullRequestStateHistory history = jpaPullRequestStateHistoryRepository.findAll().getFirst();
+        LocalDateTime expectedMergedAt = LocalDateTime.of(2099, 1, 15, 21, 30, 0);
+        assertThat(history.getGithubChangedAt()).isEqualTo(expectedMergedAt);
     }
 
     @Sql("/sql/webhook/insert_project_and_pull_request.sql")
