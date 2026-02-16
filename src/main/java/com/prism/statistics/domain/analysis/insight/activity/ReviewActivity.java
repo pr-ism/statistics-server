@@ -88,6 +88,8 @@ public class ReviewActivity extends BaseTimeEntity {
         validateNonNegative(totalAdditions, "총 추가 라인 수");
         validateNonNegative(totalDeletions, "총 삭제 라인 수");
         validateNonNegative(additionalReviewerCount, "추가 리뷰어 수");
+        validateNonNegative(codeAdditionsAfterReview, "리뷰 이후 추가 라인 수");
+        validateNonNegative(codeDeletionsAfterReview, "리뷰 이후 삭제 라인 수");
         this.pullRequestId = pullRequestId;
         this.reviewRoundTrips = reviewRoundTrips;
         this.totalCommentCount = totalCommentCount;
@@ -117,6 +119,8 @@ public class ReviewActivity extends BaseTimeEntity {
     }
 
     public void updateTotalChanges(int newTotalAdditions, int newTotalDeletions) {
+        validateNonNegative(newTotalAdditions, "총 추가 라인 수");
+        validateNonNegative(newTotalDeletions, "총 삭제 라인 수");
         this.totalAdditions = newTotalAdditions;
         this.totalDeletions = newTotalDeletions;
         this.commentDensity = calculateCommentDensity(this.totalCommentCount, this.totalAdditions, this.totalDeletions);
