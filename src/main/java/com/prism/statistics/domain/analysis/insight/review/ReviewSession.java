@@ -109,12 +109,14 @@ public class ReviewSession extends CreatedAtEntity {
     }
 
     public void updateOnReview(LocalDateTime reviewedAt, int newCommentCount) {
+        validateActivityAt(reviewedAt);
         updateLastActivity(reviewedAt);
         this.reviewCount++;
         this.commentCount += newCommentCount;
     }
 
     public void updateOnComment(LocalDateTime commentedAt) {
+        validateActivityAt(commentedAt);
         updateLastActivity(commentedAt);
         this.commentCount++;
     }
