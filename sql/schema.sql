@@ -7,7 +7,7 @@
 CREATE TABLE users (
     id BIGINT NOT NULL AUTO_INCREMENT,
     nickname_value VARCHAR(255),
-    state VARCHAR(50),
+    state VARCHAR(255),
     created_at DATETIME(6) NOT NULL,
     updated_at DATETIME(6) NOT NULL,
     PRIMARY KEY (id)
@@ -17,8 +17,9 @@ CREATE TABLE users (
 CREATE TABLE user_identities (
     id BIGINT NOT NULL AUTO_INCREMENT,
     user_id BIGINT,
-    registration_id VARCHAR(50),
+    registration_id VARCHAR(255),
     social_id VARCHAR(255),
+    UNIQUE KEY uq_user_identities_social (registration_id, social_id),
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -26,6 +27,7 @@ CREATE TABLE user_identities (
 CREATE TABLE projects (
     id BIGINT NOT NULL AUTO_INCREMENT,
     name VARCHAR(255),
+    repository_url VARCHAR(255),
     api_key VARCHAR(255),
     user_id BIGINT,
     created_at DATETIME(6) NOT NULL,
@@ -52,15 +54,15 @@ CREATE TABLE project_size_weight_settings (
 -- 5. pull_requests
 CREATE TABLE pull_requests (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    github_pull_request_id BIGINT,
-    project_id BIGINT,
+    github_pull_request_id BIGINT NOT NULL,
+    project_id BIGINT NOT NULL,
     user_name VARCHAR(255),
     user_id BIGINT,
     pull_request_number INT,
     head_commit_sha VARCHAR(255),
     title VARCHAR(255),
     state VARCHAR(50),
-    link VARCHAR(255),
+    link VARCHAR(500),
     changed_file_count INT,
     addition_count INT,
     deletion_count INT,
@@ -69,14 +71,15 @@ CREATE TABLE pull_requests (
     merged_at DATETIME(6),
     closed_at DATETIME(6),
     created_at DATETIME(6) NOT NULL,
+    UNIQUE KEY uq_pull_requests_github_pull_request_id (github_pull_request_id),
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 6. pull_request_files
 CREATE TABLE pull_request_files (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    pull_request_id BIGINT,
-    file_name VARCHAR(255),
+    pull_request_id BIGINT NOT NULL,
+    file_name VARCHAR(500),
     change_type VARCHAR(50),
     additions INT,
     deletions INT,
@@ -87,19 +90,20 @@ CREATE TABLE pull_request_files (
 -- 7. pull_request_labels
 CREATE TABLE pull_request_labels (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    github_pull_request_id BIGINT,
+    github_pull_request_id BIGINT NOT NULL,
     pull_request_id BIGINT,
     head_commit_sha VARCHAR(255),
     label_name VARCHAR(255),
     labeled_at DATETIME(6),
     created_at DATETIME(6) NOT NULL,
+    UNIQUE KEY uq_pull_request_labels (github_pull_request_id, label_name),
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 8. commits
 CREATE TABLE commits (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    pull_request_id BIGINT,
+    pull_request_id BIGINT NOT NULL,
     commit_sha VARCHAR(255),
     committed_at DATETIME(6),
     created_at DATETIME(6) NOT NULL,
@@ -113,7 +117,7 @@ CREATE TABLE commits (
 -- 9. pull_request_content_histories
 CREATE TABLE pull_request_content_histories (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    pull_request_id BIGINT,
+    pull_request_id BIGINT NOT NULL,
     head_commit_sha VARCHAR(255),
     changed_file_count INT,
     addition_count INT,
@@ -127,10 +131,10 @@ CREATE TABLE pull_request_content_histories (
 -- 10. pull_request_file_histories
 CREATE TABLE pull_request_file_histories (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    pull_request_id BIGINT,
+    pull_request_id BIGINT NOT NULL,
     head_commit_sha VARCHAR(255),
-    file_name VARCHAR(255),
-    previous_file_name VARCHAR(255),
+    file_name VARCHAR(500),
+    previous_file_name VARCHAR(500),
     change_type VARCHAR(50),
     additions INT,
     deletions INT,
@@ -142,7 +146,7 @@ CREATE TABLE pull_request_file_histories (
 -- 11. pull_request_state_histories
 CREATE TABLE pull_request_state_histories (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    pull_request_id BIGINT,
+    pull_request_id BIGINT NOT NULL,
     head_commit_sha VARCHAR(255),
     previous_state VARCHAR(50),
     new_state VARCHAR(50),
@@ -154,7 +158,7 @@ CREATE TABLE pull_request_state_histories (
 -- 12. pull_request_label_histories
 CREATE TABLE pull_request_label_histories (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    github_pull_request_id BIGINT,
+    github_pull_request_id BIGINT NOT NULL,
     pull_request_id BIGINT,
     head_commit_sha VARCHAR(255),
     label_name VARCHAR(255),
@@ -172,16 +176,17 @@ CREATE TABLE pull_request_label_histories (
 CREATE TABLE reviews (
     id BIGINT NOT NULL AUTO_INCREMENT,
     pull_request_id BIGINT,
-    github_pull_request_id BIGINT,
-    github_review_id BIGINT,
-    user_name VARCHAR(255),
-    user_id BIGINT,
-    review_state VARCHAR(50),
-    head_commit_sha VARCHAR(255),
+    github_pull_request_id BIGINT NOT NULL,
+    github_review_id BIGINT NOT NULL,
+    user_name VARCHAR(255) NOT NULL,
+    user_id BIGINT NOT NULL,
+    review_state VARCHAR(50) NOT NULL,
+    head_commit_sha VARCHAR(255) NOT NULL,
     body TEXT,
-    comment_count INT,
-    submitted_at DATETIME(6),
+    comment_count INT NOT NULL,
+    submitted_at DATETIME(6) NOT NULL,
     created_at DATETIME(6) NOT NULL,
+    UNIQUE KEY uq_reviews_github_review_id (github_review_id),
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -189,21 +194,22 @@ CREATE TABLE reviews (
 CREATE TABLE review_comments (
     id BIGINT NOT NULL AUTO_INCREMENT,
     review_id BIGINT,
-    github_comment_id BIGINT,
-    github_review_id BIGINT,
-    body TEXT,
-    path VARCHAR(255),
+    github_comment_id BIGINT NOT NULL,
+    github_review_id BIGINT NOT NULL,
+    body TEXT NOT NULL,
+    path VARCHAR(500) NOT NULL,
     start_line INT,
-    end_line INT,
-    side VARCHAR(50),
-    commit_sha VARCHAR(255),
+    end_line INT NOT NULL,
+    side VARCHAR(50) NOT NULL,
+    commit_sha VARCHAR(255) NOT NULL,
     parent_comment_id BIGINT,
-    user_name VARCHAR(255),
-    user_id BIGINT,
-    github_created_at DATETIME(6),
-    github_updated_at DATETIME(6),
-    deleted BIT(1),
+    user_name VARCHAR(255) NOT NULL,
+    user_id BIGINT NOT NULL,
+    github_created_at DATETIME(6) NOT NULL,
+    github_updated_at DATETIME(6) NOT NULL,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME(6) NOT NULL,
+    UNIQUE KEY uq_review_comments_github_comment_id (github_comment_id),
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -211,12 +217,13 @@ CREATE TABLE review_comments (
 CREATE TABLE requested_reviewers (
     id BIGINT NOT NULL AUTO_INCREMENT,
     pull_request_id BIGINT,
-    github_pull_request_id BIGINT,
+    github_pull_request_id BIGINT NOT NULL,
     head_commit_sha VARCHAR(255),
     user_name VARCHAR(255),
     user_id BIGINT,
     requested_at DATETIME(6),
     created_at DATETIME(6) NOT NULL,
+    UNIQUE KEY uq_requested_reviewers (github_pull_request_id, user_id),
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -224,7 +231,7 @@ CREATE TABLE requested_reviewers (
 CREATE TABLE requested_reviewer_histories (
     id BIGINT NOT NULL AUTO_INCREMENT,
     pull_request_id BIGINT,
-    github_pull_request_id BIGINT,
+    github_pull_request_id BIGINT NOT NULL,
     head_commit_sha VARCHAR(255),
     user_name VARCHAR(255),
     user_id BIGINT,
@@ -377,9 +384,9 @@ CREATE TABLE review_response_times (
 -- 24. pull_request_opened_change_summaries
 CREATE TABLE pull_request_opened_change_summaries (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    pull_request_id BIGINT,
-    total_changes INT,
-    avg_changes_per_file DECIMAL(19,6),
+    pull_request_id BIGINT NOT NULL,
+    total_changes INT NOT NULL,
+    avg_changes_per_file DECIMAL(19,4) NOT NULL,
     created_at DATETIME(6) NOT NULL,
     updated_at DATETIME(6) NOT NULL,
     PRIMARY KEY (id)
@@ -388,9 +395,9 @@ CREATE TABLE pull_request_opened_change_summaries (
 -- 25. pull_request_opened_commit_densities
 CREATE TABLE pull_request_opened_commit_densities (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    pull_request_id BIGINT,
-    commit_density_per_file DECIMAL(19,6),
-    commit_density_per_change DECIMAL(19,6),
+    pull_request_id BIGINT NOT NULL,
+    commit_density_per_file DECIMAL(19,4) NOT NULL,
+    commit_density_per_change DECIMAL(19,6) NOT NULL,
     created_at DATETIME(6) NOT NULL,
     updated_at DATETIME(6) NOT NULL,
     PRIMARY KEY (id)
@@ -399,10 +406,10 @@ CREATE TABLE pull_request_opened_commit_densities (
 -- 26. pull_request_opened_file_change_diversities
 CREATE TABLE pull_request_opened_file_change_diversities (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    pull_request_id BIGINT,
-    change_type VARCHAR(50),
-    count INT,
-    ratio DECIMAL(19,6),
+    pull_request_id BIGINT NOT NULL,
+    change_type VARCHAR(50) NOT NULL,
+    count INT NOT NULL,
+    ratio DECIMAL(19,2) NOT NULL,
     created_at DATETIME(6) NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
