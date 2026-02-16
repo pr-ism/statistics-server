@@ -18,6 +18,8 @@ public class CommentAnalysis extends CreatedAtEntity {
 
     private static final Pattern INLINE_CODE_PATTERN = Pattern.compile("`[^`]+`");
     private static final Pattern URL_PATTERN = Pattern.compile("https?://[^\\s]+");
+    private static final int SHORT_COMMENT_THRESHOLD = 50;
+    private static final int DETAILED_COMMENT_THRESHOLD = 200;
 
     private Long reviewCommentId;
 
@@ -134,11 +136,11 @@ public class CommentAnalysis extends CreatedAtEntity {
     }
 
     public boolean isShortComment() {
-        return commentLength < 50;
+        return commentLength < SHORT_COMMENT_THRESHOLD;
     }
 
     public boolean isDetailedComment() {
-        return commentLength >= 200;
+        return commentLength >= DETAILED_COMMENT_THRESHOLD;
     }
 
     public boolean isRichComment() {
