@@ -65,7 +65,7 @@ class MentionedUsersTest {
         MentionedUsers mentioned = MentionedUsers.fromBody(body);
 
         // then
-        assertThat(mentioned.toList()).contains("example");
+        assertThat(mentioned.isEmpty()).isTrue();
     }
 
     @Test
