@@ -66,6 +66,10 @@ public class ReviewSession extends CreatedAtEntity {
         validateReviewer(reviewer);
         validateActivityAt(firstActivityAt);
 
+        if (initialCommentCount < 0) {
+            throw new IllegalArgumentException("초기 코멘트 수는 0 이상이어야 합니다.");
+        }
+
         return new ReviewSession(
                 pullRequestId, reviewer, firstActivityAt, firstActivityAt,
                 DurationMinutes.zero(), 0, initialCommentCount
@@ -111,6 +115,11 @@ public class ReviewSession extends CreatedAtEntity {
     public void updateOnReview(LocalDateTime reviewedAt, int newCommentCount) {
         validateActivityAt(reviewedAt);
         updateLastActivity(reviewedAt);
+
+        if (newCommentCount < 0) {
+            throw new IllegalArgumentException("코멘트 수는 0 이상이어야 합니다.");
+        }
+
         this.reviewCount++;
         this.commentCount += newCommentCount;
     }
