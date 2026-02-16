@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -48,7 +47,7 @@ public class MentionedUsers {
         List<String> validNames = userNames.stream()
                 .filter(name -> name != null && !name.isBlank())
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
 
         if (validNames.isEmpty()) {
             return empty();
@@ -66,7 +65,7 @@ public class MentionedUsers {
         return matcher.results()
                 .map(result -> result.group(1))
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private MentionedUsers(String userNames, int count) {
@@ -105,6 +104,6 @@ public class MentionedUsers {
 
         List<String> merged = new ArrayList<>(toList());
         merged.addAll(other.toList());
-        return of(merged.stream().distinct().collect(Collectors.toList()));
+        return of(merged.stream().distinct().toList());
     }
 }
