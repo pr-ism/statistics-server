@@ -227,6 +227,47 @@ class CommentAnalysisTest {
     }
 
     @Test
+    void 본문이_수정되면_모든_분석_결과가_갱신된다() {
+        // given
+        String originalBody = "Please fix this @john";
+        CommentAnalysis analysis = CommentAnalysis.create(1L, 10L, originalBody);
+
+        String updatedBody = "Updated comment with ```code``` and https://example.com @jane @bob";
+
+        // when
+        analysis.updateBody(updatedBody);
+
+        // then
+        assertAll(
+                () -> assertThat(analysis.getReviewCommentId()).isEqualTo(1L),
+                () -> assertThat(analysis.getPullRequestId()).isEqualTo(10L),
+                () -> assertThat(analysis.getCommentLength()).isEqualTo(updatedBody.length()),
+                () -> assertThat(analysis.getLineCount()).isEqualTo(1),
+                () -> assertThat(analysis.getMentionCount()).isEqualTo(2),
+                () -> assertThat(analysis.isHasCode()).isTrue(),
+                () -> assertThat(analysis.isHasUrl()).isTrue()
+        );
+    }
+
+    @Test
+    void 본문이_수정되어_멘션이_제거되면_멘션_수가_0이_된다() {
+        // given
+        String originalBody = "@john @jane please review";
+        CommentAnalysis analysis = CommentAnalysis.create(1L, 10L, originalBody);
+
+        String updatedBody = "please review";
+
+        // when
+        analysis.updateBody(updatedBody);
+
+        // then
+        assertAll(
+                () -> assertThat(analysis.hasMentions()).isFalse(),
+                () -> assertThat(analysis.getMentionCount()).isZero()
+        );
+    }
+
+    @Test
     void 멘션이_없으면_멘션_수가_0이다() {
         // given
         String body = "Please review this change";
