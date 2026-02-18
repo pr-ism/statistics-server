@@ -2,6 +2,7 @@ package com.prism.statistics.application.analysis.metadata.pullrequest.event.lis
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.FileData;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
+import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSynchronizedEvent;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullRequestFileHistory;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.FileChangeType;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestFileHistoryRepository;
@@ -24,6 +25,15 @@ public class PullRequestFileHistoryEventListener {
     public void handle(PullRequestOpenCreatedEvent event) {
         List<PullRequestFileHistory> pullRequestFileHistories = event.files().stream()
                 .map(file -> toPullRequestFileHistory(event.pullRequestId(), event.headCommitSha(), file, event.githubCreatedAt()))
+                .toList();
+
+        pullRequestFileHistoryRepository.saveAll(pullRequestFileHistories);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void handle(PullRequestSynchronizedEvent event) {
+        List<PullRequestFileHistory> pullRequestFileHistories = event.files().stream()
+                .map(file -> toPullRequestFileHistory(event.pullRequestId(), event.headCommitSha(), file, event.githubChangedAt()))
                 .toList();
 
         pullRequestFileHistoryRepository.saveAll(pullRequestFileHistories);
