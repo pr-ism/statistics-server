@@ -169,6 +169,12 @@ public class PullRequest extends CreatedAtEntity {
         }
     }
 
+    public void synchronize(String headCommitSha, PullRequestChangeStats changeStats, int commitCount) {
+        this.headCommitSha = headCommitSha;
+        this.changeStats = changeStats;
+        this.commitCount = commitCount;
+    }
+
     public void changeStateToClosed(LocalDateTime closedAt) {
         this.state = PullRequestState.CLOSED;
         this.timing = PullRequestTiming.createClosed(timing.getGithubCreatedAt(), closedAt);
