@@ -9,4 +9,6 @@ public interface CommitRepository {
     Commit save(Commit commit);
 
     List<Commit> saveAll(List<Commit> commits);
+
+    List<String> findAllCommitShasByPullRequestId(Long pullRequestId);
 }
