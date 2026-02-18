@@ -19,8 +19,8 @@ public class CommitRepositoryAdapter implements CommitRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Commit save(Commit commit) {
-        return jpaCommitRepository.save(commit);
+    public Commit save(Commit commitEntity) {
+        return jpaCommitRepository.save(commitEntity);
     }
 
     @Override

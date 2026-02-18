@@ -20,8 +20,8 @@ public class PullRequestFileRepositoryAdapter implements PullRequestFileReposito
 
     @Override
     @Transactional
-    public PullRequestFile save(PullRequestFile pullRequestFile) {
-        return jpaPullRequestFileRepository.save(pullRequestFile);
+    public PullRequestFile save(PullRequestFile pullRequestFileEntity) {
+        return jpaPullRequestFileRepository.save(pullRequestFileEntity);
     }
 
     @Override
