@@ -11,6 +11,7 @@ import com.prism.statistics.application.analysis.metadata.pullrequest.dto.reques
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest.CommitsData;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSynchronizedEvent;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.HeadCommitNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaCommitRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestContentHistoryRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestFileHistoryRepository;
@@ -211,6 +212,34 @@ class PullRequestSynchronizedServiceTest {
                 () -> assertThat(jpaPullRequestContentHistoryRepository.count()).isEqualTo(0),
                 () -> assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(0)
         );
+    }
+
+    @Sql("/sql/webhook/insert_project_pr_commits_and_files.sql")
+    @Test
+    void headCommitSha에_해당하는_커밋이_없으면_예외가_발생한다() {
+        // given
+        List<CommitNode> commitNodes = List.of(
+                new CommitNode("sha1", Instant.parse("2024-01-15T09:00:00Z")),
+                new CommitNode("sha2", Instant.parse("2024-01-15T09:30:00Z"))
+        );
+
+        List<FileData> files = List.of(
+                new FileData("src/main/java/File.java", "added", 10, 0)
+        );
+
+        PullRequestSynchronizedRequest request = new PullRequestSynchronizedRequest(
+                TEST_PULL_REQUEST_NUMBER,
+                "non-existent-sha",
+                10,
+                5,
+                1,
+                new CommitsData(2, commitNodes),
+                files
+        );
+
+        // when & then
+        assertThatThrownBy(() -> pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, request))
+                .isInstanceOf(HeadCommitNotFoundException.class);
     }
 
     @Test
