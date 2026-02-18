@@ -9,6 +9,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.CommitRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.HeadCommitNotFoundException;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
@@ -108,6 +109,6 @@ public class PullRequestSynchronizedService {
                 .filter(node -> node.sha().equals(request.headCommitSha()))
                 .findFirst()
                 .map(node -> localDateTimeConverter.toLocalDateTime(node.committedDate()))
-                .orElseThrow(() -> new IllegalStateException("headCommitSha에 해당하는 커밋을 찾을 수 없습니다."));
+                .orElseThrow(() -> new HeadCommitNotFoundException());
     }
 }
