@@ -170,6 +170,10 @@ public class PullRequest extends CreatedAtEntity {
     }
 
     public void synchronize(String headCommitSha, PullRequestChangeStats changeStats, int commitCount) {
+        validateHeadCommitSha(headCommitSha);
+        validateChangeStats(changeStats);
+        validateCommitCount(commitCount);
+
         this.headCommitSha = headCommitSha;
         this.changeStats = changeStats;
         this.commitCount = commitCount;

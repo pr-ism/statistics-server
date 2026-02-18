@@ -265,6 +265,59 @@ class PullRequestTest {
         );
     }
 
+    @Test
+    void synchronize_시_headCommitSha가_null이면_예외가_발생한다() {
+        PullRequest pullRequest = createPullRequest(PullRequestState.OPEN, PullRequestTiming.createOpen(CREATED_AT));
+
+        assertThatThrownBy(() -> pullRequest.synchronize(null, CHANGE_STATS, 3))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
+    @Test
+    void synchronize_시_headCommitSha가_빈_문자열이면_예외가_발생한다() {
+        PullRequest pullRequest = createPullRequest(PullRequestState.OPEN, PullRequestTiming.createOpen(CREATED_AT));
+
+        assertThatThrownBy(() -> pullRequest.synchronize("  ", CHANGE_STATS, 3))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
+    @Test
+    void synchronize_시_changeStats가_null이면_예외가_발생한다() {
+        PullRequest pullRequest = createPullRequest(PullRequestState.OPEN, PullRequestTiming.createOpen(CREATED_AT));
+
+        assertThatThrownBy(() -> pullRequest.synchronize("newSha", null, 3))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("변경 통계는 필수입니다.");
+    }
+
+    @Test
+    void synchronize_시_commitCount가_음수이면_예외가_발생한다() {
+        PullRequest pullRequest = createPullRequest(PullRequestState.OPEN, PullRequestTiming.createOpen(CREATED_AT));
+
+        assertThatThrownBy(() -> pullRequest.synchronize("newSha", CHANGE_STATS, -1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("커밋 수는 0보다 작을 수 없습니다.");
+    }
+
+    @Test
+    void synchronize_시_정상_값이면_필드가_업데이트된다() {
+        // given
+        PullRequest pullRequest = createPullRequest(PullRequestState.OPEN, PullRequestTiming.createOpen(CREATED_AT));
+        PullRequestChangeStats newStats = PullRequestChangeStats.create(10, 200, 80);
+
+        // when
+        pullRequest.synchronize("newSha", newStats, 5);
+
+        // then
+        assertAll(
+                () -> assertThat(pullRequest.getHeadCommitSha()).isEqualTo("newSha"),
+                () -> assertThat(pullRequest.getChangeStats()).isEqualTo(newStats),
+                () -> assertThat(pullRequest.getCommitCount()).isEqualTo(5)
+        );
+    }
+
     private PullRequest.PullRequestBuilder defaultBuilder() {
         return PullRequest.builder()
                 .githubPullRequestId(100L)
