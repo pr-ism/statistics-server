@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -34,10 +35,12 @@ public class CommitRepositoryAdapter implements CommitRepository {
     @Override
     @Transactional(readOnly = true)
     public Set<String> findAllCommitShasByPullRequestId(Long pullRequestId) {
-        return Set.copyOf(queryFactory
+        return queryFactory
                 .select(commit.commitSha)
                 .from(commit)
                 .where(commit.pullRequestId.eq(pullRequestId))
-                .fetch());
+                .fetch()
+                .stream()
+                .collect(Collectors.toUnmodifiableSet());
     }
 }
