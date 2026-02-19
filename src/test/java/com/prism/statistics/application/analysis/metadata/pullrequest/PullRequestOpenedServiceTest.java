@@ -129,7 +129,7 @@ class PullRequestOpenedServiceTest {
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void Draft_Pull_Request_opened_이벤트를_처리하면_모든_엔티티가_저장된다() {
+    void Draft_Pull_Request_opened_이벤트를_처리하면_이벤트가_발행되고_모든_엔티티가_저장된다() {
         // given
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(true);
 
@@ -137,6 +137,8 @@ class PullRequestOpenedServiceTest {
         pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
 
         // then
+        long eventCount = applicationEvents.stream(PullRequestOpenCreatedEvent.class).count();
+        assertThat(eventCount).isEqualTo(1);
         assertAll(
                 () -> assertThat(jpaPullRequestRepository.count()).isEqualTo(1),
                 () -> assertThat(jpaPullRequestFileRepository.count()).isEqualTo(2),
