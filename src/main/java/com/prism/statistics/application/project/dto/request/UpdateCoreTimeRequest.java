@@ -1,5 +1,6 @@
 package com.prism.statistics.application.project.dto.request;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalTime;
 
@@ -11,4 +12,12 @@ public record UpdateCoreTimeRequest(
         @NotNull(message = "종료 시간은 필수입니다.")
         LocalTime endTime
 ) {
+    @AssertTrue(message = "종료 시간은 시작 시간 이후여야 합니다.")
+    public boolean isEndTimeAfterStartTime() {
+        if (startTime == null || endTime == null) {
+            return true;
+        }
+
+        return endTime.isAfter(startTime);
+    }
 }
