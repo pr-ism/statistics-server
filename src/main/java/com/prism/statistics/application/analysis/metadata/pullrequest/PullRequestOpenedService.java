@@ -3,7 +3,6 @@ package com.prism.statistics.application.analysis.metadata.pullrequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.CommitNode;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.PullRequestData;
-import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestDraftCreatedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSavedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent.CommitData;
@@ -39,21 +38,33 @@ public class PullRequestOpenedService {
                 .orElseThrow(() -> new InvalidApiKeyException());
 
         if (request.isDraft()) {
-            eventPublisher.publishEvent(new PullRequestDraftCreatedEvent(request));
+            createDraftPullRequest(projectId, request);
             return;
         }
-
-        PullRequestData pullRequestData = request.pullRequest();
-
-        PullRequest savedPullRequest = savePullRequest(projectId, pullRequestData);
-
-        publishPullRequestSavedEvent(savedPullRequest);
-        publishPullRequestOpenCreatedEvent(savedPullRequest, projectId, pullRequestData, request);
+        createOpenPullRequest(projectId, request);
     }
 
-    private PullRequest savePullRequest(Long projectId, PullRequestData pullRequestData) {
+    private void createDraftPullRequest(Long projectId, PullRequestOpenedRequest request) {
+        PullRequestData pullRequestData = request.pullRequest();
         LocalDateTime githubCreatedAt = localDateTimeConverter.toLocalDateTime(pullRequestData.createdAt());
 
+        PullRequest savedPullRequest = savePullRequest(projectId, pullRequestData, PullRequestState.DRAFT, PullRequestTiming.createDraft(githubCreatedAt));
+
+        publishPullRequestSavedEvent(savedPullRequest);
+        publishPullRequestCreatedEvent(savedPullRequest, projectId, pullRequestData, request, PullRequestState.DRAFT, githubCreatedAt);
+    }
+
+    private void createOpenPullRequest(Long projectId, PullRequestOpenedRequest request) {
+        PullRequestData pullRequestData = request.pullRequest();
+        LocalDateTime githubCreatedAt = localDateTimeConverter.toLocalDateTime(pullRequestData.createdAt());
+
+        PullRequest savedPullRequest = savePullRequest(projectId, pullRequestData, PullRequestState.OPEN, PullRequestTiming.createOpen(githubCreatedAt));
+
+        publishPullRequestSavedEvent(savedPullRequest);
+        publishPullRequestCreatedEvent(savedPullRequest, projectId, pullRequestData, request, PullRequestState.OPEN, githubCreatedAt);
+    }
+
+    private PullRequest savePullRequest(Long projectId, PullRequestData pullRequestData, PullRequestState state, PullRequestTiming timing) {
         PullRequest pullRequest = PullRequest.builder()
                 .githubPullRequestId(pullRequestData.githubPullRequestId())
                 .projectId(projectId)
@@ -61,7 +72,7 @@ public class PullRequestOpenedService {
                 .pullRequestNumber(pullRequestData.number())
                 .headCommitSha(pullRequestData.headCommitSha())
                 .title(pullRequestData.title())
-                .state(PullRequestState.OPEN)
+                .state(state)
                 .link(pullRequestData.url())
                 .changeStats(PullRequestChangeStats.create(
                         pullRequestData.changedFiles(),
@@ -69,7 +80,7 @@ public class PullRequestOpenedService {
                         pullRequestData.deletions()
                 ))
                 .commitCount(pullRequestData.commits().totalCount())
-                .timing(PullRequestTiming.createOpen(githubCreatedAt))
+                .timing(timing)
                 .build();
 
         return pullRequestRepository.save(pullRequest);
@@ -81,13 +92,14 @@ public class PullRequestOpenedService {
         ));
     }
 
-    private void publishPullRequestOpenCreatedEvent(
+    private void publishPullRequestCreatedEvent(
             PullRequest savedPullRequest,
             Long projectId,
             PullRequestData pullRequestData,
-            PullRequestOpenedRequest request
+            PullRequestOpenedRequest request,
+            PullRequestState initialState,
+            LocalDateTime githubCreatedAt
     ) {
-        LocalDateTime githubCreatedAt = localDateTimeConverter.toLocalDateTime(pullRequestData.createdAt());
         PullRequestChangeStats pullRequestChangeStats = PullRequestChangeStats.create(
                 pullRequestData.changedFiles(),
                 pullRequestData.additions(),
@@ -102,7 +114,7 @@ public class PullRequestOpenedService {
                 savedPullRequest.getId(),
                 projectId,
                 pullRequestData.headCommitSha(),
-                PullRequestState.OPEN,
+                initialState,
                 pullRequestChangeStats,
                 pullRequestData.commits().totalCount(),
                 githubCreatedAt,

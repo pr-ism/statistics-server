@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
-import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestDraftCreatedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.Author;
@@ -102,7 +101,7 @@ class PullRequestOpenedServiceTest {
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void Draft_Pull_Request_이면_엔티티가_저장되지_않는다() {
+    void Draft_Pull_Request_opened_이벤트를_처리하면_DRAFT_상태로_저장된다() {
         // given
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(true);
 
@@ -110,14 +109,8 @@ class PullRequestOpenedServiceTest {
         pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
 
         // then
-        assertAll(
-                () -> assertThat(jpaPullRequestRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaPullRequestFileRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaCommitRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaPullRequestStateHistoryRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaPullRequestContentHistoryRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(0)
-        );
+        PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
+        assertThat(pullRequest.getState()).isEqualTo(PullRequestState.DRAFT);
     }
 
     @Sql("/sql/webhook/insert_project.sql")
@@ -136,7 +129,7 @@ class PullRequestOpenedServiceTest {
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void Draft_PullRequest_생성_시_PullRequestDraftCreatedEvent가_발행된다() {
+    void Draft_Pull_Request_opened_이벤트를_처리하면_모든_엔티티가_저장된다() {
         // given
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(true);
 
@@ -144,8 +137,14 @@ class PullRequestOpenedServiceTest {
         pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
 
         // then
-        long eventCount = applicationEvents.stream(PullRequestDraftCreatedEvent.class).count();
-        assertThat(eventCount).isEqualTo(1);
+        assertAll(
+                () -> assertThat(jpaPullRequestRepository.count()).isEqualTo(1),
+                () -> assertThat(jpaPullRequestFileRepository.count()).isEqualTo(2),
+                () -> assertThat(jpaCommitRepository.count()).isEqualTo(2),
+                () -> assertThat(jpaPullRequestStateHistoryRepository.count()).isEqualTo(1),
+                () -> assertThat(jpaPullRequestContentHistoryRepository.count()).isEqualTo(1),
+                () -> assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(2)
+        );
     }
 
     @Test
