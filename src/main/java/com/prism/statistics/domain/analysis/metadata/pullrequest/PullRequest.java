@@ -194,6 +194,10 @@ public class PullRequest extends CreatedAtEntity {
         this.timing = PullRequestTiming.createReopened(timing.getGithubCreatedAt());
     }
 
+    public void changeStateToReadyForReview() {
+        this.state = PullRequestState.OPEN;
+    }
+
     public boolean isMerged() {
         return this.state.isMerged();
     }
