@@ -47,6 +47,30 @@ CREATE TABLE project_size_weight_settings (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 4-1. project_core_time_settings
+CREATE TABLE project_core_time_settings (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    project_id BIGINT,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 4-2. project_size_grade_threshold_settings
+CREATE TABLE project_size_grade_threshold_settings (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    project_id BIGINT,
+    s_threshold INT NOT NULL,
+    m_threshold INT NOT NULL,
+    l_threshold INT NOT NULL,
+    xl_threshold INT NOT NULL,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- =====================================================
 -- Pull Request Metadata
 -- =====================================================
