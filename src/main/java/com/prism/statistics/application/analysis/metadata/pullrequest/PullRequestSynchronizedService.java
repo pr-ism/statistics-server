@@ -46,6 +46,11 @@ public class PullRequestSynchronizedService {
     }
 
     private void processSynchronize(PullRequest pullRequest, PullRequestSynchronizedRequest request) {
+        if (pullRequest.isNotSynchronizable()) {
+            log.warn("이미 닫힌 pull request에 synchronize 이벤트가 도착했습니다. pullRequestId={}, state={}", pullRequest.getId(), pullRequest.getState());
+            return;
+        }
+
         List<CommitNode> newCommitNodes = filterNewCommits(pullRequest.getId(), request);
         boolean isNewer = isNewer(pullRequest.getHeadCommitSha(), request);
 

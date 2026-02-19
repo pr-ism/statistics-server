@@ -205,6 +205,10 @@ public class PullRequest extends CreatedAtEntity {
         return this.state.isOpen();
     }
 
+    public boolean isNotSynchronizable() {
+        return !isOpen() && !isDraft();
+    }
+
     public long calculateMergeTimeMinutes() {
         if (!isMerged()) {
             throw new IllegalStateException("병합되지 않은 PullRequest 입니다.");
