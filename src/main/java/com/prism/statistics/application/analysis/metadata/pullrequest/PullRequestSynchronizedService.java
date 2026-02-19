@@ -53,17 +53,17 @@ public class PullRequestSynchronizedService {
 
         List<CommitNode> newCommitNodes = filterNewCommits(pullRequest.getId(), request);
         boolean isNewer = isNewer(pullRequest.getHeadCommitSha(), request);
+        PullRequestChangeStats changeStats = PullRequestChangeStats.create(
+                request.changedFiles(),
+                request.additions(),
+                request.deletions()
+        );
 
         if (isNewer) {
-            PullRequestChangeStats changeStats = PullRequestChangeStats.create(
-                    request.changedFiles(),
-                    request.additions(),
-                    request.deletions()
-            );
             pullRequest.synchronize(request.headCommitSha(), changeStats, request.commits().totalCount());
         }
 
-        publishSynchronizedEvent(pullRequest, request, newCommitNodes, isNewer);
+        publishSynchronizedEvent(pullRequest, request, newCommitNodes, isNewer, changeStats);
     }
 
     private boolean isNewer(String currentHeadCommitSha, PullRequestSynchronizedRequest request) {
@@ -83,15 +83,10 @@ public class PullRequestSynchronizedService {
             PullRequest pullRequest,
             PullRequestSynchronizedRequest request,
             List<CommitNode> newCommitNodes,
-            boolean isNewer
+            boolean isNewer,
+            PullRequestChangeStats changeStats
     ) {
         LocalDateTime githubChangedAt = findHeadCommitDate(request);
-
-        PullRequestChangeStats changeStats = PullRequestChangeStats.create(
-                request.changedFiles(),
-                request.additions(),
-                request.deletions()
-        );
 
         List<CommitData> newCommits = newCommitNodes.stream()
                 .map(node -> new CommitData(node.sha(), localDateTimeConverter.toLocalDateTime(node.committedDate())))
