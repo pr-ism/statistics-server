@@ -181,4 +181,92 @@ class ProjectSettingServiceTest {
                 .isInstanceOf(ProjectOwnershipException.class)
                 .hasMessage("프로젝트를 찾을 수 없습니다.");
     }
+
+    @Sql("/sql/project/insert_project_without_settings.sql")
+    @Test
+    void 코어타임_설정이_존재하지_않으면_조회_시_예외가_발생한다() {
+        // given
+        Long userId = 7L;
+        Long projectId = 1L;
+
+        // when & then
+        assertThatThrownBy(() -> projectSettingService.findCoreTime(userId, projectId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("코어타임 설정이 존재하지 않습니다.");
+    }
+
+    @Sql("/sql/project/insert_project_without_settings.sql")
+    @Test
+    void 코어타임_설정이_존재하지_않으면_수정_시_예외가_발생한다() {
+        // given
+        Long userId = 7L;
+        Long projectId = 1L;
+        UpdateCoreTimeRequest request = new UpdateCoreTimeRequest(
+                LocalTime.of(9, 0),
+                LocalTime.of(17, 0)
+        );
+
+        // when & then
+        assertThatThrownBy(() -> projectSettingService.updateCoreTime(userId, projectId, request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("코어타임 설정이 존재하지 않습니다.");
+    }
+
+    @Sql("/sql/project/insert_project_without_settings.sql")
+    @Test
+    void 사이즈_가중치_설정이_존재하지_않으면_조회_시_예외가_발생한다() {
+        // given
+        Long userId = 7L;
+        Long projectId = 1L;
+
+        // when & then
+        assertThatThrownBy(() -> projectSettingService.findSizeWeight(userId, projectId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("사이즈 가중치 설정이 존재하지 않습니다.");
+    }
+
+    @Sql("/sql/project/insert_project_without_settings.sql")
+    @Test
+    void 사이즈_가중치_설정이_존재하지_않으면_수정_시_예외가_발생한다() {
+        // given
+        Long userId = 7L;
+        Long projectId = 1L;
+        UpdateSizeWeightRequest request = new UpdateSizeWeightRequest(
+                new BigDecimal("2.0"),
+                new BigDecimal("0.5"),
+                new BigDecimal("3.0")
+        );
+
+        // when & then
+        assertThatThrownBy(() -> projectSettingService.updateSizeWeight(userId, projectId, request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("사이즈 가중치 설정이 존재하지 않습니다.");
+    }
+
+    @Sql("/sql/project/insert_project_without_settings.sql")
+    @Test
+    void 사이즈_등급_임계값_설정이_존재하지_않으면_조회_시_예외가_발생한다() {
+        // given
+        Long userId = 7L;
+        Long projectId = 1L;
+
+        // when & then
+        assertThatThrownBy(() -> projectSettingService.findSizeGradeThreshold(userId, projectId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("사이즈 등급 임계값 설정이 존재하지 않습니다.");
+    }
+
+    @Sql("/sql/project/insert_project_without_settings.sql")
+    @Test
+    void 사이즈_등급_임계값_설정이_존재하지_않으면_수정_시_예외가_발생한다() {
+        // given
+        Long userId = 7L;
+        Long projectId = 1L;
+        UpdateSizeGradeThresholdRequest request = new UpdateSizeGradeThresholdRequest(20, 200, 500, 2000);
+
+        // when & then
+        assertThatThrownBy(() -> projectSettingService.updateSizeGradeThreshold(userId, projectId, request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("사이즈 등급 임계값 설정이 존재하지 않습니다.");
+    }
 }
