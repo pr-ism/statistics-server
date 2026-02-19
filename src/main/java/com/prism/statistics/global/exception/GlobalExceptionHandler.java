@@ -5,6 +5,7 @@ import com.prism.statistics.application.auth.exception.WithdrawnUserLoginExcepti
 import com.prism.statistics.application.user.exception.UserNotFoundException;
 import com.prism.statistics.domain.user.exception.AlreadyWithdrawnUserException;
 import com.prism.statistics.global.exception.dto.response.AuthErrorCode;
+import com.prism.statistics.global.exception.dto.response.CommitErrorCode;
 import com.prism.statistics.global.exception.dto.response.DefaultErrorCode;
 import com.prism.statistics.global.exception.dto.response.ErrorCode;
 import com.prism.statistics.global.exception.dto.response.ExceptionResponse;
@@ -20,6 +21,7 @@ import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestLabelNotFoundException;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.HeadCommitNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.RequestedReviewerNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException;
@@ -123,6 +125,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.info("InvalidApiKeyException : {}", ex.getMessage());
 
         return createResponseEntity(ProjectErrorCode.INVALID_API_KEY);
+    }
+
+    @ExceptionHandler(HeadCommitNotFoundException.class)
+    public ResponseEntity<Object> handleHeadCommitNotFoundException(HeadCommitNotFoundException ex) {
+        log.info("HeadCommitNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(CommitErrorCode.HEAD_COMMIT_NOT_FOUND);
     }
 
     @ExceptionHandler(PullRequestNotFoundException.class)

@@ -2,6 +2,7 @@ package com.prism.statistics.application.analysis.metadata.pullrequest.event.lis
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.FileData;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
+import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSynchronizedEvent;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequestFile;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.FileChangeType;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestFileRepository;
@@ -21,8 +22,22 @@ public class PullRequestFileEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(PullRequestOpenCreatedEvent event) {
-        List<PullRequestFile> pullRequestFiles = event.files().stream()
-                .map(file -> toPullRequestFile(event.pullRequestId(), file))
+        saveFiles(event.pullRequestId(), event.files());
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void handle(PullRequestSynchronizedEvent event) {
+        if (!event.isNewer()) {
+            return;
+        }
+
+        pullRequestFileRepository.deleteAllByPullRequestId(event.pullRequestId());
+        saveFiles(event.pullRequestId(), event.files());
+    }
+
+    private void saveFiles(Long pullRequestId, List<FileData> files) {
+        List<PullRequestFile> pullRequestFiles = files.stream()
+                .map(file -> toPullRequestFile(pullRequestId, file))
                 .toList();
 
         pullRequestFileRepository.saveAll(pullRequestFiles);

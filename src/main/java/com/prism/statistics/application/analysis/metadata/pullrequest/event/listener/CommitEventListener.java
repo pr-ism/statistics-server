@@ -2,6 +2,7 @@ package com.prism.statistics.application.analysis.metadata.pullrequest.event.lis
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent.CommitData;
+import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSynchronizedEvent;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.Commit;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.CommitRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,15 @@ public class CommitEventListener {
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(PullRequestOpenCreatedEvent event) {
         List<Commit> commits = event.commits().stream()
+                .map(commitData -> toCommit(event.pullRequestId(), commitData))
+                .toList();
+
+        commitRepository.saveAll(commits);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void handle(PullRequestSynchronizedEvent event) {
+        List<Commit> commits = event.newCommits().stream()
                 .map(commitData -> toCommit(event.pullRequestId(), commitData))
                 .toList();
 

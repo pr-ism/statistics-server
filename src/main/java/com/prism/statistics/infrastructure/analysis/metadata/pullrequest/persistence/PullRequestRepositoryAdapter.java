@@ -5,7 +5,6 @@ import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullReq
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
