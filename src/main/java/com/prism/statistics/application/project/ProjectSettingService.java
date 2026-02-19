@@ -8,6 +8,7 @@ import com.prism.statistics.application.project.dto.response.SizeGradeThresholdR
 import com.prism.statistics.application.project.dto.response.SizeWeightResponse;
 import com.prism.statistics.domain.analysis.insight.size.vo.SizeScoreWeight;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
+import com.prism.statistics.domain.project.exception.ProjectSettingNotFoundException;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.project.setting.ProjectCoreTimeSetting;
 import com.prism.statistics.domain.project.setting.ProjectSizeGradeThresholdSetting;
@@ -35,7 +36,7 @@ public class ProjectSettingService {
         validateProjectOwnership(projectId, userId);
 
         ProjectCoreTimeSetting setting = projectCoreTimeSettingRepository.findByProjectId(projectId)
-                .orElseThrow(() -> new IllegalStateException("코어타임 설정이 존재하지 않습니다."));
+                .orElseThrow(() -> new ProjectSettingNotFoundException("코어타임 설정이 존재하지 않습니다."));
 
         return CoreTimeResponse.from(setting);
     }
@@ -45,7 +46,7 @@ public class ProjectSettingService {
         validateProjectOwnership(projectId, userId);
 
         ProjectCoreTimeSetting setting = projectCoreTimeSettingRepository.findByProjectId(projectId)
-                .orElseThrow(() -> new IllegalStateException("코어타임 설정이 존재하지 않습니다."));
+                .orElseThrow(() -> new ProjectSettingNotFoundException("코어타임 설정이 존재하지 않습니다."));
 
         setting.changeCoreTime(CoreTime.of(request.startTime(), request.endTime()));
 
@@ -57,7 +58,7 @@ public class ProjectSettingService {
         validateProjectOwnership(projectId, userId);
 
         ProjectSizeWeightSetting setting = projectSizeWeightSettingRepository.findByProjectId(projectId)
-                .orElseThrow(() -> new IllegalStateException("사이즈 가중치 설정이 존재하지 않습니다."));
+                .orElseThrow(() -> new ProjectSettingNotFoundException("사이즈 가중치 설정이 존재하지 않습니다."));
 
         return SizeWeightResponse.from(setting);
     }
@@ -67,9 +68,10 @@ public class ProjectSettingService {
         validateProjectOwnership(projectId, userId);
 
         ProjectSizeWeightSetting setting = projectSizeWeightSettingRepository.findByProjectId(projectId)
-                .orElseThrow(() -> new IllegalStateException("사이즈 가중치 설정이 존재하지 않습니다."));
+                .orElseThrow(() -> new ProjectSettingNotFoundException("사이즈 가중치 설정이 존재하지 않습니다."));
 
-        setting.changeWeight(SizeScoreWeight.of(request.additionWeight(), request.deletionWeight(), request.fileWeight()));
+        setting.changeWeight(
+                SizeScoreWeight.of(request.additionWeight(), request.deletionWeight(), request.fileWeight()));
 
         return SizeWeightResponse.from(setting);
     }
@@ -79,17 +81,18 @@ public class ProjectSettingService {
         validateProjectOwnership(projectId, userId);
 
         ProjectSizeGradeThresholdSetting setting = projectSizeGradeThresholdSettingRepository.findByProjectId(projectId)
-                .orElseThrow(() -> new IllegalStateException("사이즈 등급 임계값 설정이 존재하지 않습니다."));
+                .orElseThrow(() -> new ProjectSettingNotFoundException("사이즈 등급 임계값 설정이 존재하지 않습니다."));
 
         return SizeGradeThresholdResponse.from(setting);
     }
 
     @Transactional
-    public SizeGradeThresholdResponse updateSizeGradeThreshold(Long userId, Long projectId, UpdateSizeGradeThresholdRequest request) {
+    public SizeGradeThresholdResponse updateSizeGradeThreshold(Long userId, Long projectId,
+                                                               UpdateSizeGradeThresholdRequest request) {
         validateProjectOwnership(projectId, userId);
 
         ProjectSizeGradeThresholdSetting setting = projectSizeGradeThresholdSettingRepository.findByProjectId(projectId)
-                .orElseThrow(() -> new IllegalStateException("사이즈 등급 임계값 설정이 존재하지 않습니다."));
+                .orElseThrow(() -> new ProjectSettingNotFoundException("사이즈 등급 임계값 설정이 존재하지 않습니다."));
 
         setting.changeThreshold(SizeGradeThreshold.of(
                 request.sThreshold(), request.mThreshold(), request.lThreshold(), request.xlThreshold()
