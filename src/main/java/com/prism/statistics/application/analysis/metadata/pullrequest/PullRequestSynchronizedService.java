@@ -36,7 +36,7 @@ public class PullRequestSynchronizedService {
     @Transactional
     public void synchronizePullRequest(String apiKey, PullRequestSynchronizedRequest request) {
         Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(InvalidApiKeyException::new);
+                .orElseThrow(() -> new InvalidApiKeyException());
 
         pullRequestRepository.findPullRequest(projectId, request.pullRequestNumber())
                 .ifPresentOrElse(
