@@ -52,12 +52,16 @@ class ProjectSettingControllerTest extends CommonControllerSliceTestSupport {
         CoreTimeResponse response = new CoreTimeResponse(LocalTime.of(9, 0), LocalTime.of(17, 0));
         given(projectSettingService.updateCoreTime(7L, 1L, request)).willReturn(response);
 
+        String requestJson = """
+                {"startTime": "09:00:00", "endTime": "17:00:00"}
+                """;
+
         // when & then
         mockMvc.perform(
                         patch("/projects/1/settings/core-time")
                                 .header("Authorization", "Bearer access-token")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .content(requestJson)
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.startTime").value("09:00:00"))
