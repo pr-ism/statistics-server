@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
@@ -32,11 +33,11 @@ public class CommitRepositoryAdapter implements CommitRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public List<String> findAllCommitShasByPullRequestId(Long pullRequestId) {
-        return queryFactory
+    public Set<String> findAllCommitShasByPullRequestId(Long pullRequestId) {
+        return Set.copyOf(queryFactory
                 .select(commit.commitSha)
                 .from(commit)
                 .where(commit.pullRequestId.eq(pullRequestId))
-                .fetch();
+                .fetch());
     }
 }

@@ -72,7 +72,7 @@ public class PullRequestSynchronizedService {
     }
 
     private List<CommitNode> filterNewCommits(Long pullRequestId, PullRequestSynchronizedRequest request) {
-        Set<String> existingShas = Set.copyOf(commitRepository.findAllCommitShasByPullRequestId(pullRequestId));
+        Set<String> existingShas = commitRepository.findAllCommitShasByPullRequestId(pullRequestId);
 
         return request.commits().nodes().stream()
                 .filter(node -> !existingShas.contains(node.sha()))

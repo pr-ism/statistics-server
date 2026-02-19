@@ -3,6 +3,7 @@ package com.prism.statistics.domain.analysis.metadata.pullrequest.repository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.Commit;
 
 import java.util.List;
+import java.util.Set;
 
 public interface CommitRepository {
 
@@ -10,5 +11,5 @@ public interface CommitRepository {
 
     List<Commit> saveAll(List<Commit> commits);
 
-    List<String> findAllCommitShasByPullRequestId(Long pullRequestId);
+    Set<String> findAllCommitShasByPullRequestId(Long pullRequestId);
 }
