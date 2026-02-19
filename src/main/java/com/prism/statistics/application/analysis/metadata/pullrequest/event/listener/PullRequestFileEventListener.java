@@ -21,12 +21,12 @@ public class PullRequestFileEventListener {
     private final PullRequestFileRepository pullRequestFileRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void handle(PullRequestOpenCreatedEvent event) {
+    public void saveInitialFiles(PullRequestOpenCreatedEvent event) {
         saveFiles(event.pullRequestId(), event.files());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void handle(PullRequestSynchronizedEvent event) {
+    public void updateFiles(PullRequestSynchronizedEvent event) {
         if (!event.isNewer()) {
             return;
         }
