@@ -8,7 +8,7 @@ public enum ProjectErrorCode implements ErrorCode {
 
     PROJECT_NOT_FOUND("P00", "프로젝트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     INVALID_API_KEY("P01", "유효하지 않은 API Key입니다.", HttpStatus.NOT_FOUND),
-    PROJECT_SETTINGS_NOT_FOUND("P02", "프로젝트 설정에 누락된 값이 있습니다.", HttpStatus.NOT_FOUND);
+    PROJECT_SETTINGS_NOT_FOUND("P02", "프로젝트 설정을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
 
     private final String errorCode;
     private final String message;
