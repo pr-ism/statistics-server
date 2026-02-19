@@ -16,7 +16,7 @@ public class PullRequestContentHistoryEventListener {
     private final PullRequestContentHistoryRepository pullRequestContentHistoryRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void handle(PullRequestOpenCreatedEvent event) {
+    public void saveInitialContentHistory(PullRequestOpenCreatedEvent event) {
         PullRequestContentHistory pullRequestContentHistory = PullRequestContentHistory.create(
                 event.pullRequestId(),
                 event.headCommitSha(),
@@ -29,7 +29,7 @@ public class PullRequestContentHistoryEventListener {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void handle(PullRequestSynchronizedEvent event) {
+    public void saveContentHistory(PullRequestSynchronizedEvent event) {
         PullRequestContentHistory pullRequestContentHistory = PullRequestContentHistory.create(
                 event.pullRequestId(),
                 event.headCommitSha(),

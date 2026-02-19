@@ -19,7 +19,7 @@ public class CommitEventListener {
     private final CommitRepository commitRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void handle(PullRequestOpenCreatedEvent event) {
+    public void saveInitialCommits(PullRequestOpenCreatedEvent event) {
         List<Commit> commits = event.commits().stream()
                 .map(commitData -> toCommit(event.pullRequestId(), commitData))
                 .toList();
@@ -28,7 +28,7 @@ public class CommitEventListener {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    public void handle(PullRequestSynchronizedEvent event) {
+    public void saveNewCommits(PullRequestSynchronizedEvent event) {
         List<Commit> commits = event.newCommits().stream()
                 .map(commitData -> toCommit(event.pullRequestId(), commitData))
                 .toList();
