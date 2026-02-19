@@ -12,6 +12,7 @@ import com.prism.statistics.application.project.dto.response.CoreTimeResponse;
 import com.prism.statistics.application.project.dto.response.SizeGradeThresholdResponse;
 import com.prism.statistics.application.project.dto.response.SizeWeightResponse;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
+import com.prism.statistics.domain.project.exception.ProjectSettingNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -191,7 +192,7 @@ class ProjectSettingServiceTest {
 
         // when & then
         assertThatThrownBy(() -> projectSettingService.findCoreTime(userId, projectId))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(ProjectSettingNotFoundException.class)
                 .hasMessage("코어타임 설정이 존재하지 않습니다.");
     }
 
@@ -208,7 +209,7 @@ class ProjectSettingServiceTest {
 
         // when & then
         assertThatThrownBy(() -> projectSettingService.updateCoreTime(userId, projectId, request))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(ProjectSettingNotFoundException.class)
                 .hasMessage("코어타임 설정이 존재하지 않습니다.");
     }
 
@@ -221,7 +222,7 @@ class ProjectSettingServiceTest {
 
         // when & then
         assertThatThrownBy(() -> projectSettingService.findSizeWeight(userId, projectId))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(ProjectSettingNotFoundException.class)
                 .hasMessage("사이즈 가중치 설정이 존재하지 않습니다.");
     }
 
@@ -239,7 +240,7 @@ class ProjectSettingServiceTest {
 
         // when & then
         assertThatThrownBy(() -> projectSettingService.updateSizeWeight(userId, projectId, request))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(ProjectSettingNotFoundException.class)
                 .hasMessage("사이즈 가중치 설정이 존재하지 않습니다.");
     }
 
@@ -252,7 +253,7 @@ class ProjectSettingServiceTest {
 
         // when & then
         assertThatThrownBy(() -> projectSettingService.findSizeGradeThreshold(userId, projectId))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(ProjectSettingNotFoundException.class)
                 .hasMessage("사이즈 등급 임계값 설정이 존재하지 않습니다.");
     }
 
@@ -266,7 +267,7 @@ class ProjectSettingServiceTest {
 
         // when & then
         assertThatThrownBy(() -> projectSettingService.updateSizeGradeThreshold(userId, projectId, request))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(ProjectSettingNotFoundException.class)
                 .hasMessage("사이즈 등급 임계값 설정이 존재하지 않습니다.");
     }
 }
