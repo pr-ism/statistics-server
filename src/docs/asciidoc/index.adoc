@@ -11,6 +11,7 @@
 include::{docdir}/domain/auth.adoc[]
 include::{docdir}/domain/user.adoc[]
 include::{docdir}/domain/project.adoc[]
+include::{docdir}/domain/project-setting.adoc[]
 include::{docdir}/domain/pull-request.adoc[]
 include::{docdir}/domain/author-statistics.adoc[]
 include::{docdir}/domain/reviewer-statistics.adoc[]
