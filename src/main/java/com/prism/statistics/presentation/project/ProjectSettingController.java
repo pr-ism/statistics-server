@@ -12,8 +12,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,7 +34,7 @@ public class ProjectSettingController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/core-time")
+    @PutMapping("/core-time")
     public ResponseEntity<CoreTimeResponse> updateCoreTime(
             @PathVariable Long projectId,
             @Valid @RequestBody UpdateCoreTimeRequest request,
@@ -53,7 +53,7 @@ public class ProjectSettingController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/size-weight")
+    @PutMapping("/size-weight")
     public ResponseEntity<SizeWeightResponse> updateSizeWeight(
             @PathVariable Long projectId,
             @Valid @RequestBody UpdateSizeWeightRequest request,
@@ -72,7 +72,7 @@ public class ProjectSettingController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/size-grade-threshold")
+    @PutMapping("/size-grade-threshold")
     public ResponseEntity<SizeGradeThresholdResponse> updateSizeGradeThreshold(
             @PathVariable Long projectId,
             @Valid @RequestBody UpdateSizeGradeThresholdRequest request,
