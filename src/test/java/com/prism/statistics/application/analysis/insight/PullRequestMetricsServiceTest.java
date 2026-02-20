@@ -4,17 +4,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
-import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.FileData;
-import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedChangeSummary;
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedCommitDensity;
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedFileChange;
+import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequestFile;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.FileChangeType;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.FileChanges;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestTiming;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedChangeSummaryRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedCommitDensityRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedFileChangeRepository;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestFileRepository;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +37,12 @@ class PullRequestMetricsServiceTest {
     private PullRequestMetricsService metricsService;
 
     @Autowired
+    private JpaPullRequestRepository pullRequestRepository;
+
+    @Autowired
+    private JpaPullRequestFileRepository pullRequestFileRepository;
+
+    @Autowired
     private JpaPullRequestOpenedChangeSummaryRepository changeSummaryRepository;
 
     @Autowired
@@ -41,12 +52,13 @@ class PullRequestMetricsServiceTest {
     private JpaPullRequestOpenedFileChangeRepository fileChangeRepository;
 
     @Test
-    void pull_request_오픈_이벤트를_처리하면_세_종류_파생_지표가_저장된다() {
+    void pull_request_id로_메트릭을_생성하면_세_종류_파생_지표가_저장된다() {
         // given
-        PullRequestOpenCreatedEvent event = createPullRequestOpenCreatedEvent();
+        PullRequest savedPullRequest = createAndSavePullRequest();
+        createAndSavePullRequestFiles(savedPullRequest.getId());
 
         // when
-        metricsService.deriveMetrics(event);
+        metricsService.deriveMetrics(savedPullRequest.getId());
 
         // then
         List<PullRequestOpenedChangeSummary> changeSummaries = changeSummaryRepository.findAll();
@@ -57,7 +69,7 @@ class PullRequestMetricsServiceTest {
                 () -> assertThat(changeSummaries)
                         .singleElement()
                         .satisfies(summary -> assertAll(
-                                () -> assertThat(summary.getPullRequestId()).isEqualTo(1L),
+                                () -> assertThat(summary.getPullRequestId()).isEqualTo(savedPullRequest.getId()),
                                 () -> assertThat(summary.getTotalChanges()).isEqualTo(16),
                                 () -> assertThat(summary.getAvgChangesPerFile()).isEqualTo(new BigDecimal("8.0000"))
                         )),
@@ -70,7 +82,7 @@ class PullRequestMetricsServiceTest {
                 () -> assertThat(fileChanges)
                         .hasSize(2)
                         .anySatisfy(item -> assertAll(
-                                () -> assertThat(item.getPullRequestId()).isEqualTo(1L),
+                                () -> assertThat(item.getPullRequestId()).isEqualTo(savedPullRequest.getId()),
                                 () -> assertThat(item.getChangeType()).isEqualTo(FileChangeType.MODIFIED),
                                 () -> assertThat(item.getCount()).isEqualTo(1),
                                 () -> assertThat(item.getRatio()).isEqualTo(new BigDecimal("0.50"))
@@ -78,7 +90,7 @@ class PullRequestMetricsServiceTest {
                 () -> assertThat(fileChanges)
                         .hasSize(2)
                         .anySatisfy(item -> assertAll(
-                                () -> assertThat(item.getPullRequestId()).isEqualTo(1L),
+                                () -> assertThat(item.getPullRequestId()).isEqualTo(savedPullRequest.getId()),
                                 () -> assertThat(item.getChangeType()).isEqualTo(FileChangeType.ADDED),
                                 () -> assertThat(item.getCount()).isEqualTo(1),
                                 () -> assertThat(item.getRatio()).isEqualTo(new BigDecimal("0.50"))
@@ -86,23 +98,40 @@ class PullRequestMetricsServiceTest {
         );
     }
 
-    private PullRequestOpenCreatedEvent createPullRequestOpenCreatedEvent() {
-        PullRequestChangeStats changeStats = PullRequestChangeStats.create(2, 10, 6);
-        List<FileData> files = List.of(
-                new FileData("src/main/java/Example.java", "modified", 8, 2),
-                new FileData("src/main/java/NewFile.java", "added", 2, 4)
+    private PullRequest createAndSavePullRequest() {
+        PullRequest pullRequest = PullRequest.builder()
+                .githubPullRequestId(12345L)
+                .projectId(10L)
+                .author(GithubUser.create("testuser", 1L))
+                .pullRequestNumber(1)
+                .headCommitSha("abc123")
+                .title("Test PR")
+                .state(PullRequestState.OPEN)
+                .link("https://github.com/test/repo/pull/1")
+                .changeStats(PullRequestChangeStats.create(2, 10, 6))
+                .commitCount(4)
+                .timing(PullRequestTiming.createOpen(LocalDateTime.of(2024, 1, 15, 10, 0)))
+                .build();
+
+        return pullRequestRepository.save(pullRequest);
+    }
+
+    private void createAndSavePullRequestFiles(Long pullRequestId) {
+        List<PullRequestFile> files = List.of(
+                PullRequestFile.create(
+                        pullRequestId,
+                        "src/main/java/Example.java",
+                        FileChangeType.MODIFIED,
+                        FileChanges.create(8, 2)
+                ),
+                PullRequestFile.create(
+                        pullRequestId,
+                        "src/main/java/NewFile.java",
+                        FileChangeType.ADDED,
+                        FileChanges.create(2, 4)
+                )
         );
 
-        return new PullRequestOpenCreatedEvent(
-                1L,
-                10L,
-                "abc123",
-                PullRequestState.OPEN,
-                changeStats,
-                4,
-                LocalDateTime.of(2024, 1, 15, 10, 0),
-                files,
-                List.of()
-        );
+        pullRequestFileRepository.saveAll(files);
     }
 }
