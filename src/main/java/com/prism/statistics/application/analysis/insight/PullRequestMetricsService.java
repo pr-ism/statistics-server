@@ -1,14 +1,16 @@
 package com.prism.statistics.application.analysis.insight;
 
-import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.FileData;
-import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedChangeSummary;
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedCommitDensity;
 import com.prism.statistics.domain.analysis.insight.PullRequestOpenedFileChange;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedChangeSummaryRepository;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedCommitDensityRepository;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedFileChangeRepository;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequestFile;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.FileChangeType;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestFileRepository;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -23,51 +25,54 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PullRequestMetricsService {
 
+    private final PullRequestRepository pullRequestRepository;
+    private final PullRequestFileRepository pullRequestFileRepository;
     private final PullRequestOpenedFileChangeRepository fileChangeRepository;
     private final PullRequestOpenedChangeSummaryRepository changeSummaryRepository;
     private final PullRequestOpenedCommitDensityRepository commitDensityRepository;
 
     @Transactional
-    public void deriveMetrics(PullRequestOpenCreatedEvent event) {
-        PullRequestOpenedChangeSummary changeSummary = createChangeSummary(event);
-        PullRequestOpenedCommitDensity commitDensity = createCommitDensity(event);
-        List<PullRequestOpenedFileChange> fileChanges = createFileChanges(event);
+    public void deriveMetrics(Long pullRequestId) {
+        PullRequest pullRequest = pullRequestRepository.findById(pullRequestId)
+                .orElseThrow(() -> new IllegalArgumentException("PullRequest not found: " + pullRequestId));
+        List<PullRequestFile> files = pullRequestFileRepository.findAllByPullRequestId(pullRequestId);
+
+        PullRequestOpenedChangeSummary changeSummary = createChangeSummary(pullRequest);
+        PullRequestOpenedCommitDensity commitDensity = createCommitDensity(pullRequest);
+        List<PullRequestOpenedFileChange> fileChanges = createFileChanges(pullRequestId, files);
 
         changeSummaryRepository.save(changeSummary);
         commitDensityRepository.save(commitDensity);
         fileChangeRepository.saveAll(fileChanges);
     }
 
-    private PullRequestOpenedChangeSummary createChangeSummary(PullRequestOpenCreatedEvent event) {
-        PullRequestChangeStats stats = event.changeStats();
+    private PullRequestOpenedChangeSummary createChangeSummary(PullRequest pullRequest) {
+        PullRequestChangeStats stats = pullRequest.getChangeStats();
         int totalChanges = stats.getAdditionCount() + stats.getDeletionCount();
         BigDecimal avgChangesPerFile = divideOrZero(totalChanges, stats.getChangedFileCount(), 4);
 
         return PullRequestOpenedChangeSummary.create(
-                event.pullRequestId(),
+                pullRequest.getId(),
                 totalChanges,
                 avgChangesPerFile
         );
     }
 
-    private PullRequestOpenedCommitDensity createCommitDensity(PullRequestOpenCreatedEvent event) {
-        PullRequestChangeStats stats = event.changeStats();
+    private PullRequestOpenedCommitDensity createCommitDensity(PullRequest pullRequest) {
+        PullRequestChangeStats stats = pullRequest.getChangeStats();
         int totalChanges = stats.getAdditionCount() + stats.getDeletionCount();
 
-        BigDecimal densityPerFile = divideOrZero(event.commitCount(), stats.getChangedFileCount(), 4);
-        BigDecimal densityPerChange = divideOrZero(event.commitCount(), totalChanges, 6);
+        BigDecimal densityPerFile = divideOrZero(pullRequest.getCommitCount(), stats.getChangedFileCount(), 4);
+        BigDecimal densityPerChange = divideOrZero(pullRequest.getCommitCount(), totalChanges, 6);
 
         return PullRequestOpenedCommitDensity.create(
-                event.pullRequestId(),
+                pullRequest.getId(),
                 densityPerFile,
                 densityPerChange
         );
     }
 
-    private List<PullRequestOpenedFileChange> createFileChanges(
-            PullRequestOpenCreatedEvent event
-    ) {
-        List<FileData> files = event.files();
+    private List<PullRequestOpenedFileChange> createFileChanges(Long pullRequestId, List<PullRequestFile> files) {
         if (files == null || files.isEmpty()) {
             return List.of();
         }
@@ -79,7 +84,7 @@ public class PullRequestMetricsService {
                          .stream()
                          .filter(entry -> entry.getValue() > 0)
                          .map(entry -> PullRequestOpenedFileChange.create(
-                                 event.pullRequestId(),
+                                 pullRequestId,
                                  entry.getKey(),
                                  entry.getValue(),
                                  calculateRatio(entry.getValue(), total)
@@ -87,13 +92,13 @@ public class PullRequestMetricsService {
                          .toList();
     }
 
-    private Map<FileChangeType, Integer> countFileChangeTypes(List<FileData> files) {
+    private Map<FileChangeType, Integer> countFileChangeTypes(List<PullRequestFile> files) {
         Map<FileChangeType, Integer> counts = new EnumMap<>(FileChangeType.class);
         for (FileChangeType type : FileChangeType.values()) {
             counts.put(type, 0);
         }
-        for (FileData file : files) {
-            FileChangeType type = FileChangeType.fromGitHubStatus(file.status());
+        for (PullRequestFile file : files) {
+            FileChangeType type = file.getChangeType();
             counts.put(type, counts.get(type) + 1);
         }
         return counts;
