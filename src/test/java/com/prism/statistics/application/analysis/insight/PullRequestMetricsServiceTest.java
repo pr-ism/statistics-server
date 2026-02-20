@@ -15,9 +15,12 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullReque
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.FileChanges;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestTiming;
+import com.prism.statistics.domain.analysis.insight.size.PullRequestSize;
+import com.prism.statistics.domain.analysis.insight.size.enums.SizeGrade;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedChangeSummaryRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedCommitDensityRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedFileChangeRepository;
+import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestSizeRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestFileRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
 import java.math.BigDecimal;
@@ -51,6 +54,9 @@ class PullRequestMetricsServiceTest {
     @Autowired
     private JpaPullRequestOpenedFileChangeRepository fileChangeRepository;
 
+    @Autowired
+    private JpaPullRequestSizeRepository pullRequestSizeRepository;
+
     @Test
     void pull_request_id로_메트릭을_생성하면_세_종류_파생_지표가_저장된다() {
         // given
@@ -64,6 +70,7 @@ class PullRequestMetricsServiceTest {
         List<PullRequestOpenedChangeSummary> changeSummaries = changeSummaryRepository.findAll();
         List<PullRequestOpenedCommitDensity> commitDensities = commitDensityRepository.findAll();
         List<PullRequestOpenedFileChange> fileChanges = fileChangeRepository.findAll();
+        List<PullRequestSize> pullRequestSizes = pullRequestSizeRepository.findAll();
 
         assertAll(
                 () -> assertThat(changeSummaries)
@@ -94,6 +101,17 @@ class PullRequestMetricsServiceTest {
                                 () -> assertThat(item.getChangeType()).isEqualTo(FileChangeType.ADDED),
                                 () -> assertThat(item.getCount()).isEqualTo(1),
                                 () -> assertThat(item.getRatio()).isEqualTo(new BigDecimal("0.50"))
+                        )),
+                () -> assertThat(pullRequestSizes)
+                        .singleElement()
+                        .satisfies(size -> assertAll(
+                                () -> assertThat(size.getPullRequestId()).isEqualTo(savedPullRequest.getId()),
+                                () -> assertThat(size.getAdditionCount()).isEqualTo(10),
+                                () -> assertThat(size.getDeletionCount()).isEqualTo(6),
+                                () -> assertThat(size.getChangedFileCount()).isEqualTo(2),
+                                () -> assertThat(size.getSizeScore()).isEqualByComparingTo(new BigDecimal("18")),
+                                () -> assertThat(size.getSizeGrade()).isEqualTo(SizeGrade.S),
+                                () -> assertThat(size.getFileChangeDiversity()).isEqualByComparingTo(new BigDecimal("0.5"))
                         ))
         );
     }
