@@ -23,17 +23,21 @@ public class SizeGradeThreshold {
     private int xlThreshold;
 
     public static SizeGradeThreshold of(int sThreshold, int mThreshold, int lThreshold, int xlThreshold) {
-        validatePositive(sThreshold);
-        validatePositive(mThreshold);
-        validatePositive(lThreshold);
-        validatePositive(xlThreshold);
-        validateAscendingOrder(sThreshold, mThreshold, lThreshold, xlThreshold);
+        validateThreshold(sThreshold, mThreshold, lThreshold, xlThreshold);
 
         return new SizeGradeThreshold(sThreshold, mThreshold, lThreshold, xlThreshold);
     }
 
     public static SizeGradeThreshold defaultThreshold() {
         return DEFAULT;
+    }
+
+    private static void validateThreshold(int sThreshold, int mThreshold, int lThreshold, int xlThreshold) {
+        validatePositive(sThreshold);
+        validatePositive(mThreshold);
+        validatePositive(lThreshold);
+        validatePositive(xlThreshold);
+        validateAscendingOrder(sThreshold, mThreshold, lThreshold, xlThreshold);
     }
 
     private static void validatePositive(int value) {
