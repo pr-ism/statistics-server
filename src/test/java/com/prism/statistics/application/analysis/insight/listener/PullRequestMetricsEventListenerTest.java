@@ -17,6 +17,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestT
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedChangeSummaryRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedCommitDensityRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestOpenedFileChangeRepository;
+import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestSizeRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestFileRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
 import java.time.Duration;
@@ -50,6 +51,9 @@ class PullRequestMetricsEventListenerTest {
     @Autowired
     private JpaPullRequestOpenedFileChangeRepository fileChangeRepository;
 
+    @Autowired
+    private JpaPullRequestSizeRepository pullRequestSizeRepository;
+
     @Test
     void pull_request_저장_이벤트를_처리하면_파생_지표가_저장된다() {
         // given
@@ -68,7 +72,8 @@ class PullRequestMetricsEventListenerTest {
                 assertAll(
                         () -> assertThat(changeSummaryRepository.count()).isEqualTo(1),
                         () -> assertThat(commitDensityRepository.count()).isEqualTo(1),
-                        () -> assertThat(fileChangeRepository.count()).isEqualTo(1)
+                        () -> assertThat(fileChangeRepository.count()).isEqualTo(1),
+                        () -> assertThat(pullRequestSizeRepository.count()).isEqualTo(1)
                 )
         );
     }
