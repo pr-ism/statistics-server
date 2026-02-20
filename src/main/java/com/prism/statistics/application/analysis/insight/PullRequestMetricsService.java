@@ -6,6 +6,8 @@ import com.prism.statistics.domain.analysis.insight.PullRequestOpenedFileChange;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedChangeSummaryRepository;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedCommitDensityRepository;
 import com.prism.statistics.domain.analysis.insight.repository.PullRequestOpenedFileChangeRepository;
+import com.prism.statistics.domain.analysis.insight.size.PullRequestSize;
+import com.prism.statistics.domain.analysis.insight.size.repository.PullRequestSizeRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequestFile;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.FileChangeType;
@@ -30,20 +32,24 @@ public class PullRequestMetricsService {
     private final PullRequestOpenedFileChangeRepository fileChangeRepository;
     private final PullRequestOpenedChangeSummaryRepository changeSummaryRepository;
     private final PullRequestOpenedCommitDensityRepository commitDensityRepository;
+    private final PullRequestSizeRepository pullRequestSizeRepository;
 
     @Transactional
     public void deriveMetrics(Long pullRequestId) {
         PullRequest pullRequest = pullRequestRepository.findById(pullRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("PullRequest not found: " + pullRequestId));
         List<PullRequestFile> files = pullRequestFileRepository.findAllByPullRequestId(pullRequestId);
+        Map<FileChangeType, Integer> fileTypeCounts = countFileChangeTypes(files);
 
         PullRequestOpenedChangeSummary changeSummary = createChangeSummary(pullRequest);
         PullRequestOpenedCommitDensity commitDensity = createCommitDensity(pullRequest);
-        List<PullRequestOpenedFileChange> fileChanges = createFileChanges(pullRequestId, files);
+        List<PullRequestOpenedFileChange> fileChanges = createFileChanges(pullRequestId, fileTypeCounts);
+        PullRequestSize pullRequestSize = createPullRequestSize(pullRequest, fileTypeCounts);
 
         changeSummaryRepository.save(changeSummary);
         commitDensityRepository.save(commitDensity);
         fileChangeRepository.saveAll(fileChanges);
+        pullRequestSizeRepository.save(pullRequestSize);
     }
 
     private PullRequestOpenedChangeSummary createChangeSummary(PullRequest pullRequest) {
@@ -72,13 +78,14 @@ public class PullRequestMetricsService {
         );
     }
 
-    private List<PullRequestOpenedFileChange> createFileChanges(Long pullRequestId, List<PullRequestFile> files) {
-        if (files == null || files.isEmpty()) {
+    private List<PullRequestOpenedFileChange> createFileChanges(
+            Long pullRequestId,
+            Map<FileChangeType, Integer> typeCounts
+    ) {
+        int total = typeCounts.values().stream().mapToInt(Integer::intValue).sum();
+        if (total == 0) {
             return List.of();
         }
-
-        Map<FileChangeType, Integer> typeCounts = countFileChangeTypes(files);
-        int total = typeCounts.values().stream().mapToInt(Integer::intValue).sum();
 
         return typeCounts.entrySet()
                          .stream()
@@ -90,6 +97,27 @@ public class PullRequestMetricsService {
                                  calculateRatio(entry.getValue(), total)
                          ))
                          .toList();
+    }
+
+    private PullRequestSize createPullRequestSize(
+            PullRequest pullRequest,
+            Map<FileChangeType, Integer> fileTypeCounts
+    ) {
+        PullRequestChangeStats stats = pullRequest.getChangeStats();
+        BigDecimal fileChangeDiversity = PullRequestSize.calculateFileChangeDiversity(
+                fileTypeCounts.getOrDefault(FileChangeType.ADDED, 0),
+                fileTypeCounts.getOrDefault(FileChangeType.MODIFIED, 0),
+                fileTypeCounts.getOrDefault(FileChangeType.REMOVED, 0),
+                fileTypeCounts.getOrDefault(FileChangeType.RENAMED, 0)
+        );
+
+        return PullRequestSize.create(
+                pullRequest.getId(),
+                stats.getAdditionCount(),
+                stats.getDeletionCount(),
+                stats.getChangedFileCount(),
+                fileChangeDiversity
+        );
     }
 
     private Map<FileChangeType, Integer> countFileChangeTypes(List<PullRequestFile> files) {
