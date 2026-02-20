@@ -1,0 +1,32 @@
+[[ProjectSetting-API]]
+== Project Setting API
+
+[[Get-CoreTime]]
+=== 코어타임 설정 조회 API
+
+operation::project-setting-controller-test/코어타임_설정_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,http-response,response-fields']
+
+[[Update-CoreTime]]
+=== 코어타임 설정 수정 API
+
+operation::project-setting-controller-test/코어타임_설정_수정_성공_테스트[snippets='http-request,request-headers,path-parameters,request-fields,http-response,response-fields']
+
+[[Get-SizeWeight]]
+=== 사이즈 가중치 설정 조회 API
+
+operation::project-setting-controller-test/사이즈_가중치_설정_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,http-response,response-fields']
+
+[[Update-SizeWeight]]
+=== 사이즈 가중치 설정 수정 API
+
+operation::project-setting-controller-test/사이즈_가중치_설정_수정_성공_테스트[snippets='http-request,request-headers,path-parameters,request-fields,http-response,response-fields']
+
+[[Get-SizeGradeThreshold]]
+=== 사이즈 등급 임계값 조회 API
+
+operation::project-setting-controller-test/사이즈_등급_임계값_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,http-response,response-fields']
+
+[[Update-SizeGradeThreshold]]
+=== 사이즈 등급 임계값 수정 API
+
+operation::project-setting-controller-test/사이즈_등급_임계값_수정_성공_테스트[snippets='http-request,request-headers,path-parameters,request-fields,http-response,response-fields']

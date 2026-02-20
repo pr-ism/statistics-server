@@ -3,6 +3,8 @@ package com.prism.statistics.global.exception;
 import com.prism.statistics.application.auth.exception.UserMissingException;
 import com.prism.statistics.application.auth.exception.WithdrawnUserLoginException;
 import com.prism.statistics.application.user.exception.UserNotFoundException;
+import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
+import com.prism.statistics.domain.project.exception.ProjectSettingNotFoundException;
 import com.prism.statistics.domain.user.exception.AlreadyWithdrawnUserException;
 import com.prism.statistics.global.exception.dto.response.AuthErrorCode;
 import com.prism.statistics.global.exception.dto.response.CommitErrorCode;
@@ -16,16 +18,15 @@ import com.prism.statistics.global.exception.dto.response.RequestedReviewerError
 import com.prism.statistics.global.exception.dto.response.ReviewCommentErrorCode;
 import com.prism.statistics.global.exception.dto.response.ReviewErrorCode;
 import com.prism.statistics.global.exception.dto.response.UserErrorCode;
-import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUserIdentityException;
-import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
-import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestLabelNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.HeadCommitNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.RequestedReviewerNotFoundException;
-import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewCommentNotFoundException;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException;
+import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUserIdentityException;
+import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
+import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Exception : ", ex);
 
         return createResponseEntity(DefaultErrorCode.UNKNOWN_SERVER_EXCEPTION);
+    }
+
+    @ExceptionHandler(ProjectSettingNotFoundException.class)
+    public ResponseEntity<Object> handleProjectSettingNotFoundException(ProjectSettingNotFoundException ex) {
+        log.info("ProjectSettingNotFoundException : {}", ex.getMessage());
+        return createResponseEntity(ProjectErrorCode.PROJECT_SETTINGS_NOT_FOUND);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -186,10 +193,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             WebRequest request
     ) {
         String errorMessage = ex.getBindingResult()
-                                .getAllErrors()
-                                .stream()
-                                .map(error -> error.getDefaultMessage())
-                                .collect(Collectors.joining(","));
+                .getAllErrors()
+                .stream()
+                .map(error -> error.getDefaultMessage())
+                .collect(Collectors.joining(","));
         DefaultErrorCode errorCode = DefaultErrorCode.API_ARGUMENTS_NOT_VALID;
         ExceptionResponse response = new ExceptionResponse(
                 errorCode.getErrorCode(),
@@ -209,6 +216,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ExceptionResponse response = ExceptionResponse.from(errorCode);
 
         return ResponseEntity.status(errorCode.getHttpStatus())
-                             .body(response);
+                .body(response);
     }
 }
