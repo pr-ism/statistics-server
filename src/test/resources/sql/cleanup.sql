@@ -24,5 +24,7 @@ TRUNCATE TABLE pull_request_opened_file_change_diversities;
 TRUNCATE TABLE pull_request_sizes;
 TRUNCATE TABLE pull_request_lifecycles;
 TRUNCATE TABLE review_activities;
+TRUNCATE TABLE review_sessions;
+TRUNCATE TABLE review_response_times;
 
 SET REFERENTIAL_INTEGRITY TRUE;
