@@ -2,7 +2,7 @@ package com.prism.statistics.presentation.project;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -58,7 +58,7 @@ class ProjectSettingControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                        patch("/projects/1/settings/core-time")
+                        put("/projects/1/settings/core-time")
                                 .header("Authorization", "Bearer access-token")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(requestJson)
@@ -100,7 +100,7 @@ class ProjectSettingControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                        patch("/projects/1/settings/size-weight")
+                        put("/projects/1/settings/size-weight")
                                 .header("Authorization", "Bearer access-token")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -162,7 +162,7 @@ class ProjectSettingControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                        patch("/projects/1/settings/size-grade-threshold")
+                        put("/projects/1/settings/size-grade-threshold")
                                 .header("Authorization", "Bearer access-token")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
