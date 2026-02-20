@@ -10,6 +10,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,12 @@ public class ReviewRepositoryAdapter implements ReviewRepository {
                         .where(review.githubReviewId.eq(githubReviewId))
                         .fetchOne()
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Review> findAllByPullRequestId(Long pullRequestId) {
+        return jpaReviewRepository.findAllByPullRequestId(pullRequestId);
     }
 
     @Override
