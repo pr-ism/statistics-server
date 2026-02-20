@@ -21,5 +21,6 @@ TRUNCATE TABLE project_size_grade_threshold_settings;
 TRUNCATE TABLE pull_request_opened_commit_densities;
 TRUNCATE TABLE pull_request_opened_change_summaries;
 TRUNCATE TABLE pull_request_opened_file_change_diversities;
+TRUNCATE TABLE pull_request_sizes;
 
 SET REFERENTIAL_INTEGRITY TRUE;
