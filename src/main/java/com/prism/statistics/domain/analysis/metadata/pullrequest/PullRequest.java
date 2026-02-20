@@ -198,6 +198,10 @@ public class PullRequest extends CreatedAtEntity {
         this.state = PullRequestState.OPEN;
     }
 
+    public void changeStateToDraft() {
+        this.state = PullRequestState.DRAFT;
+    }
+
     public boolean isMerged() {
         return this.state.isMerged();
     }
