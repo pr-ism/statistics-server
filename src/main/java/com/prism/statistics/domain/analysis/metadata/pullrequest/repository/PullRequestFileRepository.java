@@ -10,5 +10,7 @@ public interface PullRequestFileRepository {
 
     List<PullRequestFile> saveAll(List<PullRequestFile> pullRequestFiles);
 
+    List<PullRequestFile> findAllByPullRequestId(Long pullRequestId);
+
     void deleteAllByPullRequestId(Long pullRequestId);
 }
