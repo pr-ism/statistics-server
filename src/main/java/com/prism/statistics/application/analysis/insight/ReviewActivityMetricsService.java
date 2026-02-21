@@ -55,7 +55,7 @@ public class ReviewActivityMetricsService {
                 .ifPresentOrElse(
                         session -> session.updateOnReview(reviewedAt, commentCount),
                         () -> reviewSessionRepository.save(
-                                createNewReviewSession(pullRequestId, reviewer, reviewedAt, commentCount)
+                                createNewReviewSession(pullRequestId, reviewer, reviewedAt)
                         )
                 );
     }
@@ -63,13 +63,8 @@ public class ReviewActivityMetricsService {
     private ReviewSession createNewReviewSession(
             Long pullRequestId,
             GithubUser reviewer,
-            LocalDateTime reviewedAt,
-            int commentCount
+            LocalDateTime reviewedAt
     ) {
-        if (commentCount > 0) {
-            ReviewSession session = ReviewSession.create(pullRequestId, reviewer, reviewedAt);
-            return session;
-        }
         return ReviewSession.create(pullRequestId, reviewer, reviewedAt);
     }
 
