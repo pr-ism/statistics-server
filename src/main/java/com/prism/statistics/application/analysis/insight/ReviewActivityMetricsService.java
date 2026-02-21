@@ -35,8 +35,8 @@ public class ReviewActivityMetricsService {
     }
 
     @Transactional
-    public void deriveMetricsByReviewEntityId(Long reviewEntityId) {
-        reviewRepository.findByGithubReviewId(reviewEntityId)
+    public void deriveMetricsByGithubReviewId(Long githubReviewId) {
+        reviewRepository.findByGithubReviewId(githubReviewId)
                 .ifPresent(review -> {
                     if (review.getPullRequestId() != null) {
                         createOrUpdateReviewSession(review);
