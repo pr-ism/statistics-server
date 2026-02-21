@@ -118,6 +118,61 @@ class ReviewActivityMetricsServiceTest {
     }
 
     @Test
+    void deriveMetricsByReviewEntityId로_리뷰_메트릭을_생성한다() {
+        // given
+        PullRequest savedPullRequest = createAndSavePullRequest();
+        Review savedReview = createAndSaveReview(savedPullRequest, ReviewState.APPROVED, 3);
+
+        // when
+        reviewActivityMetricsService.deriveMetricsByReviewEntityId(savedReview.getGithubReviewId());
+
+        // then
+        List<ReviewSession> sessions = reviewSessionRepository.findAll();
+        assertThat(sessions)
+                .singleElement()
+                .satisfies(session -> assertAll(
+                        () -> assertThat(session.getPullRequestId()).isEqualTo(savedPullRequest.getId()),
+                        () -> assertThat(session.getReviewer().getUserId()).isEqualTo(2L),
+                        () -> assertThat(session.getReviewCount()).isEqualTo(1)
+                ));
+    }
+
+    @Test
+    void deriveMetricsByReviewEntityId에서_pullRequestId가_없으면_처리하지_않는다() {
+        // given
+        PullRequest savedPullRequest = createAndSavePullRequest();
+        Review reviewWithoutPrId = Review.builder()
+                .githubPullRequestId(savedPullRequest.getGithubPullRequestId())
+                .pullRequestNumber(savedPullRequest.getPullRequestNumber())
+                .githubReviewId(77777L)
+                .reviewer(GithubUser.create("reviewer", 2L))
+                .reviewState(ReviewState.APPROVED)
+                .headCommitSha(savedPullRequest.getHeadCommitSha())
+                .body("LGTM")
+                .commentCount(2)
+                .githubSubmittedAt(LocalDateTime.of(2024, 1, 16, 10, 0))
+                .build();
+        reviewRepository.save(reviewWithoutPrId);
+
+        // when
+        reviewActivityMetricsService.deriveMetricsByReviewEntityId(reviewWithoutPrId.getGithubReviewId());
+
+        // then
+        List<ReviewSession> sessions = reviewSessionRepository.findAll();
+        assertThat(sessions).isEmpty();
+    }
+
+    @Test
+    void deriveMetricsByReviewEntityId에서_존재하지_않는_리뷰는_무시한다() {
+        // when
+        reviewActivityMetricsService.deriveMetricsByReviewEntityId(999999L);
+
+        // then
+        List<ReviewSession> sessions = reviewSessionRepository.findAll();
+        assertThat(sessions).isEmpty();
+    }
+
+    @Test
     void 동일_리뷰어가_여러번_리뷰하면_ReviewSession이_업데이트된다() {
         // given
         PullRequest savedPullRequest = createAndSavePullRequest();
@@ -141,6 +196,79 @@ class ReviewActivityMetricsServiceTest {
                         () -> assertThat(session.getFirstActivityAt()).isEqualTo(firstReviewAt),
                         () -> assertThat(session.getLastActivityAt()).isEqualTo(secondReviewAt),
                         () -> assertThat(session.getSessionDuration().getMinutes()).isEqualTo(1710L)
+                ));
+    }
+
+    @Test
+    void 존재하지_않는_리뷰로_메트릭을_생성하면_예외가_발생한다() {
+        // when & then
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                reviewActivityMetricsService.deriveMetrics(999999L)
+        ).isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Review not found");
+    }
+
+    @Test
+    void CHANGES_REQUESTED가_처음_발생하면_ReviewResponseTime이_새로_생성된다() {
+        // given
+        PullRequest savedPullRequest = createAndSavePullRequest();
+        LocalDateTime changesRequestedAt = LocalDateTime.of(2024, 1, 16, 10, 0);
+        Review savedReview = createAndSaveReview(savedPullRequest, ReviewState.CHANGES_REQUESTED, 2, changesRequestedAt);
+
+        // when
+        reviewActivityMetricsService.deriveMetrics(savedReview.getGithubReviewId());
+
+        // then
+        List<ReviewResponseTime> responseTimes = reviewResponseTimeRepository.findAll();
+        assertThat(responseTimes)
+                .singleElement()
+                .satisfies(responseTime -> assertAll(
+                        () -> assertThat(responseTime.getPullRequestId()).isEqualTo(savedPullRequest.getId()),
+                        () -> assertThat(responseTime.hasChangesRequested()).isTrue()
+                ));
+    }
+
+    @Test
+    void 기존_ReviewResponseTime이_있으면_CHANGES_REQUESTED시_업데이트된다() {
+        // given
+        PullRequest savedPullRequest = createAndSavePullRequest();
+        LocalDateTime firstChangesRequestedAt = LocalDateTime.of(2024, 1, 16, 10, 0);
+        LocalDateTime secondChangesRequestedAt = LocalDateTime.of(2024, 1, 17, 10, 0);
+
+        Review firstReview = createAndSaveReview(savedPullRequest, ReviewState.CHANGES_REQUESTED, 2, firstChangesRequestedAt);
+        reviewActivityMetricsService.deriveMetrics(firstReview.getGithubReviewId());
+
+        Review secondReview = createAndSaveReview(savedPullRequest, ReviewState.CHANGES_REQUESTED, 1, secondChangesRequestedAt, 77777L);
+
+        // when
+        reviewActivityMetricsService.deriveMetrics(secondReview.getGithubReviewId());
+
+        // then
+        List<ReviewResponseTime> responseTimes = reviewResponseTimeRepository.findAll();
+        assertThat(responseTimes)
+                .singleElement()
+                .satisfies(responseTime -> assertAll(
+                        () -> assertThat(responseTime.getChangesRequestedCount()).isEqualTo(2),
+                        () -> assertThat(responseTime.getLastChangesRequestedAt()).isEqualTo(secondChangesRequestedAt)
+                ));
+    }
+
+    @Test
+    void 처음_리뷰하는_리뷰어면_새_ReviewSession이_생성된다() {
+        // given
+        PullRequest savedPullRequest = createAndSavePullRequest();
+        Review review = createAndSaveReview(savedPullRequest, ReviewState.COMMENTED, 1);
+
+        // when
+        reviewActivityMetricsService.deriveMetrics(review.getGithubReviewId());
+
+        // then
+        List<ReviewSession> sessions = reviewSessionRepository.findAll();
+        assertThat(sessions)
+                .singleElement()
+                .satisfies(session -> assertAll(
+                        () -> assertThat(session.getReviewCount()).isEqualTo(1),
+                        () -> assertThat(session.getReviewer().getUserId()).isEqualTo(2L)
                 ));
     }
 

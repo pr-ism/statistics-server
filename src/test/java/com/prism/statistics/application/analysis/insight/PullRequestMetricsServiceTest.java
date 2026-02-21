@@ -58,6 +58,15 @@ class PullRequestMetricsServiceTest {
     private JpaPullRequestSizeRepository pullRequestSizeRepository;
 
     @Test
+    void 존재하지_않는_PR로_메트릭을_생성하면_예외가_발생한다() {
+        // when & then
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                metricsService.deriveMetrics(999999L)
+        ).isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("PullRequest not found");
+    }
+
+    @Test
     void pull_request_id로_메트릭을_생성하면_세_종류_파생_지표가_저장된다() {
         // given
         PullRequest savedPullRequest = createAndSavePullRequest();

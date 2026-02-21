@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.domain.analysis.insight.activity.ReviewActivity;
 import com.prism.statistics.domain.analysis.insight.lifecycle.PullRequestLifecycle;
+import com.prism.statistics.domain.analysis.insight.vo.DurationMinutes;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
@@ -45,6 +46,19 @@ class PullRequestClosureMetricsServiceTest {
     private JpaReviewActivityRepository reviewActivityRepository;
 
     @Test
+    void 존재하지_않는_PR로_closure_메트릭을_생성하면_예외가_발생한다() {
+        // when & then
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                closureMetricsService.deriveClosureMetrics(
+                        999999L,
+                        PullRequestState.MERGED,
+                        LocalDateTime.now()
+                )
+        ).isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("PullRequest not found");
+    }
+
+    @Test
     void PR이_머지되면_lifecycle과_reviewActivity가_저장된다() {
         // given
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
@@ -81,6 +95,59 @@ class PullRequestClosureMetricsServiceTest {
                                 () -> assertThat(activity.getTotalCommentCount()).isEqualTo(3)
                         ))
         );
+    }
+
+    @Test
+    void 기존_lifecycle이_있으면_업데이트된다() {
+        // given
+        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
+        LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 17, 14, 30);
+        PullRequest savedPullRequest = createAndSavePullRequest(createdAt);
+        createAndSaveReview(savedPullRequest);
+
+        PullRequestLifecycle existingLifecycle = PullRequestLifecycle.createInProgress(
+                savedPullRequest.getId(),
+                createdAt,
+                DurationMinutes.of(60L),
+                1,
+                false
+        );
+        lifecycleRepository.save(existingLifecycle);
+
+        // when
+        closureMetricsService.deriveClosureMetrics(
+                savedPullRequest.getId(),
+                PullRequestState.MERGED,
+                mergedAt
+        );
+
+        // then
+        List<PullRequestLifecycle> lifecycles = lifecycleRepository.findAll();
+        assertThat(lifecycles)
+                .singleElement()
+                .satisfies(lifecycle -> assertAll(
+                        () -> assertThat(lifecycle.isMerged()).isTrue(),
+                        () -> assertThat(lifecycle.isClosed()).isTrue(),
+                        () -> assertThat(lifecycle.getTimeToMerge().getMinutes()).isEqualTo(3150L)
+                ));
+    }
+
+    @Test
+    void OPEN_상태에서는_closure_메트릭을_생성하지_않는다() {
+        // given
+        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
+        PullRequest savedPullRequest = createAndSavePullRequest(createdAt);
+
+        // when
+        closureMetricsService.deriveClosureMetrics(
+                savedPullRequest.getId(),
+                PullRequestState.OPEN,
+                LocalDateTime.now()
+        );
+
+        // then
+        List<PullRequestLifecycle> lifecycles = lifecycleRepository.findAll();
+        assertThat(lifecycles).isEmpty();
     }
 
     @Test
