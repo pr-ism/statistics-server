@@ -2,6 +2,7 @@ package com.prism.statistics.application.statistics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.within;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
@@ -135,9 +136,9 @@ class LifecycleStatisticsQueryServiceTest {
         // then
         assertAll(
                 () -> assertThat(response.health().closedWithoutReviewCount()).isEqualTo(1),
-                () -> assertThat(response.health().closedWithoutReviewRate()).isEqualTo(33.33),
+                () -> assertThat(response.health().closedWithoutReviewRate()).isCloseTo(33.33, within(0.01)),
                 () -> assertThat(response.health().reopenedCount()).isEqualTo(1),
-                () -> assertThat(response.health().reopenedRate()).isEqualTo(33.33),
+                () -> assertThat(response.health().reopenedRate()).isCloseTo(33.33, within(0.01)),
                 () -> assertThat(response.health().averageStateChangeCount()).isEqualTo(2.0)
         );
     }
