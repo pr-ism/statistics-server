@@ -73,10 +73,18 @@ public class LifecycleStatisticsRepositoryAdapter implements LifecycleStatistics
                 .mapToLong(lc -> lc.getTimeToMerge().getMinutes())
                 .sum();
 
+        long closedCount = lifecycles.stream()
+                .filter(lc -> lc.getTotalLifespan() != null)
+                .count();
+
         long totalLifespanMinutes = lifecycles.stream()
                 .filter(lc -> lc.getTotalLifespan() != null)
                 .mapToLong(lc -> lc.getTotalLifespan().getMinutes())
                 .sum();
+
+        long activeWorkCount = lifecycles.stream()
+                .filter(lc -> lc.getActiveWork() != null)
+                .count();
 
         long totalActiveWorkMinutes = lifecycles.stream()
                 .filter(lc -> lc.getActiveWork() != null)
@@ -90,9 +98,9 @@ public class LifecycleStatisticsRepositoryAdapter implements LifecycleStatistics
                 closedWithoutReviewCount,
                 reopenedCount,
                 totalStateChangeCount,
-                totalTimeToMergeMinutes == 0 ? null : totalTimeToMergeMinutes,
-                totalLifespanMinutes == 0 ? null : totalLifespanMinutes,
-                totalActiveWorkMinutes == 0 ? null : totalActiveWorkMinutes
+                mergedCount == 0 ? null : totalTimeToMergeMinutes,
+                closedCount == 0 ? null : totalLifespanMinutes,
+                activeWorkCount == 0 ? null : totalActiveWorkMinutes
         );
     }
 
