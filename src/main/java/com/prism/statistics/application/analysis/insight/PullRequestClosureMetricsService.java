@@ -29,6 +29,9 @@ public class PullRequestClosureMetricsService {
 
     @Transactional
     public void deriveClosureMetrics(Long pullRequestId, PullRequestState newState, LocalDateTime closedAt) {
+        if(closedAt == null) {
+            throw new IllegalArgumentException("닫힌 시각 입력은 필수입니다.");
+        }
         if (!isClosureState(newState)) {
             return;
         }
