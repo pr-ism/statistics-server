@@ -132,6 +132,8 @@ public class PullRequestClosureMetricsService {
                 .totalCommentCount(totalCommentCount)
                 .codeAdditionsAfterReview(0)
                 .codeDeletionsAfterReview(0)
+                // 기본 리뷰어 1명을 제외한 추가 리뷰어의 수
+                // 예: 리뷰어 1명 → 0, 리뷰어 2명 → 1, 리뷰어 3명 → 2
                 .additionalReviewerCount(countUniqueReviewers(reviews) - 1)
                 .totalAdditions(totalAdditions)
                 .totalDeletions(totalDeletions)
