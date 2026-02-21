@@ -17,6 +17,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PullRequestContentHistory extends CreatedAtEntity {
 
+    private Long githubPullRequestId;
+
     private Long pullRequestId;
 
     private String headCommitSha;
@@ -30,22 +32,55 @@ public class PullRequestContentHistory extends CreatedAtEntity {
 
     public static PullRequestContentHistory create(
             Long pullRequestId,
+            Long githubPullRequestId,
             String headCommitSha,
             PullRequestChangeStats changeStats,
             int commitCount,
             LocalDateTime githubChangedAt
     ) {
         validatePullRequestId(pullRequestId);
+        validateGithubPullRequestId(githubPullRequestId);
         validateHeadCommitSha(headCommitSha);
         validateChangeStats(changeStats);
         validateCommitCount(commitCount);
         validateChangedAt(githubChangedAt);
-        return new PullRequestContentHistory(pullRequestId, headCommitSha, changeStats, commitCount, githubChangedAt);
+        return new PullRequestContentHistory(pullRequestId, githubPullRequestId, headCommitSha, changeStats, commitCount, githubChangedAt);
+    }
+
+    public static PullRequestContentHistory createEarly(
+            Long githubPullRequestId,
+            String headCommitSha,
+            PullRequestChangeStats changeStats,
+            int commitCount,
+            LocalDateTime githubChangedAt
+    ) {
+        validateGithubPullRequestId(githubPullRequestId);
+        validateHeadCommitSha(headCommitSha);
+        validateChangeStats(changeStats);
+        validateCommitCount(commitCount);
+        validateChangedAt(githubChangedAt);
+        return new PullRequestContentHistory(null, githubPullRequestId, headCommitSha, changeStats, commitCount, githubChangedAt);
+    }
+
+    public void assignPullRequestId(Long pullRequestId) {
+        if (this.pullRequestId == null) {
+            this.pullRequestId = pullRequestId;
+        }
+    }
+
+    public boolean hasAssignedPullRequestId() {
+        return pullRequestId != null;
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
             throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
+        }
+    }
+
+    private static void validateGithubPullRequestId(Long githubPullRequestId) {
+        if (githubPullRequestId == null) {
+            throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
         }
     }
 
@@ -75,12 +110,14 @@ public class PullRequestContentHistory extends CreatedAtEntity {
 
     private PullRequestContentHistory(
             Long pullRequestId,
+            Long githubPullRequestId,
             String headCommitSha,
             PullRequestChangeStats changeStats,
             int commitCount,
             LocalDateTime githubChangedAt
     ) {
         this.pullRequestId = pullRequestId;
+        this.githubPullRequestId = githubPullRequestId;
         this.headCommitSha = headCommitSha;
         this.changeStats = changeStats;
         this.commitCount = commitCount;
