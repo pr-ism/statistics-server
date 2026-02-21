@@ -1,5 +1,6 @@
 package com.prism.statistics.application.analysis.insight.listener;
 
+import com.prism.statistics.application.analysis.insight.PullRequestMetricsEvent;
 import com.prism.statistics.application.analysis.insight.PullRequestMetricsPublisher;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSavedEvent;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,6 @@ public class PullRequestMetricsEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(PullRequestSavedEvent event) {
-        metricsPublisher.publish(event.pullRequestId());
+        metricsPublisher.publish(new PullRequestMetricsEvent(event.pullRequestId()));
     }
 }

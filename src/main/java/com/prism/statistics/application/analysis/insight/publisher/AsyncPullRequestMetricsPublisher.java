@@ -1,5 +1,6 @@
 package com.prism.statistics.application.analysis.insight.publisher;
 
+import com.prism.statistics.application.analysis.insight.PullRequestMetricsEvent;
 import com.prism.statistics.application.analysis.insight.PullRequestMetricsPublisher;
 import com.prism.statistics.application.analysis.insight.PullRequestMetricsService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,7 @@ public class AsyncPullRequestMetricsPublisher implements PullRequestMetricsPubli
 
     @Override
     @Async("asyncTaskExecutor")
-    public void publish(Long pullRequestId) {
-        metricsService.deriveMetrics(pullRequestId);
+    public void publish(PullRequestMetricsEvent event) {
+        metricsService.deriveMetrics(event.pullRequestId());
     }
 }
