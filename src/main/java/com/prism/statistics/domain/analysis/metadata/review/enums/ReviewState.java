@@ -13,4 +13,12 @@ public enum ReviewState {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("알 수 없는 리뷰 상태입니다: " + value));
     }
+
+    public boolean isApproved() {
+        return this == APPROVED;
+    }
+
+    public boolean isChangesRequested() {
+        return this == CHANGES_REQUESTED;
+    }
 }
