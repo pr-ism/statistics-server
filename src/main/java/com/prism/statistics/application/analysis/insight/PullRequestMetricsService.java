@@ -82,7 +82,7 @@ public class PullRequestMetricsService {
             Long pullRequestId,
             Map<FileChangeType, Integer> typeCounts
     ) {
-        int total = typeCounts.values().stream().mapToInt(Integer::intValue).sum();
+        int total = typeCounts.values().stream().mapToInt(i -> i).sum();
         if (total == 0) {
             return List.of();
         }

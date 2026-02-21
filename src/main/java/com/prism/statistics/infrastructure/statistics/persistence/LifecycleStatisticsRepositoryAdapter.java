@@ -57,15 +57,15 @@ public class LifecycleStatisticsRepositoryAdapter implements LifecycleStatistics
                 .count();
 
         long closedWithoutReviewCount = lifecycles.stream()
-                .filter(PullRequestLifecycle::isClosedWithoutReview)
+                .filter(lc -> lc.isClosedWithoutReview())
                 .count();
 
         long reopenedCount = lifecycles.stream()
-                .filter(PullRequestLifecycle::isReopened)
+                .filter(lc -> lc.isReopened())
                 .count();
 
         long totalStateChangeCount = lifecycles.stream()
-                .mapToInt(PullRequestLifecycle::getStateChangeCount)
+                .mapToInt(lc -> lc.getStateChangeCount())
                 .sum();
 
         long totalTimeToMergeMinutes = lifecycles.stream()

@@ -75,27 +75,27 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
         long totalCount = activities.size();
 
         long reviewedCount = activities.stream()
-                .filter(ReviewActivity::hasReviewActivity)
+                .filter(activity -> activity.hasReviewActivity())
                 .count();
 
         long totalReviewRoundTrips = activities.stream()
-                .mapToInt(ReviewActivity::getReviewRoundTrips)
+                .mapToLong(activity -> activity.getReviewRoundTrips())
                 .sum();
 
         long totalCommentCount = activities.stream()
-                .mapToInt(ReviewActivity::getTotalCommentCount)
+                .mapToLong(activity -> activity.getTotalCommentCount())
                 .sum();
 
         BigDecimal totalCommentDensity = activities.stream()
-                .map(ReviewActivity::getCommentDensity)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(activity -> activity.getCommentDensity())
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
         long withAdditionalReviewersCount = activities.stream()
-                .filter(ReviewActivity::isHasAdditionalReviewers)
+                .filter(activity -> activity.isHasAdditionalReviewers())
                 .count();
 
         long withChangesAfterReviewCount = activities.stream()
-                .filter(ReviewActivity::hasSignificantChangesAfterReview)
+                .filter(activity -> activity.hasSignificantChangesAfterReview())
                 .count();
 
         return new ReviewActivityStatisticsDto(
@@ -118,7 +118,7 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
                 .count();
 
         long uniquePullRequestCount = sessions.stream()
-                .map(ReviewSession::getPullRequestId)
+                .map(session -> session.getPullRequestId())
                 .distinct()
                 .count();
 
@@ -128,7 +128,7 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
                 .sum();
 
         long totalReviewCount = sessions.stream()
-                .mapToInt(ReviewSession::getReviewCount)
+                .mapToInt(session -> session.getReviewCount())
                 .sum();
 
         return new ReviewSessionStatisticsDto(

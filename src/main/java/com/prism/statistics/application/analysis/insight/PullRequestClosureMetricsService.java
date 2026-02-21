@@ -126,7 +126,7 @@ public class PullRequestClosureMetricsService {
 
         int reviewRoundTrips = reviews.size();
         int totalCommentCount = reviews.stream()
-                .mapToInt(Review::getCommentCount)
+                .mapToInt(review -> review.getCommentCount())
                 .sum();
 
         ReviewActivity activity = ReviewActivity.builder()

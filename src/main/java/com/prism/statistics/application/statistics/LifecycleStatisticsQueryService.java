@@ -29,7 +29,7 @@ public class LifecycleStatisticsQueryService {
 
         return lifecycleStatisticsRepository
                 .findLifecycleStatisticsByProjectId(projectId, request.startDate(), request.endDate())
-                .map(this::toResponse)
+                .map(stats -> toResponse(stats))
                 .orElse(LifecycleStatisticsResponse.empty());
     }
 
