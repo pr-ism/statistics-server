@@ -57,21 +57,21 @@ public class LifecycleStatisticsQueryService {
         long mergedCount = dto.mergedCount();
         long totalCount = dto.totalCount();
 
-        if (totalCount == 0) {
+        if (totalCount == 0L) {
             return AverageTimeStatistics.empty();
         }
 
-        long avgTimeToMerge = mergedCount > 0 && dto.totalTimeToMergeMinutes() != null
+        long avgTimeToMerge = mergedCount > 0L && dto.totalTimeToMergeMinutes() != null
                 ? dto.totalTimeToMergeMinutes() / mergedCount
                 : 0L;
 
         long closedCount = dto.mergedCount() + dto.closedWithoutMergeCount();
-        long avgLifespan = dto.totalLifespanMinutes() != null && closedCount > 0
+        long avgLifespan = dto.totalLifespanMinutes() != null && closedCount > 0L
                 ? dto.totalLifespanMinutes() / closedCount
                 : 0L;
 
         long activeWorkCount = dto.activeWorkCount();
-        long avgActiveWork = dto.totalActiveWorkMinutes() != null && activeWorkCount > 0
+        long avgActiveWork = dto.totalActiveWorkMinutes() != null && activeWorkCount > 0L
                 ? dto.totalActiveWorkMinutes() / activeWorkCount
                 : 0L;
 
@@ -81,7 +81,7 @@ public class LifecycleStatisticsQueryService {
     private HealthStatistics calculateHealth(LifecycleStatisticsDto dto) {
         long totalCount = dto.totalCount();
 
-        if (totalCount == 0) {
+        if (totalCount == 0L) {
             return HealthStatistics.empty();
         }
 
@@ -105,7 +105,7 @@ public class LifecycleStatisticsQueryService {
     }
 
     private double calculatePercentage(long count, long totalCount) {
-        if (totalCount == 0) {
+        if (totalCount == 0L) {
             return 0.0;
         }
         return Math.round(count * 10000.0 / totalCount) / 100.0;
