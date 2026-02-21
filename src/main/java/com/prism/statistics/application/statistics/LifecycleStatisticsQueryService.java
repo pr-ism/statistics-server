@@ -70,7 +70,7 @@ public class LifecycleStatisticsQueryService {
     private long calculateAvgTimeToMerge(LifecycleStatisticsDto dto) {
         long mergedCount = dto.mergedCount();
 
-        if (mergedCount == 0L || dto.totalTimeToMergeMinutes() == null) {
+        if (mergedCount == 0L) {
             return 0L;
         }
 
@@ -80,7 +80,7 @@ public class LifecycleStatisticsQueryService {
     private long calculateAvgLifespan(LifecycleStatisticsDto dto) {
         long closedCount = dto.mergedCount() + dto.closedWithoutMergeCount();
 
-        if (closedCount == 0L || dto.totalLifespanMinutes() == null) {
+        if (closedCount == 0L) {
             return 0L;
         }
 
@@ -90,7 +90,7 @@ public class LifecycleStatisticsQueryService {
     private long calculateAvgActiveWork(LifecycleStatisticsDto dto) {
         long activeWorkCount = dto.activeWorkCount();
 
-        if (activeWorkCount == 0L || dto.totalActiveWorkMinutes() == null) {
+        if (activeWorkCount == 0L) {
             return 0L;
         }
 
