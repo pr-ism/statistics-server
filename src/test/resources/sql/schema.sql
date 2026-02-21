@@ -303,7 +303,8 @@ CREATE TABLE IF NOT EXISTS pull_request_lifecycles (
     active_work_minutes BIGINT NOT NULL,
     state_change_count INT NOT NULL,
     reopened BOOLEAN NOT NULL,
-    closed_without_review BOOLEAN NOT NULL
+    closed_without_review BOOLEAN NOT NULL,
+    CONSTRAINT uq_pull_request_lifecycles_pr_id UNIQUE (pull_request_id)
 );
 
 CREATE TABLE IF NOT EXISTS review_activities (
@@ -319,7 +320,8 @@ CREATE TABLE IF NOT EXISTS review_activities (
     has_additional_reviewers BOOLEAN NOT NULL,
     additional_reviewer_count INT NOT NULL,
     total_additions INT NOT NULL,
-    total_deletions INT NOT NULL
+    total_deletions INT NOT NULL,
+    CONSTRAINT uq_review_activities_pr_id UNIQUE (pull_request_id)
 );
 
 CREATE TABLE IF NOT EXISTS review_sessions (
@@ -345,5 +347,6 @@ CREATE TABLE IF NOT EXISTS review_response_times (
     last_changes_requested_at TIMESTAMP,
     first_commit_after_changes_at TIMESTAMP,
     first_approve_after_changes_at TIMESTAMP,
-    changes_requested_count INT NOT NULL
+    changes_requested_count INT NOT NULL,
+    CONSTRAINT uq_review_response_times_pr_id UNIQUE (pull_request_id)
 );
