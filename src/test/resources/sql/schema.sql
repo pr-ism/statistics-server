@@ -289,7 +289,8 @@ CREATE TABLE IF NOT EXISTS pull_request_sizes (
     changed_file_count INT NOT NULL,
     addition_weight DECIMAL(19, 6) NOT NULL,
     deletion_weight DECIMAL(19, 6) NOT NULL,
-    file_weight DECIMAL(19, 6) NOT NULL
+    file_weight DECIMAL(19, 6) NOT NULL,
+    CONSTRAINT uq_pull_request_sizes_pr_id UNIQUE (pull_request_id)
 );
 
 CREATE TABLE IF NOT EXISTS pull_request_lifecycles (
