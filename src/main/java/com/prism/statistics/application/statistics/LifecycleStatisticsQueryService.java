@@ -54,28 +54,47 @@ public class LifecycleStatisticsQueryService {
     }
 
     private AverageTimeStatistics calculateAverageTime(LifecycleStatisticsDto dto) {
-        long mergedCount = dto.mergedCount();
         long totalCount = dto.totalCount();
 
         if (totalCount == 0L) {
             return AverageTimeStatistics.empty();
         }
 
-        long avgTimeToMerge = mergedCount > 0L && dto.totalTimeToMergeMinutes() != null
-                ? dto.totalTimeToMergeMinutes() / mergedCount
-                : 0L;
-
-        long closedCount = dto.mergedCount() + dto.closedWithoutMergeCount();
-        long avgLifespan = dto.totalLifespanMinutes() != null && closedCount > 0L
-                ? dto.totalLifespanMinutes() / closedCount
-                : 0L;
-
-        long activeWorkCount = dto.activeWorkCount();
-        long avgActiveWork = dto.totalActiveWorkMinutes() != null && activeWorkCount > 0L
-                ? dto.totalActiveWorkMinutes() / activeWorkCount
-                : 0L;
+        long avgTimeToMerge = calculateAvgTimeToMerge(dto);
+        long avgLifespan = calculateAvgLifespan(dto);
+        long avgActiveWork = calculateAvgActiveWork(dto);
 
         return AverageTimeStatistics.of(avgTimeToMerge, avgLifespan, avgActiveWork);
+    }
+
+    private long calculateAvgTimeToMerge(LifecycleStatisticsDto dto) {
+        long mergedCount = dto.mergedCount();
+
+        if (mergedCount == 0L || dto.totalTimeToMergeMinutes() == null) {
+            return 0L;
+        }
+
+        return dto.totalTimeToMergeMinutes() / mergedCount;
+    }
+
+    private long calculateAvgLifespan(LifecycleStatisticsDto dto) {
+        long closedCount = dto.mergedCount() + dto.closedWithoutMergeCount();
+
+        if (closedCount == 0L || dto.totalLifespanMinutes() == null) {
+            return 0L;
+        }
+
+        return dto.totalLifespanMinutes() / closedCount;
+    }
+
+    private long calculateAvgActiveWork(LifecycleStatisticsDto dto) {
+        long activeWorkCount = dto.activeWorkCount();
+
+        if (activeWorkCount == 0L || dto.totalActiveWorkMinutes() == null) {
+            return 0L;
+        }
+
+        return dto.totalActiveWorkMinutes() / activeWorkCount;
     }
 
     private HealthStatistics calculateHealth(LifecycleStatisticsDto dto) {

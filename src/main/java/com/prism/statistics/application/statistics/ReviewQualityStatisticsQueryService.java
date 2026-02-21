@@ -110,12 +110,8 @@ public class ReviewQualityStatisticsQueryService {
         }
 
         long totalSessionCount = dto.totalSessionCount();
-        long uniquePullRequestCount = dto.uniquePullRequestCount();
 
-        double avgReviewersPerPr = uniquePullRequestCount > 0
-                ? (double) dto.uniqueReviewerCount() / uniquePullRequestCount
-                : 0.0;
-
+        double avgReviewersPerPr = calculateAvgReviewersPerPr(dto);
         double avgSessionDurationMinutes = (double) dto.totalSessionDurationMinutes() / totalSessionCount;
         double avgReviewsPerSession = (double) dto.totalReviewCount() / totalSessionCount;
 
@@ -125,6 +121,16 @@ public class ReviewQualityStatisticsQueryService {
                 avgSessionDurationMinutes,
                 avgReviewsPerSession
         );
+    }
+
+    private double calculateAvgReviewersPerPr(ReviewSessionStatisticsDto dto) {
+        long uniquePullRequestCount = dto.uniquePullRequestCount();
+
+        if (uniquePullRequestCount == 0L) {
+            return 0.0;
+        }
+
+        return (double) dto.uniqueReviewerCount() / uniquePullRequestCount;
     }
 
     private void validateProjectOwnership(Long projectId, Long userId) {
