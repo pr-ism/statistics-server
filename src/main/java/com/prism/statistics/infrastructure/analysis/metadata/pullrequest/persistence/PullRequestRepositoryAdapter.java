@@ -27,6 +27,12 @@ public class PullRequestRepositoryAdapter implements PullRequestRepository {
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<PullRequest> findById(Long id) {
+        return jpaPullRequestRepository.findById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<PullRequest> findPullRequest(Long projectId, int pullRequestNumber) {
         return Optional.ofNullable(
                 queryFactory

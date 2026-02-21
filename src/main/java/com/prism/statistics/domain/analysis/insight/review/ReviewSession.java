@@ -2,7 +2,7 @@ package com.prism.statistics.domain.analysis.insight.review;
 
 import com.prism.statistics.domain.analysis.insight.vo.DurationMinutes;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
-import com.prism.statistics.domain.common.CreatedAtEntity;
+import com.prism.statistics.domain.common.BaseTimeEntity;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "review_sessions")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ReviewSession extends CreatedAtEntity {
+public class ReviewSession extends BaseTimeEntity {
 
     private Long pullRequestId;
 

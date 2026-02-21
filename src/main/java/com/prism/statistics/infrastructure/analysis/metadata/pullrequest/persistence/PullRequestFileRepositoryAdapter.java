@@ -31,6 +31,15 @@ public class PullRequestFileRepositoryAdapter implements PullRequestFileReposito
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<PullRequestFile> findAllByPullRequestId(Long pullRequestId) {
+        return queryFactory
+                .selectFrom(pullRequestFile)
+                .where(pullRequestFile.pullRequestId.eq(pullRequestId))
+                .fetch();
+    }
+
+    @Override
     @Transactional
     public void deleteAllByPullRequestId(Long pullRequestId) {
         queryFactory

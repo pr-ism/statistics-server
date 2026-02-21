@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,6 +32,7 @@ public class Review extends CreatedAtEntity {
     private Long githubReviewId;
 
     @Embedded
+    @NotNull
     private GithubUser reviewer;
 
     @Enumerated(EnumType.STRING)
@@ -46,9 +48,13 @@ public class Review extends CreatedAtEntity {
     private LocalDateTime githubSubmittedAt;
 
     public void assignPullRequestId(Long pullRequestId) {
-        if (this.pullRequestId == null) {
+        if (!hasAssignedPullRequest()) {
             this.pullRequestId = pullRequestId;
         }
+    }
+
+    public boolean hasAssignedPullRequest() {
+        return pullRequestId != null;
     }
 
     @Builder

@@ -5,13 +5,9 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.analysis.insight.PullRequestMetricsEvent;
 import com.prism.statistics.application.analysis.insight.PullRequestMetricsPublisher;
 import com.prism.statistics.application.analysis.insight.PullRequestMetricsService;
-import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
-import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -31,28 +27,14 @@ class AsyncPullRequestMetricsPublisherTest {
     @Test
     void publish_호출시_deriveMetrics를_비동기로_실행한다() {
         // given
-        PullRequestOpenCreatedEvent event = createEvent();
+        Long pullRequestId = 1L;
 
-        doNothing().when(metricsService).deriveMetrics(event);
+        doNothing().when(metricsService).deriveMetrics(pullRequestId);
 
         // when
-        publisher.publish(event);
+        publisher.publish(new PullRequestMetricsEvent(pullRequestId));
 
         // then
-        verify(metricsService, timeout(6000)).deriveMetrics(event);
-    }
-
-    private PullRequestOpenCreatedEvent createEvent() {
-        return new PullRequestOpenCreatedEvent(
-                1L,
-                2L,
-                "abc123",
-                PullRequestState.OPEN,
-                PullRequestChangeStats.create(1, 2, 3),
-                1,
-                LocalDateTime.of(2024, 1, 15, 10, 0),
-                List.of(),
-                List.of()
-        );
+        verify(metricsService, timeout(6000)).deriveMetrics(pullRequestId);
     }
 }
