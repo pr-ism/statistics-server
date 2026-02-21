@@ -65,7 +65,7 @@ public class LifecycleStatisticsRepositoryAdapter implements LifecycleStatistics
                 .count();
 
         long totalStateChangeCount = lifecycles.stream()
-                .mapToInt(lc -> lc.getStateChangeCount())
+                .mapToLong(lc -> lc.getStateChangeCount())
                 .sum();
 
         long totalTimeToMergeMinutes = lifecycles.stream()
