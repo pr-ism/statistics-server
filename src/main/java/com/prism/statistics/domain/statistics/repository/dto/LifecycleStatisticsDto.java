@@ -7,9 +7,9 @@ public record LifecycleStatisticsDto(
         long closedWithoutReviewCount,
         long reopenedCount,
         long totalStateChangeCount,
-        Long totalTimeToMergeMinutes,
-        Long totalLifespanMinutes,
-        Long totalActiveWorkMinutes,
+        long totalTimeToMergeMinutes,
+        long totalLifespanMinutes,
+        long totalActiveWorkMinutes,
         long activeWorkCount
 ) {
 }
