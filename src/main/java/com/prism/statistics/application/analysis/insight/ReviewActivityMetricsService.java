@@ -24,7 +24,6 @@ public class ReviewActivityMetricsService {
     @Transactional
     public void deriveMetrics(Long reviewId) {
         Review review = reviewRepository.findByGithubReviewId(reviewId)
-                .or(() -> reviewRepository.findByGithubReviewId(reviewId))
                 .orElseThrow(() -> new IllegalArgumentException("Review not found: " + reviewId));
 
         if (review.getPullRequestId() == null) {
