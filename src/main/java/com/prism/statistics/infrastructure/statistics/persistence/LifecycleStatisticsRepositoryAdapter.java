@@ -110,9 +110,8 @@ public class LifecycleStatisticsRepositoryAdapter implements LifecycleStatistics
         }
 
         if (startDate != null && endDate != null) {
-            return pullRequestLifecycle.createdAt.between(
-                    startDate.atStartOfDay(),
-                    endDate.plusDays(1).atStartOfDay()
+            return pullRequestLifecycle.createdAt.goe(startDate.atStartOfDay())
+                    .and(pullRequestLifecycle.createdAt.lt(endDate.plusDays(1).atStartOfDay())
             );
         }
 
