@@ -52,8 +52,8 @@ class LifecycleStatisticsQueryServiceTest {
         PullRequest pr1 = createAndSavePullRequest(project.getId());
         PullRequest pr2 = createAndSavePullRequest(project.getId());
 
-        createAndSaveLifecycle(pr1.getId(), true, false, 1710L, 1800L, 120L, 2, false);
-        createAndSaveLifecycle(pr2.getId(), false, true, null, 1440L, 60L, 1, false);
+        createAndSaveLifecycle(pr1.getId(), false, 1710L, 1800L, 120L, 2, false);
+        createAndSaveLifecycle(pr2.getId(), true, null, 1440L, 60L, 1, false);
 
         LifecycleStatisticsRequest request = new LifecycleStatisticsRequest(null, null);
 
@@ -79,7 +79,7 @@ class LifecycleStatisticsQueryServiceTest {
         Long userId = 1L;
         Project project = createAndSaveProject(userId);
         PullRequest pr = createAndSavePullRequest(project.getId());
-        createAndSaveLifecycle(pr.getId(), true, false, 1000L, 1200L, 100L, 1, false);
+        createAndSaveLifecycle(pr.getId(), false, 1000L, 1200L, 100L, 1, false);
 
         LocalDate startDate = LocalDate.now().minusDays(7);
         LocalDate endDate = LocalDate.now().plusDays(1);
@@ -123,9 +123,9 @@ class LifecycleStatisticsQueryServiceTest {
         PullRequest pr2 = createAndSavePullRequest(project.getId());
         PullRequest pr3 = createAndSavePullRequest(project.getId());
 
-        createAndSaveLifecycle(pr1.getId(), true, false, 100L, 200L, 50L, 2, false);
-        createAndSaveLifecycle(pr2.getId(), false, true, null, 300L, 60L, 3, true);
-        createAndSaveLifecycle(pr3.getId(), true, false, 150L, 250L, 70L, 1, false);
+        createAndSaveLifecycle(pr1.getId(), false, 100L, 200L, 50L, 2, false);
+        createAndSaveLifecycle(pr2.getId(), true, null, 300L, 60L, 3, true);
+        createAndSaveLifecycle(pr3.getId(), false, 150L, 250L, 70L, 1, false);
 
         LifecycleStatisticsRequest request = new LifecycleStatisticsRequest(null, null);
 
@@ -163,7 +163,7 @@ class LifecycleStatisticsQueryServiceTest {
         Long userId = 1L;
         Project project = createAndSaveProject(userId);
         PullRequest pr = createAndSavePullRequest(project.getId());
-        createAndSaveLifecycle(pr.getId(), false, true, null, 1440L, 60L, 1, false);
+        createAndSaveLifecycle(pr.getId(), true, null, 1440L, 60L, 1, false);
 
         LifecycleStatisticsRequest request = new LifecycleStatisticsRequest(null, null);
 
@@ -217,7 +217,6 @@ class LifecycleStatisticsQueryServiceTest {
 
     private void createAndSaveLifecycle(
             Long pullRequestId,
-            boolean merged,
             boolean closedWithoutReview,
             Long timeToMergeMinutes,
             Long totalLifespanMinutes,
