@@ -9,6 +9,7 @@ public record LifecycleStatisticsDto(
         long totalStateChangeCount,
         Long totalTimeToMergeMinutes,
         Long totalLifespanMinutes,
-        Long totalActiveWorkMinutes
+        Long totalActiveWorkMinutes,
+        long activeWorkCount
 ) {
 }
