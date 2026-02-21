@@ -42,4 +42,8 @@ public enum PullRequestState {
     public boolean isClosed() {
         return this == CLOSED;
     }
+
+    public boolean isClosureState() {
+        return this == MERGED || this == CLOSED;
+    }
 }
