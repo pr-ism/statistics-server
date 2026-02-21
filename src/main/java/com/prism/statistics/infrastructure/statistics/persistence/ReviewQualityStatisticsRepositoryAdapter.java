@@ -128,7 +128,7 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
                 .sum();
 
         long totalReviewCount = sessions.stream()
-                .mapToInt(session -> session.getReviewCount())
+                .mapToLong(session -> session.getReviewCount())
                 .sum();
 
         return new ReviewSessionStatisticsDto(
@@ -163,10 +163,8 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
         }
 
         if (startDate != null && endDate != null) {
-            return reviewSession.createdAt.between(
-                    startDate.atStartOfDay(),
-                    endDate.plusDays(1).atStartOfDay()
-            );
+            return reviewSession.createdAt.goe(startDate.atStartOfDay())
+                    .and(reviewSession.createdAt.lt(endDate.plusDays(1).atStartOfDay()));
         }
 
         if (startDate != null) {
