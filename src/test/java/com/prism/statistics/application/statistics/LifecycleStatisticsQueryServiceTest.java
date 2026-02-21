@@ -201,7 +201,7 @@ class LifecycleStatisticsQueryServiceTest {
                 .githubPullRequestId(System.nanoTime())
                 .projectId(projectId)
                 .author(GithubUser.create("testuser", 1L))
-                .pullRequestNumber((int) (System.nanoTime() % 10000))
+                .pullRequestNumber((int) (Math.abs(System.nanoTime() % 10000)))
                 .headCommitSha("abc123")
                 .title("Test PR")
                 .state(PullRequestState.MERGED)
