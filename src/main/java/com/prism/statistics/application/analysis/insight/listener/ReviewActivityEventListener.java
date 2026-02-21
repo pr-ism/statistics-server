@@ -1,5 +1,6 @@
 package com.prism.statistics.application.analysis.insight.listener;
 
+import com.prism.statistics.application.analysis.insight.ReviewActivityEvent;
 import com.prism.statistics.application.analysis.insight.ReviewActivityPublisher;
 import com.prism.statistics.application.analysis.metadata.review.event.ReviewSavedEvent;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,6 @@ public class ReviewActivityEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(ReviewSavedEvent event) {
-        reviewActivityPublisher.publish(event.githubReviewId());
+        reviewActivityPublisher.publish(new ReviewActivityEvent(event.githubReviewId()));
     }
 }

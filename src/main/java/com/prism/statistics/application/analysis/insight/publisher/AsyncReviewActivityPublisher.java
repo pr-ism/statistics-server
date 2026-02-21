@@ -1,5 +1,6 @@
 package com.prism.statistics.application.analysis.insight.publisher;
 
+import com.prism.statistics.application.analysis.insight.ReviewActivityEvent;
 import com.prism.statistics.application.analysis.insight.ReviewActivityMetricsService;
 import com.prism.statistics.application.analysis.insight.ReviewActivityPublisher;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,7 @@ public class AsyncReviewActivityPublisher implements ReviewActivityPublisher {
 
     @Override
     @Async("asyncTaskExecutor")
-    public void publish(Long reviewId) {
-        reviewActivityMetricsService.deriveMetrics(reviewId);
+    public void publish(ReviewActivityEvent event) {
+        reviewActivityMetricsService.deriveMetrics(event.reviewId());
     }
 }
