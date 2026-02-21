@@ -118,13 +118,13 @@ class ReviewActivityMetricsServiceTest {
     }
 
     @Test
-    void deriveMetricsByReviewEntityId로_리뷰_메트릭을_생성한다() {
+    void deriveMetricsByGithubReviewId로_리뷰_메트릭을_생성한다() {
         // given
         PullRequest savedPullRequest = createAndSavePullRequest();
         Review savedReview = createAndSaveReview(savedPullRequest, ReviewState.APPROVED, 3);
 
         // when
-        reviewActivityMetricsService.deriveMetricsByReviewEntityId(savedReview.getGithubReviewId());
+        reviewActivityMetricsService.deriveMetricsByGithubReviewId(savedReview.getGithubReviewId());
 
         // then
         List<ReviewSession> sessions = reviewSessionRepository.findAll();
@@ -138,7 +138,7 @@ class ReviewActivityMetricsServiceTest {
     }
 
     @Test
-    void deriveMetricsByReviewEntityId에서_pullRequestId가_없으면_처리하지_않는다() {
+    void deriveMetricsByGithubReviewId에서_pullRequestId가_없으면_처리하지_않는다() {
         // given
         PullRequest savedPullRequest = createAndSavePullRequest();
         Review reviewWithoutPrId = Review.builder()
@@ -155,7 +155,7 @@ class ReviewActivityMetricsServiceTest {
         reviewRepository.save(reviewWithoutPrId);
 
         // when
-        reviewActivityMetricsService.deriveMetricsByReviewEntityId(reviewWithoutPrId.getGithubReviewId());
+        reviewActivityMetricsService.deriveMetricsByGithubReviewId(reviewWithoutPrId.getGithubReviewId());
 
         // then
         List<ReviewSession> sessions = reviewSessionRepository.findAll();
@@ -163,9 +163,9 @@ class ReviewActivityMetricsServiceTest {
     }
 
     @Test
-    void deriveMetricsByReviewEntityId에서_존재하지_않는_리뷰는_무시한다() {
+    void deriveMetricsByGithubReviewId에서_존재하지_않는_리뷰는_무시한다() {
         // when
-        reviewActivityMetricsService.deriveMetricsByReviewEntityId(999999L);
+        reviewActivityMetricsService.deriveMetricsByGithubReviewId(999999L);
 
         // then
         List<ReviewSession> sessions = reviewSessionRepository.findAll();
