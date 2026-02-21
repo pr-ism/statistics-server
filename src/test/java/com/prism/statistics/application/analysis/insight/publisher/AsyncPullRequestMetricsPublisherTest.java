@@ -5,6 +5,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.analysis.insight.PullRequestMetricsEvent;
 import com.prism.statistics.application.analysis.insight.PullRequestMetricsPublisher;
 import com.prism.statistics.application.analysis.insight.PullRequestMetricsService;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -31,7 +32,7 @@ class AsyncPullRequestMetricsPublisherTest {
         doNothing().when(metricsService).deriveMetrics(pullRequestId);
 
         // when
-        publisher.publish(pullRequestId);
+        publisher.publish(new PullRequestMetricsEvent(pullRequestId));
 
         // then
         verify(metricsService, timeout(6000)).deriveMetrics(pullRequestId);
