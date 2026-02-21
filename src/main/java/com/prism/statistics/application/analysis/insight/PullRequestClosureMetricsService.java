@@ -29,7 +29,7 @@ public class PullRequestClosureMetricsService {
 
     @Transactional
     public void deriveClosureMetrics(Long pullRequestId, PullRequestState newState, LocalDateTime closedAt) {
-        if (!isClosureState(newState)) {
+        if (!newState.isClosureState()) {
             return;
         }
         if(closedAt == null) {
@@ -43,10 +43,6 @@ public class PullRequestClosureMetricsService {
 
         saveOrUpdateLifecycle(pullRequest, newState, closedAt, reviews.isEmpty());
         saveReviewActivity(pullRequest, reviews);
-    }
-
-    private boolean isClosureState(PullRequestState state) {
-        return state == PullRequestState.MERGED || state == PullRequestState.CLOSED;
     }
 
     private void saveOrUpdateLifecycle(
