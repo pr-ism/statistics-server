@@ -73,9 +73,9 @@ public class ReviewActivityMetricsService {
         Long pullRequestId = review.getPullRequestId();
         LocalDateTime reviewedAt = review.getGithubSubmittedAt();
 
-        if (state == ReviewState.CHANGES_REQUESTED) {
+        if (state.isChangesRequested()) {
             handleChangesRequested(pullRequestId, reviewedAt);
-        } else if (state == ReviewState.APPROVED) {
+        } else if (state.isApproved()) {
             handleApproval(pullRequestId, reviewedAt);
         }
     }
