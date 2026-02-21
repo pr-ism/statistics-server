@@ -75,7 +75,10 @@ public class ReviewActivityMetricsService {
 
         if (state.isChangesRequested()) {
             handleChangesRequested(pullRequestId, reviewedAt);
-        } else if (state.isApproved()) {
+            return;
+        }
+
+        if (state.isApproved()) {
             handleApproval(pullRequestId, reviewedAt);
         }
     }
