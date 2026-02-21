@@ -61,11 +61,10 @@ public class PullRequestClosureMetricsService {
         DurationMinutes totalLifespan = DurationMinutes.between(createdAt, closedAt);
         DurationMinutes activeWork = totalLifespan;
 
-        DurationMinutes finalTimeToMerge = timeToMerge;
         lifecycleRepository.findByPullRequestId(pullRequest.getId())
                 .ifPresentOrElse(
                         lifecycle -> lifecycle.updateOnClose(
-                                finalTimeToMerge,
+                                timeToMerge,
                                 totalLifespan,
                                 activeWork,
                                 closedWithoutReview
@@ -73,7 +72,7 @@ public class PullRequestClosureMetricsService {
                         () -> lifecycleRepository.save(createNewLifecycle(
                                 pullRequest.getId(),
                                 createdAt,
-                                finalTimeToMerge,
+                                timeToMerge,
                                 totalLifespan,
                                 activeWork,
                                 closedWithoutReview
