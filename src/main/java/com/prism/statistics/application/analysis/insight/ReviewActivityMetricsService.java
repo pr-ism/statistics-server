@@ -26,7 +26,7 @@ public class ReviewActivityMetricsService {
         Review review = reviewRepository.findByGithubReviewId(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("Review not found: " + reviewId));
 
-        if (review.getPullRequestId() == null) {
+        if (!review.hasAssignedPullRequest()) {
             return;
         }
 
@@ -38,7 +38,7 @@ public class ReviewActivityMetricsService {
     public void deriveMetricsByGithubReviewId(Long githubReviewId) {
         reviewRepository.findByGithubReviewId(githubReviewId)
                 .ifPresent(review -> {
-                    if (review.getPullRequestId() != null) {
+                    if (review.hasAssignedPullRequest()) {
                         createOrUpdateReviewSession(review);
                         handleReviewResponseTime(review);
                     }
