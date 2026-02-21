@@ -65,12 +65,14 @@ public class LifecycleStatisticsQueryService {
                 ? dto.totalTimeToMergeMinutes() / mergedCount
                 : 0L;
 
-        long avgLifespan = dto.totalLifespanMinutes() != null
-                ? dto.totalLifespanMinutes() / totalCount
+        long closedCount = dto.mergedCount() + dto.closedWithoutMergeCount();
+        long avgLifespan = dto.totalLifespanMinutes() != null && closedCount > 0
+                ? dto.totalLifespanMinutes() / closedCount
                 : 0L;
 
-        long avgActiveWork = dto.totalActiveWorkMinutes() != null
-                ? dto.totalActiveWorkMinutes() / totalCount
+        long activeWorkCount = dto.activeWorkCount();
+        long avgActiveWork = dto.totalActiveWorkMinutes() != null && activeWorkCount > 0
+                ? dto.totalActiveWorkMinutes() / activeWorkCount
                 : 0L;
 
         return AverageTimeStatistics.of(avgTimeToMerge, avgLifespan, avgActiveWork);
