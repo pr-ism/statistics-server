@@ -98,11 +98,18 @@ public class LifecycleStatisticsRepositoryAdapter implements LifecycleStatistics
                 closedWithoutReviewCount,
                 reopenedCount,
                 totalStateChangeCount,
-                mergedCount == 0 ? null : totalTimeToMergeMinutes,
-                closedCount == 0 ? null : totalLifespanMinutes,
-                activeWorkCount == 0 ? null : totalActiveWorkMinutes,
+                nullIfZeroCount(mergedCount, totalTimeToMergeMinutes),
+                nullIfZeroCount(closedCount, totalLifespanMinutes),
+                nullIfZeroCount(activeWorkCount, totalActiveWorkMinutes),
                 activeWorkCount
         );
+    }
+
+    private Long nullIfZeroCount(long count, long value) {
+        if (count == 0) {
+            return null;
+        }
+        return value;
     }
 
     private BooleanExpression dateRangeCondition(LocalDate startDate, LocalDate endDate) {

@@ -52,8 +52,8 @@ public class ReviewQualityStatisticsQueryService {
             ReviewActivityStatisticsDto activityDto,
             ReviewSessionStatisticsDto sessionDto
     ) {
-        long totalPullRequestCount = activityDto != null ? activityDto.totalCount() : 0L;
-        long reviewedPullRequestCount = activityDto != null ? activityDto.reviewedCount() : 0L;
+        long totalPullRequestCount = extractTotalCount(activityDto);
+        long reviewedPullRequestCount = extractReviewedCount(activityDto);
         double reviewRate = calculatePercentage(reviewedPullRequestCount, totalPullRequestCount);
 
         ReviewActivityStatistics activityStats = buildActivityStatistics(activityDto);
@@ -66,6 +66,20 @@ public class ReviewQualityStatisticsQueryService {
                 activityStats,
                 reviewerStats
         );
+    }
+
+    private long extractTotalCount(ReviewActivityStatisticsDto dto) {
+        if (dto == null) {
+            return 0L;
+        }
+        return dto.totalCount();
+    }
+
+    private long extractReviewedCount(ReviewActivityStatisticsDto dto) {
+        if (dto == null) {
+            return 0L;
+        }
+        return dto.reviewedCount();
     }
 
     private ReviewActivityStatistics buildActivityStatistics(ReviewActivityStatisticsDto dto) {

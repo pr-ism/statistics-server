@@ -54,9 +54,7 @@ public class PullRequestClosureMetricsService {
         PullRequestTiming timing = pullRequest.getTiming();
         LocalDateTime createdAt = timing.getGithubCreatedAt();
 
-        DurationMinutes timeToMerge = (newState == PullRequestState.MERGED)
-                ? DurationMinutes.between(createdAt, closedAt)
-                : null;
+        DurationMinutes timeToMerge = calculateTimeToMerge(newState, createdAt, closedAt);
 
         DurationMinutes totalLifespan = DurationMinutes.between(createdAt, closedAt);
         DurationMinutes activeWork = totalLifespan;
@@ -145,5 +143,16 @@ public class PullRequestClosureMetricsService {
                 .map(review -> review.getReviewer().getUserId())
                 .distinct()
                 .count();
+    }
+
+    private DurationMinutes calculateTimeToMerge(
+            PullRequestState newState,
+            LocalDateTime createdAt,
+            LocalDateTime closedAt
+    ) {
+        if (newState.isMerged()) {
+            return DurationMinutes.between(createdAt, closedAt);
+        }
+        return null;
     }
 }
