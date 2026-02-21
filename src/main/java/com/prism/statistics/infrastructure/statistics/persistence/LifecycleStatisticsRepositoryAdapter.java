@@ -100,7 +100,8 @@ public class LifecycleStatisticsRepositoryAdapter implements LifecycleStatistics
                 totalStateChangeCount,
                 mergedCount == 0 ? null : totalTimeToMergeMinutes,
                 closedCount == 0 ? null : totalLifespanMinutes,
-                activeWorkCount == 0 ? null : totalActiveWorkMinutes
+                activeWorkCount == 0 ? null : totalActiveWorkMinutes,
+                activeWorkCount
         );
     }
 
