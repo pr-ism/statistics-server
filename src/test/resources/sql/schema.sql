@@ -336,7 +336,8 @@ CREATE TABLE IF NOT EXISTS review_sessions (
     last_activity_at TIMESTAMP NOT NULL,
     session_duration_minutes BIGINT NOT NULL,
     review_count INT NOT NULL,
-    comment_count INT NOT NULL
+    comment_count INT NOT NULL,
+    CONSTRAINT uq_review_sessions_pr_reviewer UNIQUE (pull_request_id, reviewer_github_id)
 );
 
 CREATE TABLE IF NOT EXISTS review_response_times (
