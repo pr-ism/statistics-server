@@ -146,10 +146,8 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
         }
 
         if (startDate != null && endDate != null) {
-            return reviewActivity.createdAt.between(
-                    startDate.atStartOfDay(),
-                    endDate.plusDays(1).atStartOfDay()
-            );
+            return reviewActivity.createdAt.goe(startDate.atStartOfDay())
+                    .and(reviewActivity.createdAt.lt(endDate.plusDays(1).atStartOfDay()));
         }
 
         if (startDate != null) {
