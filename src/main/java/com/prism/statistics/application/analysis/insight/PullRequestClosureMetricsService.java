@@ -87,7 +87,7 @@ public class PullRequestClosureMetricsService {
 
     private PullRequestLifecycle createNewLifecycle(
             Long pullRequestId,
-            LocalDateTime reviewReadyAt,
+            LocalDateTime createdAt,
             DurationMinutes timeToMerge,
             DurationMinutes totalLifespan,
             DurationMinutes activeWork,
@@ -95,7 +95,7 @@ public class PullRequestClosureMetricsService {
     ) {
         return PullRequestLifecycle.builder()
                 .pullRequestId(pullRequestId)
-                .reviewReadyAt(reviewReadyAt)
+                .reviewReadyAt(createdAt)
                 .timeToMerge(timeToMerge)
                 .totalLifespan(totalLifespan)
                 .activeWork(activeWork)
