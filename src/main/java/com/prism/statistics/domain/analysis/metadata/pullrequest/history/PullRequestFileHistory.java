@@ -21,6 +21,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PullRequestFileHistory extends CreatedAtEntity {
 
+    private Long githubPullRequestId;
+
     private Long pullRequestId;
 
     private String headCommitSha;
@@ -40,31 +42,73 @@ public class PullRequestFileHistory extends CreatedAtEntity {
 
     public static PullRequestFileHistory create(
             Long pullRequestId,
+            Long githubPullRequestId,
             String headCommitSha,
             String fileName,
             FileChangeType changeType,
             FileChanges fileChanges,
             LocalDateTime githubChangedAt
     ) {
-        validateBaseFields(pullRequestId, headCommitSha, fileName, fileChanges, githubChangedAt);
+        validateBaseFields(headCommitSha, fileName, fileChanges, githubChangedAt);
+        validatePullRequestId(pullRequestId);
+        validateGithubPullRequestId(githubPullRequestId);
         validateChangeType(changeType);
-        return new PullRequestFileHistory(pullRequestId, headCommitSha, fileName, PreviousFileName.empty(), changeType, fileChanges, githubChangedAt);
+        return new PullRequestFileHistory(pullRequestId, githubPullRequestId, headCommitSha, fileName, PreviousFileName.empty(), changeType, fileChanges, githubChangedAt);
     }
 
     public static PullRequestFileHistory createRenamed(
             Long pullRequestId,
+            Long githubPullRequestId,
             String headCommitSha,
             String fileName,
             String previousFileName,
             FileChanges fileChanges,
             LocalDateTime githubChangedAt
     ) {
-        validateBaseFields(pullRequestId, headCommitSha, fileName, fileChanges, githubChangedAt);
-        return new PullRequestFileHistory(pullRequestId, headCommitSha, fileName, PreviousFileName.of(previousFileName), FileChangeType.RENAMED, fileChanges, githubChangedAt);
+        validateBaseFields(headCommitSha, fileName, fileChanges, githubChangedAt);
+        validatePullRequestId(pullRequestId);
+        validateGithubPullRequestId(githubPullRequestId);
+        return new PullRequestFileHistory(pullRequestId, githubPullRequestId, headCommitSha, fileName, PreviousFileName.of(previousFileName), FileChangeType.RENAMED, fileChanges, githubChangedAt);
     }
 
-    private static void validateBaseFields(Long pullRequestId, String headCommitSha, String fileName, FileChanges fileChanges, LocalDateTime githubChangedAt) {
-        validatePullRequestId(pullRequestId);
+    public static PullRequestFileHistory createEarly(
+            Long githubPullRequestId,
+            String headCommitSha,
+            String fileName,
+            FileChangeType changeType,
+            FileChanges fileChanges,
+            LocalDateTime githubChangedAt
+    ) {
+        validateBaseFields(headCommitSha, fileName, fileChanges, githubChangedAt);
+        validateGithubPullRequestId(githubPullRequestId);
+        validateChangeType(changeType);
+        return new PullRequestFileHistory(null, githubPullRequestId, headCommitSha, fileName, PreviousFileName.empty(), changeType, fileChanges, githubChangedAt);
+    }
+
+    public static PullRequestFileHistory createEarlyRenamed(
+            Long githubPullRequestId,
+            String headCommitSha,
+            String fileName,
+            String previousFileName,
+            FileChanges fileChanges,
+            LocalDateTime githubChangedAt
+    ) {
+        validateBaseFields(headCommitSha, fileName, fileChanges, githubChangedAt);
+        validateGithubPullRequestId(githubPullRequestId);
+        return new PullRequestFileHistory(null, githubPullRequestId, headCommitSha, fileName, PreviousFileName.of(previousFileName), FileChangeType.RENAMED, fileChanges, githubChangedAt);
+    }
+
+    public void assignPullRequestId(Long pullRequestId) {
+        if (this.pullRequestId == null) {
+            this.pullRequestId = pullRequestId;
+        }
+    }
+
+    public boolean hasAssignedPullRequestId() {
+        return pullRequestId != null;
+    }
+
+    private static void validateBaseFields(String headCommitSha, String fileName, FileChanges fileChanges, LocalDateTime githubChangedAt) {
         validateHeadCommitSha(headCommitSha);
         validateFileName(fileName);
         validateFileChanges(fileChanges);
@@ -74,6 +118,12 @@ public class PullRequestFileHistory extends CreatedAtEntity {
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
             throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
+        }
+    }
+
+    private static void validateGithubPullRequestId(Long githubPullRequestId) {
+        if (githubPullRequestId == null) {
+            throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
         }
     }
 
@@ -109,6 +159,7 @@ public class PullRequestFileHistory extends CreatedAtEntity {
 
     private PullRequestFileHistory(
             Long pullRequestId,
+            Long githubPullRequestId,
             String headCommitSha,
             String fileName,
             PreviousFileName previousFileName,
@@ -117,6 +168,7 @@ public class PullRequestFileHistory extends CreatedAtEntity {
             LocalDateTime githubChangedAt
     ) {
         this.pullRequestId = pullRequestId;
+        this.githubPullRequestId = githubPullRequestId;
         this.headCommitSha = headCommitSha;
         this.fileName = fileName;
         this.previousFileName = previousFileName;
