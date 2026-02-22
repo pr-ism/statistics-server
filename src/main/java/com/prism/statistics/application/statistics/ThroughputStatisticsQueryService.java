@@ -37,12 +37,14 @@ public class ThroughputStatisticsQueryService {
 
         double avgMergeTimeMinutes = calculateAvgMergeTime(dto.totalMergeTimeMinutes(), mergedCount);
         double mergeSuccessRate = calculateMergeSuccessRate(mergedCount, closedCount);
+        double closedPrRate = calculateClosedPrRate(mergedCount, closedCount);
 
         return ThroughputStatisticsResponse.of(
                 mergedCount,
                 closedCount,
                 avgMergeTimeMinutes,
-                mergeSuccessRate
+                mergeSuccessRate,
+                closedPrRate
         );
     }
 
@@ -59,6 +61,14 @@ public class ThroughputStatisticsQueryService {
             return 0.0;
         }
         return (double) mergedCount / totalClosedPrs * 100.0;
+    }
+
+    private double calculateClosedPrRate(long mergedCount, long closedCount) {
+        long totalClosedPrs = mergedCount + closedCount;
+        if (totalClosedPrs == 0) {
+            return 0.0;
+        }
+        return (double) closedCount / totalClosedPrs * 100.0;
     }
 
     private void validateProjectOwnership(Long projectId, Long userId) {
