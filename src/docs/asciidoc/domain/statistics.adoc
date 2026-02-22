@@ -1,0 +1,47 @@
+[[Statistics-API]]
+== Statistics API
+
+[[Get-StatisticsSummary]]
+=== 통계 요약 조회 API
+
+operation::statistics-summary-controller-test/통계_요약_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']
+
+[[Get-ThroughputStatistics]]
+=== 처리량 통계 조회 API
+
+operation::throughput-statistics-controller-test/처리량_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']
+
+[[Get-LifecycleStatistics]]
+=== 라이프사이클 통계 조회 API
+
+operation::lifecycle-statistics-controller-test/라이프사이클_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']
+
+[[Get-ReviewQualityStatistics]]
+=== 리뷰 품질 통계 조회 API
+
+operation::review-quality-statistics-controller-test/리뷰_품질_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']
+
+[[Get-ReviewSpeedStatistics]]
+=== 리뷰 속도 통계 조회 API
+
+operation::review-speed-statistics-controller-test/리뷰_속도_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']
+
+[[Get-PrSizeStatistics]]
+=== PR 크기 통계 조회 API
+
+operation::pr-size-statistics-controller-test/PR_크기_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']
+
+[[Get-CollaborationStatistics]]
+=== 협업 통계 조회 API
+
+operation::collaboration-statistics-controller-test/협업_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']
+
+[[Get-DailyTrendStatistics]]
+=== 일별 트렌드 통계 조회 API
+
+operation::daily-trend-statistics-controller-test/일별_트렌드_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']
+
+[[Get-WeeklyTrendStatistics]]
+=== 주간 트렌드 통계 조회 API
+
+operation::weekly-trend-statistics-controller-test/주간_트렌드_통계_조회_성공_테스트[snippets='http-request,request-headers,path-parameters,query-parameters,http-response,response-fields']
