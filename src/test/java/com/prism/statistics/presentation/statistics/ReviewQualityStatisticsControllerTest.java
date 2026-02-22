@@ -41,7 +41,7 @@ class ReviewQualityStatisticsControllerTest extends CommonControllerSliceTestSup
                 100L,
                 85L,
                 85.0,
-                ReviewActivityStatistics.of(2.5, 8.3, 0.05, 10L, 15L),
+                ReviewActivityStatistics.of(2.5, 8.3, 0.05, 10L, 15L, 45.0, 17.65, 20.0, 120.5, 5.0),
                 ReviewerStatistics.of(12L, 1.8, 45.5, 1.2)
         );
 
@@ -64,6 +64,11 @@ class ReviewQualityStatisticsControllerTest extends CommonControllerSliceTestSup
                 .andExpect(jsonPath("$.reviewActivity.avgCommentDensity").value(0.05))
                 .andExpect(jsonPath("$.reviewActivity.withAdditionalReviewersCount").value(10))
                 .andExpect(jsonPath("$.reviewActivity.withChangesAfterReviewCount").value(15))
+                .andExpect(jsonPath("$.reviewActivity.firstReviewApproveRate").value(45.0))
+                .andExpect(jsonPath("$.reviewActivity.postReviewCommitRate").value(17.65))
+                .andExpect(jsonPath("$.reviewActivity.changesRequestedRate").value(20.0))
+                .andExpect(jsonPath("$.reviewActivity.avgChangesResolutionMinutes").value(120.5))
+                .andExpect(jsonPath("$.reviewActivity.highIntensityPrRate").value(5.0))
                 .andExpect(jsonPath("$.reviewerStats.totalReviewerCount").value(12))
                 .andExpect(jsonPath("$.reviewerStats.avgReviewersPerPr").value(1.8))
                 .andExpect(jsonPath("$.reviewerStats.avgSessionDurationMinutes").value(45.5))
@@ -97,6 +102,11 @@ class ReviewQualityStatisticsControllerTest extends CommonControllerSliceTestSup
                                 fieldWithPath("reviewActivity.avgCommentDensity").description("평균 코멘트 밀도 (코멘트/코드변경량)"),
                                 fieldWithPath("reviewActivity.withAdditionalReviewersCount").description("추가 리뷰어가 있는 PR 수"),
                                 fieldWithPath("reviewActivity.withChangesAfterReviewCount").description("리뷰 후 코드 변경이 있는 PR 수"),
+                                fieldWithPath("reviewActivity.firstReviewApproveRate").description("첫 리뷰 승인 비율 (%)"),
+                                fieldWithPath("reviewActivity.postReviewCommitRate").description("리뷰 후 커밋 발생률 (%)"),
+                                fieldWithPath("reviewActivity.changesRequestedRate").description("변경 요청 비율 (%)"),
+                                fieldWithPath("reviewActivity.avgChangesResolutionMinutes").description("평균 변경 요청 해결 시간 (분)"),
+                                fieldWithPath("reviewActivity.highIntensityPrRate").description("고강도 PR 비율 (%)"),
                                 fieldWithPath("reviewerStats").description("리뷰어 통계"),
                                 fieldWithPath("reviewerStats.totalReviewerCount").description("전체 리뷰어 수"),
                                 fieldWithPath("reviewerStats.avgReviewersPerPr").description("PR당 평균 리뷰어 수"),
