@@ -1,10 +1,14 @@
 package com.prism.statistics.application.analysis.insight;
 
+import com.prism.statistics.domain.analysis.insight.bottleneck.PullRequestBottleneck;
+import com.prism.statistics.domain.analysis.insight.bottleneck.repository.PullRequestBottleneckRepository;
 import com.prism.statistics.domain.analysis.insight.review.ReviewResponseTime;
 import com.prism.statistics.domain.analysis.insight.review.ReviewSession;
 import com.prism.statistics.domain.analysis.insight.review.repository.ReviewResponseTimeRepository;
 import com.prism.statistics.domain.analysis.insight.review.repository.ReviewSessionRepository;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewRepository;
@@ -20,6 +24,8 @@ public class ReviewActivityMetricsService {
     private final ReviewRepository reviewRepository;
     private final ReviewSessionRepository reviewSessionRepository;
     private final ReviewResponseTimeRepository reviewResponseTimeRepository;
+    private final PullRequestBottleneckRepository pullRequestBottleneckRepository;
+    private final PullRequestRepository pullRequestRepository;
 
     @Transactional
     public void deriveMetrics(Long reviewId) {
@@ -32,6 +38,7 @@ public class ReviewActivityMetricsService {
 
         createOrUpdateReviewSession(review);
         handleReviewResponseTime(review);
+        createOrUpdateBottleneck(review);
     }
 
     @Transactional
@@ -41,6 +48,7 @@ public class ReviewActivityMetricsService {
                     if (review.hasAssignedPullRequest()) {
                         createOrUpdateReviewSession(review);
                         handleReviewResponseTime(review);
+                        createOrUpdateBottleneck(review);
                     }
                 });
     }
@@ -100,5 +108,36 @@ public class ReviewActivityMetricsService {
                         responseTime.updateOnApproveAfterChanges(approvedAt);
                     }
                 });
+    }
+
+    private void createOrUpdateBottleneck(Review review) {
+        Long pullRequestId = review.getPullRequestId();
+        LocalDateTime reviewedAt = review.getGithubSubmittedAt();
+        boolean isApprove = review.getReviewState().isApproved();
+
+        pullRequestBottleneckRepository.findByPullRequestId(pullRequestId)
+                .ifPresentOrElse(
+                        bottleneck -> bottleneck.updateOnNewReview(reviewedAt, isApprove),
+                        () -> createNewBottleneck(pullRequestId, reviewedAt, isApprove)
+                );
+    }
+
+    private void createNewBottleneck(Long pullRequestId, LocalDateTime reviewedAt, boolean isApprove) {
+        PullRequest pullRequest = pullRequestRepository.findById(pullRequestId)
+                .orElseThrow(() -> new IllegalArgumentException("PullRequest not found: " + pullRequestId));
+
+        LocalDateTime reviewReadyAt = pullRequest.getTiming().getGithubCreatedAt();
+
+        PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
+                pullRequestId,
+                reviewReadyAt,
+                reviewedAt
+        );
+
+        if (isApprove) {
+            bottleneck.updateOnNewReview(reviewedAt, true);
+        }
+
+        pullRequestBottleneckRepository.save(bottleneck);
     }
 }
