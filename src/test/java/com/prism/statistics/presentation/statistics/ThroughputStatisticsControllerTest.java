@@ -39,7 +39,8 @@ class ThroughputStatisticsControllerTest extends CommonControllerSliceTestSuppor
                 85L,
                 15L,
                 1440.5,
-                85.0
+                85.0,
+                15.0
         );
 
         given(throughputStatisticsQueryService.findThroughputStatistics(eq(7L), eq(1L), any(ThroughputStatisticsRequest.class)))
@@ -56,7 +57,8 @@ class ThroughputStatisticsControllerTest extends CommonControllerSliceTestSuppor
                 .andExpect(jsonPath("$.mergedPrCount").value(85))
                 .andExpect(jsonPath("$.closedPrCount").value(15))
                 .andExpect(jsonPath("$.avgMergeTimeMinutes").value(1440.5))
-                .andExpect(jsonPath("$.mergeSuccessRate").value(85.0));
+                .andExpect(jsonPath("$.mergeSuccessRate").value(85.0))
+                .andExpect(jsonPath("$.closedPrRate").value(15.0));
 
         처리량_통계_조회_문서화(resultActions);
     }
@@ -80,7 +82,8 @@ class ThroughputStatisticsControllerTest extends CommonControllerSliceTestSuppor
                                 fieldWithPath("mergedPrCount").description("Merge된 PR 수"),
                                 fieldWithPath("closedPrCount").description("Close된 PR 수 (Merge 제외)"),
                                 fieldWithPath("avgMergeTimeMinutes").description("평균 Merge 소요 시간 (분)"),
-                                fieldWithPath("mergeSuccessRate").description("Merge 성공률 (%, Merged / (Merged + Closed))")
+                                fieldWithPath("mergeSuccessRate").description("Merge 성공률 (%, Merged / (Merged + Closed))"),
+                                fieldWithPath("closedPrRate").description("PR 폐기율 (%, Closed / (Merged + Closed))")
                         )
                 )
         );
@@ -102,7 +105,8 @@ class ThroughputStatisticsControllerTest extends CommonControllerSliceTestSuppor
                 .andExpect(jsonPath("$.mergedPrCount").value(0))
                 .andExpect(jsonPath("$.closedPrCount").value(0))
                 .andExpect(jsonPath("$.avgMergeTimeMinutes").value(0.0))
-                .andExpect(jsonPath("$.mergeSuccessRate").value(0.0));
+                .andExpect(jsonPath("$.mergeSuccessRate").value(0.0))
+                .andExpect(jsonPath("$.closedPrRate").value(0.0));
     }
 
     @Test
