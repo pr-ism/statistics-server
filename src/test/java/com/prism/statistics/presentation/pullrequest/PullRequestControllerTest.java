@@ -18,8 +18,8 @@ import com.prism.statistics.application.pullrequest.dto.response.PullRequestDeta
 import com.prism.statistics.application.pullrequest.dto.response.PullRequestListResponse;
 import com.prism.statistics.application.pullrequest.dto.response.PullRequestListResponse.PullRequestSummary;
 import com.prism.statistics.context.security.WithOAuth2User;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
+import com.prism.statistics.domain.project.exception.ProjectNotFoundException;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.PullRequestNotFoundException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import java.time.LocalDateTime;
 import java.util.List;

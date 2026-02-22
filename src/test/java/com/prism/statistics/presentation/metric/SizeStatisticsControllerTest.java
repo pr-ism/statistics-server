@@ -20,7 +20,7 @@ import com.prism.statistics.application.metric.dto.request.SizeStatisticsRequest
 import com.prism.statistics.application.metric.dto.response.SizeStatisticsResponse;
 import com.prism.statistics.application.metric.dto.response.SizeStatisticsResponse.SizeStatistics;
 import com.prism.statistics.context.security.WithOAuth2User;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.domain.project.exception.ProjectNotFoundException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import java.util.List;
 import org.junit.jupiter.api.Test;

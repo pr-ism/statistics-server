@@ -9,7 +9,7 @@ import com.prism.statistics.application.analysis.metadata.review.dto.request.Rev
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewSubmittedRequest.ReviewerData;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
-import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
+import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewRepository;
 import java.time.Instant;
 import java.time.LocalDateTime;
