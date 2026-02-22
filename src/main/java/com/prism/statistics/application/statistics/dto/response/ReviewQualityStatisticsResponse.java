@@ -23,10 +23,15 @@ public record ReviewQualityStatisticsResponse(
             double avgCommentCount,
             double avgCommentDensity,
             long withAdditionalReviewersCount,
-            long withChangesAfterReviewCount
+            long withChangesAfterReviewCount,
+            double firstReviewApproveRate,
+            double postReviewCommitRate,
+            double changesRequestedRate,
+            double avgChangesResolutionMinutes,
+            double highIntensityPrRate
     ) {
         public static ReviewActivityStatistics empty() {
-            return new ReviewActivityStatistics(0.0, 0.0, 0.0, 0L, 0L);
+            return new ReviewActivityStatistics(0.0, 0.0, 0.0, 0L, 0L, 0.0, 0.0, 0.0, 0.0, 0.0);
         }
 
         public static ReviewActivityStatistics of(
@@ -34,14 +39,24 @@ public record ReviewQualityStatisticsResponse(
                 double avgCommentCount,
                 double avgCommentDensity,
                 long withAdditionalReviewersCount,
-                long withChangesAfterReviewCount
+                long withChangesAfterReviewCount,
+                double firstReviewApproveRate,
+                double postReviewCommitRate,
+                double changesRequestedRate,
+                double avgChangesResolutionMinutes,
+                double highIntensityPrRate
         ) {
             return new ReviewActivityStatistics(
                     roundToTwoDecimals(avgReviewRoundTrips),
                     roundToTwoDecimals(avgCommentCount),
                     roundToTwoDecimals(avgCommentDensity),
                     withAdditionalReviewersCount,
-                    withChangesAfterReviewCount
+                    withChangesAfterReviewCount,
+                    roundToTwoDecimals(firstReviewApproveRate),
+                    roundToTwoDecimals(postReviewCommitRate),
+                    roundToTwoDecimals(changesRequestedRate),
+                    roundToTwoDecimals(avgChangesResolutionMinutes),
+                    roundToTwoDecimals(highIntensityPrRate)
             );
         }
 

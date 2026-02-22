@@ -95,13 +95,32 @@ public class ReviewQualityStatisticsQueryService {
                 .divide(BigDecimal.valueOf(reviewedCount), 6, java.math.RoundingMode.HALF_UP)
                 .doubleValue();
 
+        double firstReviewApproveRate = calculatePercentage(dto.firstReviewApproveCount(), reviewedCount);
+        double postReviewCommitRate = calculatePercentage(dto.withChangesAfterReviewCount(), reviewedCount);
+        double changesRequestedRate = calculatePercentage(dto.changesRequestedCount(), reviewedCount);
+        double avgChangesResolutionMinutes = calculateAverage(
+                dto.totalChangesResolutionMinutes(), dto.changesResolvedCount());
+        double highIntensityPrRate = calculatePercentage(dto.highIntensityPrCount(), reviewedCount);
+
         return ReviewActivityStatistics.of(
                 avgReviewRoundTrips,
                 avgCommentCount,
                 avgCommentDensity,
                 dto.withAdditionalReviewersCount(),
-                dto.withChangesAfterReviewCount()
+                dto.withChangesAfterReviewCount(),
+                firstReviewApproveRate,
+                postReviewCommitRate,
+                changesRequestedRate,
+                avgChangesResolutionMinutes,
+                highIntensityPrRate
         );
+    }
+
+    private double calculateAverage(long total, long count) {
+        if (count == 0) {
+            return 0.0;
+        }
+        return (double) total / count;
     }
 
     private ReviewerStatistics buildReviewerStatistics(ReviewSessionStatisticsDto dto) {
