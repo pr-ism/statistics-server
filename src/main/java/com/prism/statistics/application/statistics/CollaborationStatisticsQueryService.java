@@ -39,7 +39,7 @@ public class CollaborationStatisticsQueryService {
 
         return collaborationStatisticsRepository
                 .findCollaborationStatisticsByProjectId(projectId, request.startDate(), request.endDate())
-                .map(this::toResponse)
+                .map(dto -> toResponse(dto))
                 .orElse(CollaborationStatisticsResponse.empty());
     }
 
@@ -87,7 +87,7 @@ public class CollaborationStatisticsQueryService {
         }
 
         List<Long> sorted = values.stream().sorted().toList();
-        double sum = sorted.stream().mapToLong(Long::longValue).sum();
+        double sum = sorted.stream().mapToLong(value -> value).sum();
 
         if (sum == 0) {
             return 0.0;
@@ -109,7 +109,7 @@ public class CollaborationStatisticsQueryService {
             return 0.0;
         }
 
-        long totalReviews = counts.stream().mapToLong(Long::longValue).sum();
+        long totalReviews = counts.stream().mapToLong(value -> value).sum();
         if (totalReviews == 0) {
             return 0.0;
         }
@@ -120,7 +120,7 @@ public class CollaborationStatisticsQueryService {
 
         long top3Sum = sorted.stream()
                 .limit(3)
-                .mapToLong(Long::longValue)
+                .mapToLong(value -> value)
                 .sum();
 
         return (double) top3Sum / totalReviews * 100.0;
@@ -161,7 +161,7 @@ public class CollaborationStatisticsQueryService {
                             dto.prCount()
                     );
                 })
-                .sorted(Comparator.comparing(AuthorReviewWaitTime::avgReviewWaitMinutes).reversed())
+                .sorted(Comparator.comparingDouble((AuthorReviewWaitTime item) -> item.avgReviewWaitMinutes()).reversed())
                 .toList();
     }
 
@@ -175,7 +175,7 @@ public class CollaborationStatisticsQueryService {
 
         Map<Long, ReviewerResponseTimeDto> responseTimeMap = responseTimes.stream()
                 .collect(java.util.stream.Collectors.toMap(
-                        ReviewerResponseTimeDto::reviewerId,
+                        dto -> dto.reviewerId(),
                         dto -> dto,
                         (a, b) -> a
                 ));
@@ -195,7 +195,7 @@ public class CollaborationStatisticsQueryService {
 
                     return ReviewerStats.of(reviewerId, reviewerName, reviewCount, avgResponseTimeMinutes);
                 })
-                .sorted(Comparator.comparing(ReviewerStats::reviewCount).reversed())
+                .sorted(Comparator.comparingLong((ReviewerStats item) -> item.reviewCount()).reversed())
                 .toList();
     }
 
