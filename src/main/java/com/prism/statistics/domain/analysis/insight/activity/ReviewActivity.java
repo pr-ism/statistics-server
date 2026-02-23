@@ -157,4 +157,8 @@ public class ReviewActivity extends BaseTimeEntity {
     public boolean isFirstReviewApproved() {
         return reviewRoundTrips == 1 && !hasAdditionalReviewers;
     }
+
+    public boolean hasCodeChangesAfterReview() {
+        return codeAdditionsAfterReview > 0 || codeDeletionsAfterReview > 0;
+    }
 }

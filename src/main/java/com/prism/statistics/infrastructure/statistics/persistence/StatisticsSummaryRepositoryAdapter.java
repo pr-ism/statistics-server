@@ -167,7 +167,7 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                 .count();
 
         long changesRequestedCount = activities.stream()
-                .filter(a -> a.getCodeAdditionsAfterReview() > 0 || a.getCodeDeletionsAfterReview() > 0)
+                .filter(activity -> activity.hasCodeChangesAfterReview())
                 .count();
 
         long closedWithoutReviewCount = lifecycles.stream()
