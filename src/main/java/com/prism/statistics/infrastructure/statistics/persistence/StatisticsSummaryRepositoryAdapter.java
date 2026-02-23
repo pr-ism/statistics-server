@@ -163,7 +163,7 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                 .sum();
 
         long firstReviewApproveCount = activities.stream()
-                .filter(a -> a.getReviewRoundTrips() == 1 && !a.isHasAdditionalReviewers())
+                .filter(activity -> activity.isFirstReviewApproved())
                 .count();
 
         long changesRequestedCount = activities.stream()
