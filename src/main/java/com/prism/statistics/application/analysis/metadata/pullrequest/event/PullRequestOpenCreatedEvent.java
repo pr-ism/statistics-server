@@ -9,6 +9,7 @@ import java.util.List;
 
 public record PullRequestOpenCreatedEvent(
         Long pullRequestId,
+        Long githubPullRequestId,
         Long projectId,
         String headCommitSha,
         PullRequestState initialState,

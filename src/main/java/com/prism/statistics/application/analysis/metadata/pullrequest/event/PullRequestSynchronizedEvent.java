@@ -9,6 +9,7 @@ import java.util.List;
 
 public record PullRequestSynchronizedEvent(
         Long pullRequestId,
+        Long githubPullRequestId,
         String headCommitSha,
         boolean isNewer,
         PullRequestChangeStats changeStats,
