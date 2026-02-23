@@ -284,12 +284,13 @@ class StatisticsSummaryQueryServiceTest {
     }
 
     private void createAndSaveSize(Long pullRequestId, BigDecimal sizeScore) {
+        int additionCount = sizeScore.intValueExact();
         PullRequestSize size = PullRequestSize.create(
                 pullRequestId,
-                100,
-                50,
-                5,
-                sizeScore
+                additionCount,
+                0,
+                0,
+                BigDecimal.valueOf(0.3)
         );
         sizeRepository.save(size);
     }
