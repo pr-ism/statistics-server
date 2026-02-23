@@ -1,10 +1,6 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest.event.listener;
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSavedEvent;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.CommitRepository;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestContentHistoryRepository;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestFileHistoryRepository;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestFileRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestLabelHistoryRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestLabelRepository;
 import com.prism.statistics.domain.analysis.metadata.review.repository.RequestedReviewerHistoryRepository;
@@ -26,10 +22,6 @@ public class PullRequestSavedEventListener {
     private final RequestedReviewerRepository requestedReviewerRepository;
     private final RequestedReviewerHistoryRepository requestedReviewerHistoryRepository;
     private final ReviewRepository reviewRepository;
-    private final CommitRepository commitRepository;
-    private final PullRequestFileRepository pullRequestFileRepository;
-    private final PullRequestContentHistoryRepository pullRequestContentHistoryRepository;
-    private final PullRequestFileHistoryRepository pullRequestFileHistoryRepository;
 
     @Async("backfillExecutor")
     @Transactional
@@ -64,33 +56,5 @@ public class PullRequestSavedEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void backfillReview(PullRequestSavedEvent event) {
         reviewRepository.backfillPullRequestId(event.githubPullRequestId(), event.pullRequestId());
-    }
-
-    @Async("backfillExecutor")
-    @Transactional
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void backfillCommit(PullRequestSavedEvent event) {
-        commitRepository.backfillPullRequestId(event.githubPullRequestId(), event.pullRequestId());
-    }
-
-    @Async("backfillExecutor")
-    @Transactional
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void backfillPullRequestFile(PullRequestSavedEvent event) {
-        pullRequestFileRepository.backfillPullRequestId(event.githubPullRequestId(), event.pullRequestId());
-    }
-
-    @Async("backfillExecutor")
-    @Transactional
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void backfillPullRequestContentHistory(PullRequestSavedEvent event) {
-        pullRequestContentHistoryRepository.backfillPullRequestId(event.githubPullRequestId(), event.pullRequestId());
-    }
-
-    @Async("backfillExecutor")
-    @Transactional
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void backfillPullRequestFileHistory(PullRequestSavedEvent event) {
-        pullRequestFileHistoryRepository.backfillPullRequestId(event.githubPullRequestId(), event.pullRequestId());
     }
 }
