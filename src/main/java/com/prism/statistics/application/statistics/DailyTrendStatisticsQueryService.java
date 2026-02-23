@@ -33,7 +33,7 @@ public class DailyTrendStatisticsQueryService {
 
         return dailyTrendStatisticsRepository
                 .findDailyTrendStatisticsByProjectId(projectId, request.startDate(), request.endDate())
-                .map(this::toResponse)
+                .map(dto -> toResponse(dto))
                 .orElse(DailyTrendStatisticsResponse.empty());
     }
 
@@ -56,11 +56,11 @@ public class DailyTrendStatisticsQueryService {
             List<DailyPrCountDto> mergedCounts
     ) {
         long totalCreatedCount = createdCounts.stream()
-                .mapToLong(DailyPrCountDto::count)
+                .mapToLong(item -> item.count())
                 .sum();
 
         long totalMergedCount = mergedCounts.stream()
-                .mapToLong(DailyPrCountDto::count)
+                .mapToLong(item -> item.count())
                 .sum();
 
         int createdDays = createdCounts.size();
@@ -70,20 +70,20 @@ public class DailyTrendStatisticsQueryService {
         double avgDailyMergedCount = mergedDays > 0 ? (double) totalMergedCount / mergedDays : 0.0;
 
         Optional<DailyPrCountDto> peakCreated = createdCounts.stream()
-                .max(Comparator.comparingLong(DailyPrCountDto::count));
+                .max(Comparator.comparingLong(item -> item.count()));
 
         Optional<DailyPrCountDto> peakMerged = mergedCounts.stream()
-                .max(Comparator.comparingLong(DailyPrCountDto::count));
+                .max(Comparator.comparingLong(item -> item.count()));
 
         return TrendSummary.of(
                 totalCreatedCount,
                 totalMergedCount,
                 avgDailyCreatedCount,
                 avgDailyMergedCount,
-                peakCreated.map(DailyPrCountDto::date).orElse(null),
-                peakCreated.map(DailyPrCountDto::count).orElse(0L),
-                peakMerged.map(DailyPrCountDto::date).orElse(null),
-                peakMerged.map(DailyPrCountDto::count).orElse(0L)
+                peakCreated.map(item -> item.date()).orElse(null),
+                peakCreated.map(item -> item.count()).orElse(0L),
+                peakMerged.map(item -> item.date()).orElse(null),
+                peakMerged.map(item -> item.count()).orElse(0L)
         );
     }
 

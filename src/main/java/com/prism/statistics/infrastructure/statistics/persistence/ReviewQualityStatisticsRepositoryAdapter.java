@@ -54,7 +54,7 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
         }
 
         List<Long> pullRequestIds = activities.stream()
-                .map(ReviewActivity::getPullRequestId)
+                .map(activity -> activity.getPullRequestId())
                 .toList();
 
         List<Review> reviews = queryFactory
@@ -114,7 +114,7 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
 
         BigDecimal totalCommentDensity = activities.stream()
                 .map(activity -> activity.getCommentDensity())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, (left, right) -> left.add(right));
 
         long withAdditionalReviewersCount = activities.stream()
                 .filter(activity -> activity.isHasAdditionalReviewers())
@@ -149,7 +149,7 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
     private long calculateFirstReviewApproveCount(List<Review> reviews) {
         Map<Long, Review> firstReviewByPr = reviews.stream()
                 .collect(Collectors.toMap(
-                        Review::getPullRequestId,
+                        review -> review.getPullRequestId(),
                         r -> r,
                         (existing, replacement) ->
                                 existing.getGithubSubmittedAt().isBefore(replacement.getGithubSubmittedAt())
@@ -164,21 +164,21 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
     private long calculateChangesRequestedCount(List<Review> reviews) {
         return reviews.stream()
                 .filter(r -> r.getReviewState() == ReviewState.CHANGES_REQUESTED)
-                .map(Review::getPullRequestId)
+                .map(review -> review.getPullRequestId())
                 .distinct()
                 .count();
     }
 
     private long calculateTotalChangesResolutionMinutes(List<ReviewResponseTime> responseTimes) {
         return responseTimes.stream()
-                .filter(ReviewResponseTime::isResolved)
+                .filter(responseTime -> responseTime.isResolved())
                 .mapToLong(rt -> rt.getChangesResolution().getMinutes())
                 .sum();
     }
 
     private long calculateChangesResolvedCount(List<ReviewResponseTime> responseTimes) {
         return responseTimes.stream()
-                .filter(ReviewResponseTime::isResolved)
+                .filter(responseTime -> responseTime.isResolved())
                 .count();
     }
 

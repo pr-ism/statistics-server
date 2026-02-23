@@ -48,7 +48,7 @@ public class ReviewSpeedStatisticsRepositoryAdapter implements ReviewSpeedStatis
         }
 
         List<Long> pullRequestIds = pullRequests.stream()
-                .map(PullRequest::getId)
+                .map(pr -> pr.getId())
                 .toList();
 
         List<PullRequestBottleneck> bottlenecks = queryFactory
@@ -58,7 +58,7 @@ public class ReviewSpeedStatisticsRepositoryAdapter implements ReviewSpeedStatis
 
         Map<Long, PullRequestBottleneck> bottleneckMap = bottlenecks.stream()
                 .collect(Collectors.toMap(
-                        PullRequestBottleneck::getPullRequestId,
+                        bottleneck -> bottleneck.getPullRequestId(),
                         b -> b
                 ));
 

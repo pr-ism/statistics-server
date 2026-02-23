@@ -32,7 +32,7 @@ public class WeeklyTrendStatisticsQueryService {
 
         return weeklyTrendStatisticsRepository
                 .findWeeklyTrendStatisticsByProjectId(projectId, request.startDate(), request.endDate())
-                .map(this::toResponse)
+                .map(dto -> toResponse(dto))
                 .orElse(WeeklyTrendStatisticsResponse.empty());
     }
 

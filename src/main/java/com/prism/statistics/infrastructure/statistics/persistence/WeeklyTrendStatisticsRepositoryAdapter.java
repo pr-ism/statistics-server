@@ -55,7 +55,7 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
         }
 
         List<Long> pullRequestIds = pullRequests.stream()
-                .map(PullRequest::getId)
+                .map(pr -> pr.getId())
                 .toList();
 
         Map<Long, PullRequestBottleneck> bottleneckMap = queryFactory
@@ -63,14 +63,14 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
                 .where(pullRequestBottleneck.pullRequestId.in(pullRequestIds))
                 .fetch()
                 .stream()
-                .collect(Collectors.toMap(PullRequestBottleneck::getPullRequestId, b -> b));
+                .collect(Collectors.toMap(bottleneck -> bottleneck.getPullRequestId(), b -> b));
 
         Map<Long, PullRequestSize> sizeMap = queryFactory
                 .selectFrom(pullRequestSize)
                 .where(pullRequestSize.pullRequestId.in(pullRequestIds))
                 .fetch()
                 .stream()
-                .collect(Collectors.toMap(PullRequestSize::getPullRequestId, s -> s));
+                .collect(Collectors.toMap(size -> size.getPullRequestId(), s -> s));
 
         List<WeeklyThroughputDto> weeklyThroughputs = aggregateWeeklyThroughput(pullRequests, startDate, endDate);
         List<MonthlyThroughputDto> monthlyThroughputs = aggregateMonthlyThroughput(pullRequests, startDate, endDate);
@@ -174,7 +174,7 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
                     List<Long> waitTimes = entry.getValue();
 
                     double avgWaitTime = waitTimes.stream()
-                            .mapToLong(Long::longValue)
+                            .mapToLong(value -> value)
                             .average()
                             .orElse(0.0);
 
@@ -204,7 +204,7 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
                     List<Double> sizeScores = entry.getValue();
 
                     double avgSizeScore = sizeScores.stream()
-                            .mapToDouble(Double::doubleValue)
+                            .mapToDouble(value -> value)
                             .average()
                             .orElse(0.0);
 

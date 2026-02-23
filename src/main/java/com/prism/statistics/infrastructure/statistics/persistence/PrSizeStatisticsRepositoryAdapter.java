@@ -53,7 +53,7 @@ public class PrSizeStatisticsRepositoryAdapter implements PrSizeStatisticsReposi
         }
 
         List<Long> pullRequestIds = sizes.stream()
-                .map(PullRequestSize::getPullRequestId)
+                .map(size -> size.getPullRequestId())
                 .toList();
 
         List<PullRequestBottleneck> bottlenecks = queryFactory
@@ -67,10 +67,10 @@ public class PrSizeStatisticsRepositoryAdapter implements PrSizeStatisticsReposi
                 .fetch();
 
         Map<Long, PullRequestBottleneck> bottleneckMap = bottlenecks.stream()
-                .collect(Collectors.toMap(PullRequestBottleneck::getPullRequestId, b -> b));
+                .collect(Collectors.toMap(bottleneck -> bottleneck.getPullRequestId(), b -> b));
 
         Map<Long, ReviewActivity> activityMap = activities.stream()
-                .collect(Collectors.toMap(ReviewActivity::getPullRequestId, a -> a));
+                .collect(Collectors.toMap(activity -> activity.getPullRequestId(), a -> a));
 
         return Optional.of(aggregateStatistics(sizes, bottleneckMap, activityMap));
     }
@@ -83,19 +83,19 @@ public class PrSizeStatisticsRepositoryAdapter implements PrSizeStatisticsReposi
         long totalCount = sizes.size();
 
         BigDecimal totalSizeScore = sizes.stream()
-                .map(PullRequestSize::getSizeScore)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(size -> size.getSizeScore())
+                .reduce(BigDecimal.ZERO, (left, right) -> left.add(right));
 
         Map<SizeGrade, Long> sizeGradeDistribution = new EnumMap<>(SizeGrade.class);
         for (SizeGrade grade : SizeGrade.values()) {
             sizeGradeDistribution.put(grade, 0L);
         }
         sizes.stream()
-                .collect(Collectors.groupingBy(PullRequestSize::getSizeGrade, Collectors.counting()))
-                .forEach(sizeGradeDistribution::put);
+                .collect(Collectors.groupingBy(size -> size.getSizeGrade(), Collectors.counting()))
+                .forEach((grade, count) -> sizeGradeDistribution.put(grade, count));
 
         long largePrCount = sizes.stream()
-                .filter(PullRequestSize::isLargeOrAbove)
+                .filter(size -> size.isLargeOrAbove())
                 .count();
 
         List<PrSizeCorrelationDataDto> correlationData = new ArrayList<>();

@@ -45,13 +45,13 @@ public class ReviewSpeedStatisticsQueryService {
                         coreTime.getStartTime(),
                         coreTime.getEndTime()
                 )
-                .map(this::toResponse)
+                .map(dto -> toResponse(dto))
                 .orElse(ReviewSpeedStatisticsResponse.empty());
     }
 
     private CoreTime getCoreTime(Long projectId) {
         return projectCoreTimeSettingRepository.findByProjectId(projectId)
-                .map(ProjectCoreTimeSetting::getCoreTime)
+                .map(setting -> setting.getCoreTime())
                 .orElse(CoreTime.defaultCoreTime());
     }
 

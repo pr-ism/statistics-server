@@ -27,7 +27,7 @@ public class ThroughputStatisticsQueryService {
 
         return throughputStatisticsRepository
                 .findThroughputStatisticsByProjectId(projectId, request.startDate(), request.endDate())
-                .map(this::toResponse)
+                .map(dto -> toResponse(dto))
                 .orElse(ThroughputStatisticsResponse.empty());
     }
 

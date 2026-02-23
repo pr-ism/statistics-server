@@ -35,7 +35,7 @@ public class PrSizeStatisticsQueryService {
 
         return prSizeStatisticsRepository
                 .findPrSizeStatisticsByProjectId(projectId, request.startDate(), request.endDate())
-                .map(this::toResponse)
+                .map(dto -> toResponse(dto))
                 .orElse(PrSizeStatisticsResponse.empty());
     }
 

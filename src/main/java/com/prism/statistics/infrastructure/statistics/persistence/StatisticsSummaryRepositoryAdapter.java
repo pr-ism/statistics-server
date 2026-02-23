@@ -89,14 +89,14 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
 
         long totalPrCount = pullRequestIds.size();
         long mergedPrCount = closedPullRequests.stream()
-                .filter(PullRequest::isMerged)
+                .filter(pr -> pr.isMerged())
                 .count();
         long closedPrCount = closedPullRequests.stream()
-                .filter(PullRequest::isClosed)
+                .filter(pr -> pr.isClosed())
                 .count();
         long totalMergeTimeMinutes = closedPullRequests.stream()
-                .filter(PullRequest::isMerged)
-                .mapToLong(PullRequest::calculateMergeTimeMinutes)
+                .filter(pr -> pr.isMerged())
+                .mapToLong(pr -> pr.calculateMergeTimeMinutes())
                 .sum();
 
         List<PullRequestSize> sizes = queryFactory
@@ -105,8 +105,8 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                 .fetch();
 
         BigDecimal totalSizeScore = sizes.stream()
-                .map(PullRequestSize::getSizeScore)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(size -> size.getSizeScore())
+                .reduce(BigDecimal.ZERO, (left, right) -> left.add(right));
 
         String dominantSizeGrade = findDominantSizeGrade(sizes);
 
@@ -127,10 +127,10 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
         }
 
         Map<SizeGrade, Long> gradeCounts = sizes.stream()
-                .collect(Collectors.groupingBy(PullRequestSize::getSizeGrade, Collectors.counting()));
+                .collect(Collectors.groupingBy(size -> size.getSizeGrade(), Collectors.counting()));
 
         return gradeCounts.entrySet().stream()
-                .max(Comparator.comparingLong(Map.Entry::getValue))
+                .max(Comparator.comparingLong(entry -> entry.getValue()))
                 .map(entry -> entry.getKey().name())
                 .orElse("N/A");
     }
@@ -157,7 +157,7 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                 .count();
 
         long totalReviewWaitMinutes = bottlenecks.stream()
-                .filter(PullRequestBottleneck::hasReview)
+                .filter(bottleneck -> bottleneck.hasReview())
                 .mapToLong(b -> b.getReviewWait().getMinutes())
                 .sum();
 
@@ -170,7 +170,7 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                 .count();
 
         long closedWithoutReviewCount = lifecycles.stream()
-                .filter(PullRequestLifecycle::isClosedWithoutReview)
+                .filter(lifecycle -> lifecycle.isClosedWithoutReview())
                 .count();
 
         return new ReviewHealthDto(
@@ -200,16 +200,16 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                 .count();
 
         long uniquePullRequestCount = sessions.stream()
-                .map(ReviewSession::getPullRequestId)
+                .map(session -> session.getPullRequestId())
                 .distinct()
                 .count();
 
         long totalReviewRoundTrips = activities.stream()
-                .mapToLong(ReviewActivity::getReviewRoundTrips)
+                .mapToLong(activity -> activity.getReviewRoundTrips())
                 .sum();
 
         long totalCommentCount = activities.stream()
-                .mapToLong(ReviewActivity::getTotalCommentCount)
+                .mapToLong(activity -> activity.getTotalCommentCount())
                 .sum();
 
         double giniCoefficient = calculateGiniCoefficient(sessions);
@@ -243,7 +243,7 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
             return 0.0;
         }
 
-        double totalSum = counts.stream().mapToDouble(Long::doubleValue).sum();
+        double totalSum = counts.stream().mapToDouble(value -> value).sum();
         if (totalSum == 0) {
             return 0.0;
         }

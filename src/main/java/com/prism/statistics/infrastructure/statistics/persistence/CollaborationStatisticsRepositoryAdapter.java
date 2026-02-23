@@ -60,7 +60,7 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
         }
 
         List<Long> pullRequestIds = pullRequests.stream()
-                .map(PullRequest::getId)
+                .map(pr -> pr.getId())
                 .toList();
 
         List<Review> reviews = queryFactory
@@ -104,13 +104,13 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
         long totalCount = pullRequests.size();
 
         Map<Long, PullRequest> prMap = pullRequests.stream()
-                .collect(Collectors.toMap(PullRequest::getId, pr -> pr));
+                .collect(Collectors.toMap(pr -> pr.getId(), pr -> pr));
 
         Map<Long, PullRequestBottleneck> bottleneckMap = bottlenecks.stream()
-                .collect(Collectors.toMap(PullRequestBottleneck::getPullRequestId, b -> b));
+                .collect(Collectors.toMap(bottleneck -> bottleneck.getPullRequestId(), b -> b));
 
         long reviewedCount = bottlenecks.stream()
-                .filter(PullRequestBottleneck::hasReview)
+                .filter(bottleneck -> bottleneck.hasReview())
                 .count();
 
         Map<Long, Long> reviewerReviewCounts = calculateReviewerReviewCounts(reviews);
@@ -148,7 +148,7 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
         Map<Long, Long> draftOpenTransitionCounts = stateHistories.stream()
                 .filter(h -> isDraftOpenTransition(h))
                 .collect(Collectors.groupingBy(
-                        PullRequestStateHistory::getPullRequestId,
+                        history -> history.getPullRequestId(),
                         Collectors.counting()
                 ));
 
@@ -171,7 +171,7 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
     ) {
         Map<Long, LocalDateTime> prCreatedAtMap = pullRequests.stream()
                 .collect(Collectors.toMap(
-                        PullRequest::getId,
+                        pr -> pr.getId(),
                         pr -> pr.getTiming().getGithubCreatedAt()
                 ));
 
@@ -181,7 +181,7 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
                     LocalDateTime prCreatedAt = prCreatedAtMap.get(h.getPullRequestId());
                     return prCreatedAt != null && h.getGithubChangedAt().isAfter(prCreatedAt);
                 })
-                .map(RequestedReviewerHistory::getPullRequestId)
+                .map(history -> history.getPullRequestId())
                 .distinct()
                 .count();
     }
@@ -233,7 +233,7 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
 
         Map<Long, Review> firstReviewByPr = reviews.stream()
                 .collect(Collectors.toMap(
-                        Review::getPullRequestId,
+                        review -> review.getPullRequestId(),
                         r -> r,
                         (existing, replacement) ->
                                 existing.getGithubSubmittedAt().isBefore(replacement.getGithubSubmittedAt())

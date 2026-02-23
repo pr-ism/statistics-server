@@ -42,16 +42,16 @@ public class ThroughputStatisticsRepositoryAdapter implements ThroughputStatisti
         }
 
         long mergedCount = pullRequests.stream()
-                .filter(PullRequest::isMerged)
+                .filter(pr -> pr.isMerged())
                 .count();
 
         long closedCount = pullRequests.stream()
-                .filter(PullRequest::isClosed)
+                .filter(pr -> pr.isClosed())
                 .count();
 
         long totalMergeTimeMinutes = pullRequests.stream()
-                .filter(PullRequest::isMerged)
-                .mapToLong(PullRequest::calculateMergeTimeMinutes)
+                .filter(pr -> pr.isMerged())
+                .mapToLong(pr -> pr.calculateMergeTimeMinutes())
                 .sum();
 
         return Optional.of(new ThroughputStatisticsDto(

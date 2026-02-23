@@ -35,7 +35,7 @@ public class StatisticsSummaryQueryService {
 
         return statisticsSummaryRepository
                 .findStatisticsSummaryByProjectId(projectId, request.startDate(), request.endDate())
-                .map(this::toResponse)
+                .map(dto -> toResponse(dto))
                 .orElse(StatisticsSummaryResponse.empty());
     }
 
