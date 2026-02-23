@@ -53,17 +53,9 @@ public class StatisticsSummaryQueryService {
         long closedPrCount = dto.closedPrCount();
         long totalClosedPrs = mergedPrCount + closedPrCount;
 
-        double mergeSuccessRate = totalClosedPrs > 0
-                ? (double) mergedPrCount / totalClosedPrs * 100.0
-                : 0.0;
-
-        double avgMergeTimeMinutes = mergedPrCount > 0
-                ? (double) dto.totalMergeTimeMinutes() / mergedPrCount
-                : 0.0;
-
-        double avgSizeScore = dto.sizeMeasuredCount() > 0 && dto.totalSizeScore() != null
-                ? dto.totalSizeScore().doubleValue() / dto.sizeMeasuredCount()
-                : 0.0;
+        double mergeSuccessRate = calculateRate(mergedPrCount, totalClosedPrs);
+        double avgMergeTimeMinutes = calculateAverage(dto.totalMergeTimeMinutes(), mergedPrCount);
+        double avgSizeScore = calculateAverage(dto.totalSizeScore(), dto.sizeMeasuredCount());
 
         return OverviewSummary.of(
                 dto.totalPrCount(),
@@ -79,25 +71,11 @@ public class StatisticsSummaryQueryService {
     private ReviewHealthSummary toReviewHealthSummary(ReviewHealthDto dto) {
         long totalPrCount = dto.totalPrCount();
 
-        double reviewRate = totalPrCount > 0
-                ? (double) dto.reviewedPrCount() / totalPrCount * 100.0
-                : 0.0;
-
-        double avgReviewWaitMinutes = dto.reviewedPrCount() > 0
-                ? (double) dto.totalReviewWaitMinutes() / dto.reviewedPrCount()
-                : 0.0;
-
-        double firstReviewApproveRate = dto.reviewedPrCount() > 0
-                ? (double) dto.firstReviewApproveCount() / dto.reviewedPrCount() * 100.0
-                : 0.0;
-
-        double changesRequestedRate = dto.reviewedPrCount() > 0
-                ? (double) dto.changesRequestedCount() / dto.reviewedPrCount() * 100.0
-                : 0.0;
-
-        double closedWithoutReviewRate = totalPrCount > 0
-                ? (double) dto.closedWithoutReviewCount() / totalPrCount * 100.0
-                : 0.0;
+        double reviewRate = calculateRate(dto.reviewedPrCount(), totalPrCount);
+        double avgReviewWaitMinutes = calculateAverage(dto.totalReviewWaitMinutes(), dto.reviewedPrCount());
+        double firstReviewApproveRate = calculateRate(dto.firstReviewApproveCount(), dto.reviewedPrCount());
+        double changesRequestedRate = calculateRate(dto.changesRequestedCount(), dto.reviewedPrCount());
+        double closedWithoutReviewRate = calculateRate(dto.closedWithoutReviewCount(), totalPrCount);
 
         return ReviewHealthSummary.of(
                 reviewRate,
@@ -111,17 +89,9 @@ public class StatisticsSummaryQueryService {
     private TeamActivitySummary toTeamActivitySummary(TeamActivityDto dto) {
         long uniquePrCount = dto.uniquePullRequestCount();
 
-        double avgReviewersPerPr = uniquePrCount > 0
-                ? (double) dto.totalReviewerAssignments() / uniquePrCount
-                : 0.0;
-
-        double avgReviewRoundTrips = uniquePrCount > 0
-                ? (double) dto.totalReviewRoundTrips() / uniquePrCount
-                : 0.0;
-
-        double avgCommentCount = uniquePrCount > 0
-                ? (double) dto.totalCommentCount() / uniquePrCount
-                : 0.0;
+        double avgReviewersPerPr = calculateAverage(dto.totalReviewerAssignments(), uniquePrCount);
+        double avgReviewRoundTrips = calculateAverage(dto.totalReviewRoundTrips(), uniquePrCount);
+        double avgCommentCount = calculateAverage(dto.totalCommentCount(), uniquePrCount);
 
         return TeamActivitySummary.of(
                 dto.uniqueReviewerCount(),
@@ -135,17 +105,9 @@ public class StatisticsSummaryQueryService {
     private BottleneckSummary toBottleneckSummary(BottleneckDto dto) {
         long count = dto.bottleneckCount();
 
-        double avgReviewWaitMinutes = count > 0
-                ? (double) dto.totalReviewWaitMinutes() / count
-                : 0.0;
-
-        double avgReviewProgressMinutes = count > 0
-                ? (double) dto.totalReviewProgressMinutes() / count
-                : 0.0;
-
-        double avgMergeWaitMinutes = count > 0
-                ? (double) dto.totalMergeWaitMinutes() / count
-                : 0.0;
+        double avgReviewWaitMinutes = calculateAverage(dto.totalReviewWaitMinutes(), count);
+        double avgReviewProgressMinutes = calculateAverage(dto.totalReviewProgressMinutes(), count);
+        double avgMergeWaitMinutes = calculateAverage(dto.totalMergeWaitMinutes(), count);
 
         return BottleneckSummary.of(
                 avgReviewWaitMinutes,
@@ -158,5 +120,26 @@ public class StatisticsSummaryQueryService {
         if (!projectRepository.existsByIdAndUserId(projectId, userId)) {
             throw new ProjectOwnershipException();
         }
+    }
+
+    private double calculateRate(long numerator, long denominator) {
+        if (denominator <= 0) {
+            return 0.0d;
+        }
+        return numerator * 100.0d / denominator;
+    }
+
+    private double calculateAverage(long total, long count) {
+        if (count <= 0) {
+            return 0.0d;
+        }
+        return (double) total / count;
+    }
+
+    private double calculateAverage(java.math.BigDecimal total, long count) {
+        if (count <= 0 || total == null) {
+            return 0.0d;
+        }
+        return total.doubleValue() / count;
     }
 }
