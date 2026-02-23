@@ -47,7 +47,7 @@ public class PullRequestRepositoryAdapter implements PullRequestRepository {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Optional<PullRequest> findWithLock(Long githubPullRequestId) {
         return Optional.ofNullable(
                 queryFactory
