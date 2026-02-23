@@ -20,6 +20,7 @@ import com.prism.statistics.domain.analysis.metadata.review.Review;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.project.Project;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
+import com.prism.statistics.domain.statistics.repository.dto.CollaborationStatisticsDto.AuthorReviewWaitTimeDto;
 import com.prism.statistics.domain.statistics.repository.dto.CollaborationStatisticsDto.ReviewerResponseTimeDto;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestBottleneckRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaReviewSessionRepository;
@@ -215,6 +216,27 @@ class CollaborationStatisticsQueryServiceTest {
         assertThat(stats).hasSize(1);
         assertThat(stats.getFirst().reviewerName()).isEqualTo("reviewer1");
         assertThat(stats.getFirst().avgResponseTimeMinutes()).isEqualTo(50.0);
+    }
+
+    @Test
+    void 작성자_리뷰_대기_시간은_평균_대기_시간_내림차순으로_정렬된다() {
+        List<AuthorReviewWaitTimeDto> dtos = List.of(
+                new AuthorReviewWaitTimeDto(1L, "author-1", 120L, 2L),
+                new AuthorReviewWaitTimeDto(2L, "author-2", 30L, 1L)
+        );
+
+        @SuppressWarnings("unchecked")
+        List<com.prism.statistics.application.statistics.dto.response.CollaborationStatisticsResponse.AuthorReviewWaitTime> result =
+                (List<com.prism.statistics.application.statistics.dto.response.CollaborationStatisticsResponse.AuthorReviewWaitTime>)
+                        ReflectionTestUtils.invokeMethod(
+                                collaborationStatisticsQueryService,
+                                "buildAuthorReviewWaitTimes",
+                                dtos
+                        );
+
+        assertThat(result).hasSize(2);
+        assertThat(result.getFirst().authorName()).isEqualTo("author-1");
+        assertThat(result.getFirst().avgReviewWaitMinutes()).isGreaterThan(result.get(1).avgReviewWaitMinutes());
     }
 
     @Test

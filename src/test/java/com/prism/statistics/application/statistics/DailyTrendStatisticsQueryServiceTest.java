@@ -45,7 +45,8 @@ class DailyTrendStatisticsQueryServiceTest {
 
         LocalDateTime today = LocalDate.now().atStartOfDay();
         createAndSavePullRequest(project.getId(), today.minusDays(1), today); // 어제 생성, 오늘 머지
-        createAndSavePullRequest(project.getId(), today.minusDays(2), null); // 그제 생성, 머지 안됨
+        createAndSavePullRequest(project.getId(), today.minusDays(2), today.minusDays(1)); // 그제 생성, 어제 머지
+        createAndSavePullRequest(project.getId(), today.minusDays(3), null); // 3일 전 생성, 머지 안됨
 
         DailyTrendStatisticsRequest request = new DailyTrendStatisticsRequest(
                 LocalDate.now().minusDays(3),
@@ -60,8 +61,8 @@ class DailyTrendStatisticsQueryServiceTest {
         assertAll(
                 () -> assertThat(response.dailyCreatedTrend()).isNotEmpty(),
                 () -> assertThat(response.dailyMergedTrend()).isNotEmpty(),
-                () -> assertThat(response.summary().totalCreatedCount()).isEqualTo(2),
-                () -> assertThat(response.summary().totalMergedCount()).isEqualTo(1),
+                () -> assertThat(response.summary().totalCreatedCount()).isEqualTo(3),
+                () -> assertThat(response.summary().totalMergedCount()).isEqualTo(2),
                 () -> assertThat(response.summary().avgDailyCreatedCount()).isGreaterThan(0),
                 () -> assertThat(response.summary().avgDailyMergedCount()).isGreaterThan(0)
         );
