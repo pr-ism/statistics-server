@@ -49,7 +49,8 @@ public class PullRequestBottleneck extends BaseTimeEntity {
     public static PullRequestBottleneck createOnFirstReview(
             Long pullRequestId,
             LocalDateTime reviewReadyAt,
-            LocalDateTime firstReviewAt
+            LocalDateTime firstReviewAt,
+            boolean isApprove
     ) {
         DurationMinutes reviewWait = DurationMinutes.between(reviewReadyAt, firstReviewAt);
 
@@ -59,6 +60,7 @@ public class PullRequestBottleneck extends BaseTimeEntity {
                 .reviewProgress(DurationMinutes.zero())
                 .firstReviewAt(firstReviewAt)
                 .lastReviewAt(firstReviewAt)
+                .lastApproveAt(isApprove ? firstReviewAt : null)
                 .build();
     }
 

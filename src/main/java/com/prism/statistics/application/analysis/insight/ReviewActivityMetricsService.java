@@ -133,12 +133,9 @@ public class ReviewActivityMetricsService {
         PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
                 pullRequestId,
                 reviewReadyAt,
-                reviewedAt
+                reviewedAt,
+                isApprove
         );
-
-        if (isApprove) {
-            bottleneck.updateOnNewReview(reviewedAt, true);
-        }
 
         pullRequestBottleneckRepository.save(bottleneck);
     }
