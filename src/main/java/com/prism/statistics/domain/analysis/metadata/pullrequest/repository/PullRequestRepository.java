@@ -13,6 +13,8 @@ public interface PullRequestRepository {
 
     Optional<PullRequest> findPullRequest(Long projectId, int pullRequestNumber);
 
+    Optional<PullRequest> findWithLock(Long githubPullRequestId);
+
     List<PullRequest> findAllByProjectId(Long projectId);
 
     Optional<Long> findIdByGithubId(Long githubPullRequestId);

@@ -5,6 +5,7 @@ import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullReq
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,18 @@ public class PullRequestRepositoryAdapter implements PullRequestRepository {
                                 pullRequest.projectId.eq(projectId),
                                 pullRequest.pullRequestNumber.eq(pullRequestNumber)
                         )
+                        .fetchOne()
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<PullRequest> findWithLock(Long githubPullRequestId) {
+        return Optional.ofNullable(
+                queryFactory
+                        .selectFrom(pullRequest)
+                        .where(pullRequest.githubPullRequestId.eq(githubPullRequestId))
+                        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                         .fetchOne()
         );
     }
