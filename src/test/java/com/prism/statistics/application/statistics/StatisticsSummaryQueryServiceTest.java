@@ -258,13 +258,8 @@ class StatisticsSummaryQueryServiceTest {
 
     private PullRequest createAndSavePullRequest(Long projectId, PullRequestState state) {
         LocalDateTime createdAt = LocalDateTime.now().minusDays(1);
-        LocalDateTime closedAt = state.isClosureState() ? LocalDateTime.now() : null;
-
-        PullRequestTiming timing = state.isMerged()
-                ? PullRequestTiming.createMerged(createdAt, closedAt)
-                : state.isClosed()
-                ? PullRequestTiming.createClosed(createdAt, closedAt)
-                : PullRequestTiming.createOpen(createdAt);
+        LocalDateTime closedAt = resolveClosedAt(state);
+        PullRequestTiming timing = resolveTiming(state, createdAt, closedAt);
 
         PullRequest pullRequest = PullRequest.builder()
                 .githubPullRequestId(System.nanoTime())
@@ -322,7 +317,7 @@ class StatisticsSummaryQueryServiceTest {
         PullRequestLifecycle lifecycle = PullRequestLifecycle.builder()
                 .pullRequestId(pullRequestId)
                 .reviewReadyAt(LocalDateTime.now().minusDays(1))
-                .timeToMerge(closedWithoutReview ? null : DurationMinutes.of(1440L))
+                .timeToMerge(resolveTimeToMerge(closedWithoutReview))
                 .totalLifespan(DurationMinutes.of(1440L))
                 .activeWork(DurationMinutes.of(120L))
                 .stateChangeCount(1)
@@ -330,6 +325,34 @@ class StatisticsSummaryQueryServiceTest {
                 .closedWithoutReview(closedWithoutReview)
                 .build();
         lifecycleRepository.save(lifecycle);
+    }
+
+    private LocalDateTime resolveClosedAt(PullRequestState state) {
+        if (state.isClosureState()) {
+            return LocalDateTime.now();
+        }
+        return null;
+    }
+
+    private PullRequestTiming resolveTiming(
+            PullRequestState state,
+            LocalDateTime createdAt,
+            LocalDateTime closedAt
+    ) {
+        if (state.isMerged()) {
+            return PullRequestTiming.createMerged(createdAt, closedAt);
+        }
+        if (state.isClosed()) {
+            return PullRequestTiming.createClosed(createdAt, closedAt);
+        }
+        return PullRequestTiming.createOpen(createdAt);
+    }
+
+    private DurationMinutes resolveTimeToMerge(boolean closedWithoutReview) {
+        if (closedWithoutReview) {
+            return null;
+        }
+        return DurationMinutes.of(1440L);
     }
 
     private void createAndSaveBottleneck(Long pullRequestId, Long reviewWait, Long reviewProgress, Long mergeWait) {
