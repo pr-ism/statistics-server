@@ -9,6 +9,7 @@ import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewRep
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -24,35 +25,35 @@ public class PullRequestSavedEventListener {
     private final ReviewRepository reviewRepository;
 
     @Async("backfillExecutor")
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void backfillPullRequestLabel(PullRequestSavedEvent event) {
         pullRequestLabelRepository.backfillPullRequestId(event.githubPullRequestId(), event.pullRequestId());
     }
 
     @Async("backfillExecutor")
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void backfillPullRequestLabelHistory(PullRequestSavedEvent event) {
         pullRequestLabelHistoryRepository.backfillPullRequestId(event.githubPullRequestId(), event.pullRequestId());
     }
 
     @Async("backfillExecutor")
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void backfillRequestedReviewer(PullRequestSavedEvent event) {
         requestedReviewerRepository.backfillPullRequestId(event.githubPullRequestId(), event.pullRequestId());
     }
 
     @Async("backfillExecutor")
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void backfillRequestedReviewerHistory(PullRequestSavedEvent event) {
         requestedReviewerHistoryRepository.backfillPullRequestId(event.githubPullRequestId(), event.pullRequestId());
     }
 
     @Async("backfillExecutor")
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void backfillReview(PullRequestSavedEvent event) {
         reviewRepository.backfillPullRequestId(event.githubPullRequestId(), event.pullRequestId());
