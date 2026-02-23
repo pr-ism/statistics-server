@@ -8,8 +8,10 @@ import com.prism.statistics.domain.analysis.insight.review.repository.ReviewResp
 import com.prism.statistics.domain.analysis.insight.review.repository.ReviewSessionRepository;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.PullRequestNotFoundException;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
+import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewNotFoundException;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewRepository;
 import java.time.LocalDateTime;
@@ -30,7 +32,7 @@ public class ReviewActivityMetricsService {
     @Transactional
     public void deriveMetrics(Long reviewId) {
         Review review = reviewRepository.findByGithubReviewId(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("Review not found: " + reviewId));
+                .orElseThrow(ReviewNotFoundException::new);
 
         if (!review.hasAssignedPullRequest()) {
             return;
@@ -124,7 +126,7 @@ public class ReviewActivityMetricsService {
 
     private void createNewBottleneck(Long pullRequestId, LocalDateTime reviewedAt, boolean isApprove) {
         PullRequest pullRequest = pullRequestRepository.findById(pullRequestId)
-                .orElseThrow(() -> new IllegalArgumentException("PullRequest not found: " + pullRequestId));
+                .orElseThrow(() -> new PullRequestNotFoundException());
 
         LocalDateTime reviewReadyAt = pullRequest.getTiming().getGithubCreatedAt();
 

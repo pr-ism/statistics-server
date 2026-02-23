@@ -22,7 +22,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.HeadC
 import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.PullRequestNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.RequestedReviewerNotFoundException;
 import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewCommentNotFoundException;
-import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException;
+import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewNotFoundException;
 import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUserIdentityException;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestLabelNotFoundException;
 import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
@@ -190,6 +190,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ReviewNotFoundException.class)
     public ResponseEntity<Object> handleReviewNotFoundException(ReviewNotFoundException ex) {
         log.info("ReviewNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(ReviewErrorCode.REVIEW_NOT_FOUND);
+    }
+
+    @ExceptionHandler(com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException.class)
+    public ResponseEntity<Object> handleInfraReviewNotFoundException(
+            com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException ex
+    ) {
+        log.info("InfraReviewNotFoundException : {}", ex.getMessage());
 
         return createResponseEntity(ReviewErrorCode.REVIEW_NOT_FOUND);
     }
