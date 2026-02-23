@@ -3,8 +3,8 @@ package com.prism.statistics.application.analysis.metadata.review;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentDeletedRequest;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewCommentRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewCommentNotFoundException;
+import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
+import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewCommentNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

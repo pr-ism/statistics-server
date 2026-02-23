@@ -9,7 +9,7 @@ import com.prism.statistics.domain.analysis.metadata.review.history.RequestedRev
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewerAction;
 import com.prism.statistics.domain.analysis.metadata.review.repository.RequestedReviewerHistoryRepository;
 import com.prism.statistics.domain.analysis.metadata.review.repository.RequestedReviewerRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
+import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
