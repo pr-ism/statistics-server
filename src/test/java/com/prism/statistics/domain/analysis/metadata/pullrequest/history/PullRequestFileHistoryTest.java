@@ -214,6 +214,47 @@ class PullRequestFileHistoryTest {
                 .hasMessage("GitHub PullRequest ID는 필수입니다.");
     }
 
+    @Test
+    void createEarly에서_Head_Commit_SHA가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarly(GITHUB_PULL_REQUEST_ID, null, "file.java", FileChangeType.ADDED, FILE_CHANGES, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void createEarly에서_파일명이_null이거나_빈_문자열이면_예외가_발생한다(String fileName) {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarly(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, fileName, FileChangeType.ADDED, FILE_CHANGES, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("파일명은 필수입니다.");
+    }
+
+    @Test
+    void createEarly에서_변경_타입이_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarly(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "file.java", null, FILE_CHANGES, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("변경 타입은 필수입니다.");
+    }
+
+    @Test
+    void createEarly에서_파일_변경_정보가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarly(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "file.java", FileChangeType.ADDED, null, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("파일 변경 정보는 필수입니다.");
+    }
+
+    @Test
+    void createEarly에서_변경_시각이_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarly(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "file.java", FileChangeType.ADDED, FILE_CHANGES, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("변경 시각은 필수입니다.");
+    }
+
     @ParameterizedTest
     @NullAndEmptySource
     void createEarlyRenamed에서_이전_파일명이_null이거나_빈_문자열이면_예외가_발생한다(String previousFileName) {

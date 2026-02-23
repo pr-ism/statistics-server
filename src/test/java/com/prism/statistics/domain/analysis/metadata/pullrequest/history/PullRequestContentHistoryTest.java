@@ -124,6 +124,46 @@ class PullRequestContentHistoryTest {
     }
 
     @Test
+    void createEarly에서_Head_Commit_SHA가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestContentHistory.createEarly(GITHUB_PULL_REQUEST_ID, null, CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
+    @Test
+    void createEarly에서_Head_Commit_SHA가_빈_문자열이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestContentHistory.createEarly(GITHUB_PULL_REQUEST_ID, "  ", CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
+    @Test
+    void createEarly에서_변경된_값이_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestContentHistory.createEarly(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, null, COMMIT_COUNT, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("변경 내역은 필수입니다.");
+    }
+
+    @Test
+    void createEarly에서_커밋_수가_음수이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestContentHistory.createEarly(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, CHANGE_STATS, -1, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("커밋 수는 0보다 작을 수 없습니다.");
+    }
+
+    @Test
+    void createEarly에서_변경_시각이_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestContentHistory.createEarly(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, CHANGE_STATS, COMMIT_COUNT, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("변경 시각은 필수입니다.");
+    }
+
+    @Test
     void pullRequestId가_null일_때_할당한다() {
         // given
         PullRequestContentHistory history = PullRequestContentHistory.createEarly(

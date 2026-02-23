@@ -102,6 +102,39 @@ class PullRequestFileTest {
     }
 
     @Test
+    void createEarly에서_GitHub_Pull_Request_ID가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFile.createEarly(null, "file.java", FileChangeType.ADDED, FILE_CHANGES))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("GitHub PullRequest ID는 필수입니다.");
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void createEarly에서_파일명이_null이거나_빈_문자열이면_예외가_발생한다(String fileName) {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFile.createEarly(GITHUB_PULL_REQUEST_ID, fileName, FileChangeType.ADDED, FILE_CHANGES))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("파일명은 필수입니다.");
+    }
+
+    @Test
+    void createEarly에서_변경_타입이_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFile.createEarly(GITHUB_PULL_REQUEST_ID, "file.java", null, FILE_CHANGES))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("변경 타입은 필수입니다.");
+    }
+
+    @Test
+    void createEarly에서_파일_변경_정보가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFile.createEarly(GITHUB_PULL_REQUEST_ID, "file.java", FileChangeType.ADDED, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("파일 변경 정보는 필수입니다.");
+    }
+
+    @Test
     void createEarly로_orphan_PullRequestFile을_생성한다() {
         // when
         PullRequestFile pullRequestFile = PullRequestFile.createEarly(

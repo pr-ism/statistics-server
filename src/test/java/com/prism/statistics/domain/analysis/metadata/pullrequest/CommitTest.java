@@ -90,6 +90,23 @@ class CommitTest {
                 .hasMessage("GitHub PullRequest ID는 필수입니다.");
     }
 
+    @ParameterizedTest
+    @NullAndEmptySource
+    void createEarly에서_커밋_SHA가_null이거나_빈_문자열이면_예외가_발생한다(String commitSha) {
+        // when & then
+        assertThatThrownBy(() -> Commit.createEarly(GITHUB_PULL_REQUEST_ID, commitSha, COMMITTED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("커밋 SHA는 필수입니다.");
+    }
+
+    @Test
+    void createEarly에서_커밋_시각이_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> Commit.createEarly(GITHUB_PULL_REQUEST_ID, COMMIT_SHA, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("커밋 시각은 필수입니다.");
+    }
+
     @Test
     void pullRequestId가_null일_때_할당한다() {
         // given
