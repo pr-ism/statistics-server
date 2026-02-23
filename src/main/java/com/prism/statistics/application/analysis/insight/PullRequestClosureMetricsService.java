@@ -2,6 +2,7 @@ package com.prism.statistics.application.analysis.insight;
 
 import com.prism.statistics.domain.analysis.insight.activity.ReviewActivity;
 import com.prism.statistics.domain.analysis.insight.activity.repository.ReviewActivityRepository;
+import com.prism.statistics.domain.analysis.insight.bottleneck.repository.PullRequestBottleneckRepository;
 import com.prism.statistics.domain.analysis.insight.lifecycle.PullRequestLifecycle;
 import com.prism.statistics.domain.analysis.insight.lifecycle.repository.PullRequestLifecycleRepository;
 import com.prism.statistics.domain.analysis.insight.vo.DurationMinutes;
@@ -26,6 +27,7 @@ public class PullRequestClosureMetricsService {
     private final ReviewRepository reviewRepository;
     private final PullRequestLifecycleRepository lifecycleRepository;
     private final ReviewActivityRepository reviewActivityRepository;
+    private final PullRequestBottleneckRepository pullRequestBottleneckRepository;
 
     @Transactional
     public void deriveClosureMetrics(Long pullRequestId, PullRequestState newState, LocalDateTime closedAt) {
@@ -43,6 +45,7 @@ public class PullRequestClosureMetricsService {
 
         saveOrUpdateLifecycle(pullRequest, newState, closedAt, reviews.isEmpty());
         saveReviewActivity(pullRequest, reviews);
+        updateBottleneckOnMerge(pullRequestId, newState, closedAt);
     }
 
     private void saveOrUpdateLifecycle(
@@ -154,5 +157,14 @@ public class PullRequestClosureMetricsService {
             return DurationMinutes.between(createdAt, closedAt);
         }
         return null;
+    }
+
+    private void updateBottleneckOnMerge(Long pullRequestId, PullRequestState newState, LocalDateTime closedAt) {
+        if (!newState.isMerged()) {
+            return;
+        }
+
+        pullRequestBottleneckRepository.findByPullRequestId(pullRequestId)
+                .ifPresent(bottleneck -> bottleneck.updateOnMerge(closedAt));
     }
 }
