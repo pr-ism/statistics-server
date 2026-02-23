@@ -32,7 +32,7 @@ public class ReviewActivityMetricsService {
     @Transactional
     public void deriveMetrics(Long reviewId) {
         Review review = reviewRepository.findByGithubReviewId(reviewId)
-                .orElseThrow(ReviewNotFoundException::new);
+                .orElseThrow(() -> new ReviewNotFoundException());
 
         if (!review.hasAssignedPullRequest()) {
             return;
