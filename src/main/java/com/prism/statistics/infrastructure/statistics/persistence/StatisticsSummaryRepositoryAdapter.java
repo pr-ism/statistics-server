@@ -54,10 +54,13 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
             return Optional.empty();
         }
 
+        List<ReviewActivity> activities = fetchReviewActivities(pullRequestIds);
+        List<PullRequestBottleneck> bottlenecks = fetchPullRequestBottlenecks(pullRequestIds);
+
         OverviewDto overview = buildOverviewDto(projectId, pullRequestIds, startDate, endDate);
-        ReviewHealthDto reviewHealth = buildReviewHealthDto(pullRequestIds);
-        TeamActivityDto teamActivity = buildTeamActivityDto(pullRequestIds);
-        BottleneckDto bottleneck = buildBottleneckDto(pullRequestIds);
+        ReviewHealthDto reviewHealth = buildReviewHealthDto(pullRequestIds, activities, bottlenecks);
+        TeamActivityDto teamActivity = buildTeamActivityDto(pullRequestIds, activities);
+        BottleneckDto bottleneck = buildBottleneckDto(bottlenecks);
 
         return Optional.of(new StatisticsSummaryDto(overview, reviewHealth, teamActivity, bottleneck));
     }
@@ -137,20 +140,14 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                 .orElse("N/A");
     }
 
-    private ReviewHealthDto buildReviewHealthDto(List<Long> pullRequestIds) {
-        List<ReviewActivity> activities = queryFactory
-                .selectFrom(reviewActivity)
-                .where(reviewActivity.pullRequestId.in(pullRequestIds))
-                .fetch();
-
+    private ReviewHealthDto buildReviewHealthDto(
+            List<Long> pullRequestIds,
+            List<ReviewActivity> activities,
+            List<PullRequestBottleneck> bottlenecks
+    ) {
         List<PullRequestLifecycle> lifecycles = queryFactory
                 .selectFrom(pullRequestLifecycle)
                 .where(pullRequestLifecycle.pullRequestId.in(pullRequestIds))
-                .fetch();
-
-        List<PullRequestBottleneck> bottlenecks = queryFactory
-                .selectFrom(pullRequestBottleneck)
-                .where(pullRequestBottleneck.pullRequestId.in(pullRequestIds))
                 .fetch();
 
         long totalPrCount = pullRequestIds.size();
@@ -185,15 +182,10 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
         );
     }
 
-    private TeamActivityDto buildTeamActivityDto(List<Long> pullRequestIds) {
+    private TeamActivityDto buildTeamActivityDto(List<Long> pullRequestIds, List<ReviewActivity> activities) {
         List<ReviewSession> sessions = queryFactory
                 .selectFrom(reviewSession)
                 .where(reviewSession.pullRequestId.in(pullRequestIds))
-                .fetch();
-
-        List<ReviewActivity> activities = queryFactory
-                .selectFrom(reviewActivity)
-                .where(reviewActivity.pullRequestId.in(pullRequestIds))
                 .fetch();
 
         long uniqueReviewerCount = sessions.stream()
@@ -263,12 +255,7 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
         return giniSum / (n * totalSum);
     }
 
-    private BottleneckDto buildBottleneckDto(List<Long> pullRequestIds) {
-        List<PullRequestBottleneck> bottlenecks = queryFactory
-                .selectFrom(pullRequestBottleneck)
-                .where(pullRequestBottleneck.pullRequestId.in(pullRequestIds))
-                .fetch();
-
+    private BottleneckDto buildBottleneckDto(List<PullRequestBottleneck> bottlenecks) {
         long totalReviewWaitMinutes = bottlenecks.stream()
                 .filter(b -> b.getReviewWait() != null)
                 .mapToLong(b -> b.getReviewWait().getMinutes())
@@ -290,6 +277,20 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                 totalMergeWaitMinutes,
                 bottlenecks.size()
         );
+    }
+
+    private List<ReviewActivity> fetchReviewActivities(List<Long> pullRequestIds) {
+        return queryFactory
+                .selectFrom(reviewActivity)
+                .where(reviewActivity.pullRequestId.in(pullRequestIds))
+                .fetch();
+    }
+
+    private List<PullRequestBottleneck> fetchPullRequestBottlenecks(List<Long> pullRequestIds) {
+        return queryFactory
+                .selectFrom(pullRequestBottleneck)
+                .where(pullRequestBottleneck.pullRequestId.in(pullRequestIds))
+                .fetch();
     }
 
     private BooleanExpression createdAtDateRangeCondition(LocalDate startDate, LocalDate endDate) {
