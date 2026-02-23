@@ -10,8 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.prism.statistics.application.analysis.metadata.review.ReviewCommentEditedService;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentEditedRequest;
-import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewCommentNotFoundException;
+import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
+import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewCommentNotFoundException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +39,12 @@ class ReviewCommentEditedControllerTest extends CommonControllerSliceTestSupport
 
         // when & then
         mockMvc.perform(
-                post("/collect/review/comment/edited")
-                        .header(API_KEY_HEADER, TEST_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload)
-        )
-        .andExpect(status().isOk());
+                        post("/collect/review/comment/edited")
+                                .header(API_KEY_HEADER, TEST_API_KEY)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(payload)
+                )
+                .andExpect(status().isOk());
 
         then(reviewCommentEditedService).should()
                 .editReviewComment(eq(TEST_API_KEY), any(ReviewCommentEditedRequest.class));
@@ -63,11 +63,11 @@ class ReviewCommentEditedControllerTest extends CommonControllerSliceTestSupport
 
         // when & then
         mockMvc.perform(
-                post("/collect/review/comment/edited")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload)
-        )
-        .andExpect(status().isBadRequest());
+                        post("/collect/review/comment/edited")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(payload)
+                )
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -86,14 +86,14 @@ class ReviewCommentEditedControllerTest extends CommonControllerSliceTestSupport
 
         // when & then
         mockMvc.perform(
-                post("/collect/review/comment/edited")
-                        .header(API_KEY_HEADER, TEST_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload)
-        )
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.errorCode").value("P01"))
-        .andExpect(jsonPath("$.message").value("유효하지 않은 API Key입니다."));
+                        post("/collect/review/comment/edited")
+                                .header(API_KEY_HEADER, TEST_API_KEY)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(payload)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("P01"))
+                .andExpect(jsonPath("$.message").value("유효하지 않은 API Key입니다."));
     }
 
     @Test
@@ -112,13 +112,13 @@ class ReviewCommentEditedControllerTest extends CommonControllerSliceTestSupport
 
         // when & then
         mockMvc.perform(
-                post("/collect/review/comment/edited")
-                        .header(API_KEY_HEADER, TEST_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload)
-        )
-        .andExpect(status().isInternalServerError())
-        .andExpect(jsonPath("$.errorCode").value("RC00"))
-        .andExpect(jsonPath("$.message").value("리뷰 댓글을 찾을 수 없습니다."));
+                        post("/collect/review/comment/edited")
+                                .header(API_KEY_HEADER, TEST_API_KEY)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(payload)
+                )
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.errorCode").value("RC00"))
+                .andExpect(jsonPath("$.message").value("리뷰 댓글을 찾을 수 없습니다."));
     }
 }
