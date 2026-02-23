@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.domain.analysis.insight.activity.ReviewActivity;
+import com.prism.statistics.domain.analysis.insight.bottleneck.PullRequestBottleneck;
 import com.prism.statistics.domain.analysis.insight.lifecycle.PullRequestLifecycle;
 import com.prism.statistics.domain.analysis.insight.vo.DurationMinutes;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
@@ -14,6 +15,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestC
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestTiming;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
+import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestBottleneckRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullRequestLifecycleRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaReviewActivityRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
@@ -45,16 +47,19 @@ class PullRequestClosureMetricsServiceTest {
     @Autowired
     private JpaReviewActivityRepository reviewActivityRepository;
 
+    @Autowired
+    private JpaPullRequestBottleneckRepository pullRequestBottleneckRepository;
+
     @Test
     void 존재하지_않는_PR로_closure_메트릭을_생성하면_예외가_발생한다() {
         // when & then
         org.assertj.core.api.Assertions.assertThatThrownBy(() ->
-                closureMetricsService.deriveClosureMetrics(
-                        999999L,
-                        PullRequestState.MERGED,
-                        LocalDateTime.now()
-                )
-        ).isInstanceOf(IllegalArgumentException.class)
+                        closureMetricsService.deriveClosureMetrics(
+                                999999L,
+                                PullRequestState.MERGED,
+                                LocalDateTime.now()
+                        )
+                ).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("PullRequest not found");
     }
 
@@ -184,6 +189,39 @@ class PullRequestClosureMetricsServiceTest {
                                 () -> assertThat(activity.hasReviewActivity()).isFalse()
                         ))
         );
+    }
+
+    @Test
+    void 병목_데이터가_있으면_머지_시_머지_대기시간을_업데이트한다() {
+        // given
+        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 0);
+        LocalDateTime firstReviewAt = LocalDateTime.of(2024, 1, 15, 12, 0);
+        LocalDateTime approvedAt = LocalDateTime.of(2024, 1, 15, 13, 0);
+        LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 16, 10, 0);
+
+        PullRequest savedPullRequest = createAndSavePullRequest(createdAt);
+        PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
+                savedPullRequest.getId(),
+                createdAt,
+                firstReviewAt
+        );
+        bottleneck.updateOnNewReview(approvedAt, true);
+        pullRequestBottleneckRepository.save(bottleneck);
+
+        // when
+        closureMetricsService.deriveClosureMetrics(
+                savedPullRequest.getId(),
+                PullRequestState.MERGED,
+                mergedAt
+        );
+
+        // then
+        PullRequestBottleneck updated = pullRequestBottleneckRepository
+                .findByPullRequestId(savedPullRequest.getId())
+                .orElseThrow();
+
+        assertThat(updated.isMerged()).isTrue();
+        assertThat(updated.getMergeWait()).isNotNull();
     }
 
     private PullRequest createAndSavePullRequest(LocalDateTime createdAt) {
