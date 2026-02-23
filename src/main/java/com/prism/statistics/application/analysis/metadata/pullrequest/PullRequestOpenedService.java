@@ -112,6 +112,7 @@ public class PullRequestOpenedService {
 
         PullRequestOpenCreatedEvent event = new PullRequestOpenCreatedEvent(
                 savedPullRequest.getId(),
+                savedPullRequest.getGithubPullRequestId(),
                 projectId,
                 pullRequestData.headCommitSha(),
                 initialState,
