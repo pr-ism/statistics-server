@@ -47,4 +47,27 @@ public class PullRequestFileRepositoryAdapter implements PullRequestFileReposito
                 .where(pullRequestFile.pullRequestId.eq(pullRequestId))
                 .execute();
     }
+
+    @Override
+    @Transactional
+    public long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId) {
+        return queryFactory
+                .update(pullRequestFile)
+                .set(pullRequestFile.pullRequestId, pullRequestId)
+                .where(
+                        pullRequestFile.githubPullRequestId.eq(githubPullRequestId),
+                        pullRequestFile.pullRequestId.isNull()
+                )
+                .execute();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByGithubPullRequestId(Long githubPullRequestId) {
+        return queryFactory
+                .selectOne()
+                .from(pullRequestFile)
+                .where(pullRequestFile.githubPullRequestId.eq(githubPullRequestId))
+                .fetchFirst() != null;
+    }
 }

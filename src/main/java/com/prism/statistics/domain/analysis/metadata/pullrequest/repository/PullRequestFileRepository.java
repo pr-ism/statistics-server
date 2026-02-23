@@ -13,4 +13,8 @@ public interface PullRequestFileRepository {
     List<PullRequestFile> findAllByPullRequestId(Long pullRequestId);
 
     void deleteAllByPullRequestId(Long pullRequestId);
+
+    long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId);
+
+    boolean existsByGithubPullRequestId(Long githubPullRequestId);
 }
