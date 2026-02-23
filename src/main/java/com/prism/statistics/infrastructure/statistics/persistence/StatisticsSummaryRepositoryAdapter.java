@@ -156,8 +156,9 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                 .count();
 
         long totalReviewWaitMinutes = bottlenecks.stream()
-                .filter(bottleneck -> bottleneck.hasReview())
+                .filter(b -> b.getReviewWait() != null)
                 .mapToLong(b -> b.getReviewWait().getMinutes())
+
                 .sum();
 
         long firstReviewApproveCount = activities.stream()
