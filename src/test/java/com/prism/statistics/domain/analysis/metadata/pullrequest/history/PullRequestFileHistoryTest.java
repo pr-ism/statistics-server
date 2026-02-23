@@ -27,12 +27,14 @@ class PullRequestFileHistoryTest {
 
     @Test
     void PullRequestFileHistory를_생성한다() {
+        // when
         PullRequestFileHistory history = PullRequestFileHistory.create(
                 PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA,
                 "src/main/java/com/example/Service.java", FileChangeType.MODIFIED,
                 FILE_CHANGES, GITHUB_CHANGED_AT
         );
 
+        // then
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isEqualTo(PULL_REQUEST_ID),
                 () -> assertThat(history.getGithubPullRequestId()).isEqualTo(GITHUB_PULL_REQUEST_ID),
@@ -48,12 +50,14 @@ class PullRequestFileHistoryTest {
 
     @Test
     void RENAMED_파일_이력을_생성한다() {
+        // when
         PullRequestFileHistory history = PullRequestFileHistory.createRenamed(
                 PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA,
                 "NewName.java", "OldName.java",
                 FILE_CHANGES, GITHUB_CHANGED_AT
         );
 
+        // then
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isEqualTo(PULL_REQUEST_ID),
                 () -> assertThat(history.getGithubPullRequestId()).isEqualTo(GITHUB_PULL_REQUEST_ID),
@@ -69,6 +73,7 @@ class PullRequestFileHistoryTest {
 
     @Test
     void Pull_Request_ID가_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.create(null, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "file.java", FileChangeType.ADDED, FILE_CHANGES, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PullRequest ID는 필수입니다.");
@@ -76,6 +81,7 @@ class PullRequestFileHistoryTest {
 
     @Test
     void GitHub_Pull_Request_ID가_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.create(PULL_REQUEST_ID, null, HEAD_COMMIT_SHA, "file.java", FileChangeType.ADDED, FILE_CHANGES, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("GitHub PullRequest ID는 필수입니다.");
@@ -83,6 +89,7 @@ class PullRequestFileHistoryTest {
 
     @Test
     void Head_Commit_SHA가_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, null, "file.java", FileChangeType.ADDED, FILE_CHANGES, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Head Commit SHA는 필수입니다.");
@@ -90,6 +97,7 @@ class PullRequestFileHistoryTest {
 
     @Test
     void Head_Commit_SHA가_빈_문자열이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, "  ", "file.java", FileChangeType.ADDED, FILE_CHANGES, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Head Commit SHA는 필수입니다.");
@@ -98,6 +106,7 @@ class PullRequestFileHistoryTest {
     @ParameterizedTest
     @NullAndEmptySource
     void 파일명이_null이거나_빈_문자열이면_예외가_발생한다(String fileName) {
+        // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, fileName, FileChangeType.ADDED, FILE_CHANGES, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("파일명은 필수입니다.");
@@ -105,6 +114,7 @@ class PullRequestFileHistoryTest {
 
     @Test
     void 변경_타입이_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "file.java", null, FILE_CHANGES, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 타입은 필수입니다.");
@@ -112,8 +122,10 @@ class PullRequestFileHistoryTest {
 
     @Test
     void create에서_RENAMED_타입도_생성할_수_있다() {
+        // when
         PullRequestFileHistory history = PullRequestFileHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "file.java", FileChangeType.RENAMED, FILE_CHANGES, GITHUB_CHANGED_AT);
 
+        // then
         assertAll(
                 () -> assertThat(history.getChangeType()).isEqualTo(FileChangeType.RENAMED),
                 () -> assertThat(history.getPreviousFileName().isEmpty()).isTrue(),
@@ -124,6 +136,7 @@ class PullRequestFileHistoryTest {
     @ParameterizedTest
     @NullAndEmptySource
     void createRenamed에서_이전_파일명이_null이거나_빈_문자열이면_예외가_발생한다(String previousFileName) {
+        // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.createRenamed(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "NewName.java", previousFileName, FILE_CHANGES, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("이전 파일명은 필수입니다.");
@@ -131,6 +144,7 @@ class PullRequestFileHistoryTest {
 
     @Test
     void 파일_변경_정보가_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "file.java", FileChangeType.ADDED, null, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("파일 변경 정보는 필수입니다.");
@@ -138,6 +152,7 @@ class PullRequestFileHistoryTest {
 
     @Test
     void 변경_시각이_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "file.java", FileChangeType.ADDED, FILE_CHANGES, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 시각은 필수입니다.");
@@ -145,19 +160,23 @@ class PullRequestFileHistoryTest {
 
     @Test
     void 총_변경_라인_수를_계산한다() {
+        // when
         PullRequestFileHistory history = PullRequestFileHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "file.java", FileChangeType.MODIFIED, FILE_CHANGES, GITHUB_CHANGED_AT);
 
+        // then
         assertThat(history.getTotalChanges()).isEqualTo(150);
     }
 
     @Test
     void pullRequestId_없이_생성한다() {
+        // when
         PullRequestFileHistory history = PullRequestFileHistory.createEarly(
                 GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA,
                 "file.java", FileChangeType.MODIFIED,
                 FILE_CHANGES, GITHUB_CHANGED_AT
         );
 
+        // then
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isNull(),
                 () -> assertThat(history.getGithubPullRequestId()).isEqualTo(GITHUB_PULL_REQUEST_ID),
@@ -169,12 +188,14 @@ class PullRequestFileHistoryTest {
 
     @Test
     void pullRequestId_없이_RENAMED_파일_이력을_생성한다() {
+        // when
         PullRequestFileHistory history = PullRequestFileHistory.createEarlyRenamed(
                 GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA,
                 "NewName.java", "OldName.java",
                 FILE_CHANGES, GITHUB_CHANGED_AT
         );
 
+        // then
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isNull(),
                 () -> assertThat(history.getGithubPullRequestId()).isEqualTo(GITHUB_PULL_REQUEST_ID),
@@ -187,6 +208,7 @@ class PullRequestFileHistoryTest {
 
     @Test
     void createEarly에서_GitHub_Pull_Request_ID가_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.createEarly(null, HEAD_COMMIT_SHA, "file.java", FileChangeType.ADDED, FILE_CHANGES, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("GitHub PullRequest ID는 필수입니다.");
@@ -195,6 +217,7 @@ class PullRequestFileHistoryTest {
     @ParameterizedTest
     @NullAndEmptySource
     void createEarlyRenamed에서_이전_파일명이_null이거나_빈_문자열이면_예외가_발생한다(String previousFileName) {
+        // when & then
         assertThatThrownBy(() -> PullRequestFileHistory.createEarlyRenamed(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "NewName.java", previousFileName, FILE_CHANGES, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("이전 파일명은 필수입니다.");
@@ -202,49 +225,59 @@ class PullRequestFileHistoryTest {
 
     @Test
     void pullRequestId가_null일_때_할당한다() {
+        // given
         PullRequestFileHistory history = PullRequestFileHistory.createEarly(
                 GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA,
                 "file.java", FileChangeType.MODIFIED,
                 FILE_CHANGES, GITHUB_CHANGED_AT
         );
 
+        // when
         history.assignPullRequestId(PULL_REQUEST_ID);
 
+        // then
         assertThat(history.getPullRequestId()).isEqualTo(PULL_REQUEST_ID);
     }
 
     @Test
     void pullRequestId가_이미_있으면_변경하지_않는다() {
+        // given
         PullRequestFileHistory history = PullRequestFileHistory.create(
                 PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA,
                 "file.java", FileChangeType.MODIFIED,
                 FILE_CHANGES, GITHUB_CHANGED_AT
         );
 
+        // when
         history.assignPullRequestId(999L);
 
+        // then
         assertThat(history.getPullRequestId()).isEqualTo(PULL_REQUEST_ID);
     }
 
     @Test
     void pullRequestId가_있으면_hasAssignedPullRequestId가_true를_반환한다() {
+        // when
         PullRequestFileHistory history = PullRequestFileHistory.create(
                 PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA,
                 "file.java", FileChangeType.MODIFIED,
                 FILE_CHANGES, GITHUB_CHANGED_AT
         );
 
+        // then
         assertThat(history.hasAssignedPullRequestId()).isTrue();
     }
 
     @Test
     void pullRequestId가_없으면_hasAssignedPullRequestId가_false를_반환한다() {
+        // when
         PullRequestFileHistory history = PullRequestFileHistory.createEarly(
                 GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA,
                 "file.java", FileChangeType.MODIFIED,
                 FILE_CHANGES, GITHUB_CHANGED_AT
         );
 
+        // then
         assertThat(history.hasAssignedPullRequestId()).isFalse();
     }
 }

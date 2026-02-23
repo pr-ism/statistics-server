@@ -25,10 +25,12 @@ class PullRequestContentHistoryTest {
 
     @Test
     void PullRequestContentHistory를_생성한다() {
+        // when
         PullRequestContentHistory history = PullRequestContentHistory.create(
                 PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT
         );
 
+        // then
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isEqualTo(PULL_REQUEST_ID),
                 () -> assertThat(history.getGithubPullRequestId()).isEqualTo(GITHUB_PULL_REQUEST_ID),
@@ -41,6 +43,7 @@ class PullRequestContentHistoryTest {
 
     @Test
     void Pull_Request_ID가_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestContentHistory.create(null, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PullRequest ID는 필수입니다.");
@@ -48,6 +51,7 @@ class PullRequestContentHistoryTest {
 
     @Test
     void GitHub_Pull_Request_ID가_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestContentHistory.create(PULL_REQUEST_ID, null, HEAD_COMMIT_SHA, CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("GitHub PullRequest ID는 필수입니다.");
@@ -55,6 +59,7 @@ class PullRequestContentHistoryTest {
 
     @Test
     void Head_Commit_SHA가_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestContentHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, null, CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Head Commit SHA는 필수입니다.");
@@ -62,6 +67,7 @@ class PullRequestContentHistoryTest {
 
     @Test
     void Head_Commit_SHA가_빈_문자열이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestContentHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, "  ", CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Head Commit SHA는 필수입니다.");
@@ -69,6 +75,7 @@ class PullRequestContentHistoryTest {
 
     @Test
     void 변경된_값이_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestContentHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, null, COMMIT_COUNT, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 내역은 필수입니다.");
@@ -76,6 +83,7 @@ class PullRequestContentHistoryTest {
 
     @Test
     void 커밋_수가_음수이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestContentHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, CHANGE_STATS, -1, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("커밋 수는 0보다 작을 수 없습니다.");
@@ -83,6 +91,7 @@ class PullRequestContentHistoryTest {
 
     @Test
     void 변경_시각이_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestContentHistory.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, CHANGE_STATS, COMMIT_COUNT, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 시각은 필수입니다.");
@@ -90,10 +99,12 @@ class PullRequestContentHistoryTest {
 
     @Test
     void pullRequestId_없이_생성한다() {
+        // when
         PullRequestContentHistory history = PullRequestContentHistory.createEarly(
                 GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT
         );
 
+        // then
         assertAll(
                 () -> assertThat(history.getPullRequestId()).isNull(),
                 () -> assertThat(history.getGithubPullRequestId()).isEqualTo(GITHUB_PULL_REQUEST_ID),
@@ -106,6 +117,7 @@ class PullRequestContentHistoryTest {
 
     @Test
     void createEarly에서_GitHub_Pull_Request_ID가_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> PullRequestContentHistory.createEarly(null, HEAD_COMMIT_SHA, CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("GitHub PullRequest ID는 필수입니다.");
@@ -113,41 +125,51 @@ class PullRequestContentHistoryTest {
 
     @Test
     void pullRequestId가_null일_때_할당한다() {
+        // given
         PullRequestContentHistory history = PullRequestContentHistory.createEarly(
                 GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT
         );
 
+        // when
         history.assignPullRequestId(PULL_REQUEST_ID);
 
+        // then
         assertThat(history.getPullRequestId()).isEqualTo(PULL_REQUEST_ID);
     }
 
     @Test
     void pullRequestId가_이미_있으면_변경하지_않는다() {
+        // given
         PullRequestContentHistory history = PullRequestContentHistory.create(
                 PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT
         );
 
+        // when
         history.assignPullRequestId(999L);
 
+        // then
         assertThat(history.getPullRequestId()).isEqualTo(PULL_REQUEST_ID);
     }
 
     @Test
     void pullRequestId가_있으면_hasAssignedPullRequestId가_true를_반환한다() {
+        // when
         PullRequestContentHistory history = PullRequestContentHistory.create(
                 PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT
         );
 
+        // then
         assertThat(history.hasAssignedPullRequestId()).isTrue();
     }
 
     @Test
     void pullRequestId가_없으면_hasAssignedPullRequestId가_false를_반환한다() {
+        // when
         PullRequestContentHistory history = PullRequestContentHistory.createEarly(
                 GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, CHANGE_STATS, COMMIT_COUNT, GITHUB_CHANGED_AT
         );
 
+        // then
         assertThat(history.hasAssignedPullRequestId()).isFalse();
     }
 }
