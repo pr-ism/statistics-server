@@ -18,13 +18,13 @@ import com.prism.statistics.global.exception.dto.response.RequestedReviewerError
 import com.prism.statistics.global.exception.dto.response.ReviewCommentErrorCode;
 import com.prism.statistics.global.exception.dto.response.ReviewErrorCode;
 import com.prism.statistics.global.exception.dto.response.UserErrorCode;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestLabelNotFoundException;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.HeadCommitNotFoundException;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.PullRequestNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.RequestedReviewerNotFoundException;
 import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewCommentNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException;
 import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUserIdentityException;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestLabelNotFoundException;
 import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.domain.project.exception.ProjectNotFoundException;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
@@ -120,6 +120,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return createResponseEntity(ProjectErrorCode.PROJECT_NOT_FOUND);
     }
 
+    @ExceptionHandler(com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException.class)
+    public ResponseEntity<Object> handleInfraProjectNotFoundException(
+            com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException ex
+    ) {
+        log.info("InfraProjectNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(ProjectErrorCode.PROJECT_NOT_FOUND);
+    }
+
     @ExceptionHandler(ProjectOwnershipException.class)
     public ResponseEntity<Object> handleProjectOwnershipException(ProjectOwnershipException ex) {
         log.info("ProjectOwnershipException : {}", ex.getMessage());
@@ -144,6 +153,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(PullRequestNotFoundException.class)
     public ResponseEntity<Object> handlePullRequestNotFoundException(PullRequestNotFoundException ex) {
         log.info("PullRequestNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(PullRequestErrorCode.PULL_REQUEST_NOT_FOUND);
+    }
+
+    @ExceptionHandler(com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException.class)
+    public ResponseEntity<Object> handleInfraPullRequestNotFoundException(
+            com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException ex
+    ) {
+        log.info("InfraPullRequestNotFoundException : {}", ex.getMessage());
 
         return createResponseEntity(PullRequestErrorCode.PULL_REQUEST_NOT_FOUND);
     }
