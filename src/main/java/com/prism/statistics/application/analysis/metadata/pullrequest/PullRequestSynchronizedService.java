@@ -2,6 +2,7 @@ package com.prism.statistics.application.analysis.metadata.pullrequest;
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest.CommitNode;
+import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestEarlySynchronizedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSynchronizedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent.CommitData;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
@@ -35,14 +36,37 @@ public class PullRequestSynchronizedService {
 
     @Transactional
     public void synchronizePullRequest(String apiKey, PullRequestSynchronizedRequest request) {
-        Long projectId = projectRepository.findIdByApiKey(apiKey)
+        projectRepository.findIdByApiKey(apiKey)
                 .orElseThrow(() -> new InvalidApiKeyException());
 
-        pullRequestRepository.findPullRequest(projectId, request.pullRequestNumber())
+        pullRequestRepository.findWithLock(request.githubPullRequestId())
                 .ifPresentOrElse(
                         pullRequest -> processSynchronize(pullRequest, request),
-                        () -> log.warn("PullRequest를 찾을 수 없습니다. pullRequestNumber={}", request.pullRequestNumber())
+                        () -> processEarlySynchronize(request)
                 );
+    }
+
+    private void processEarlySynchronize(PullRequestSynchronizedRequest request) {
+        LocalDateTime githubChangedAt = findHeadCommitDate(request);
+        PullRequestChangeStats changeStats = PullRequestChangeStats.create(
+                request.changedFiles(),
+                request.additions(),
+                request.deletions()
+        );
+
+        List<CommitData> commits = request.commits().nodes().stream()
+                .map(node -> new CommitData(node.sha(), localDateTimeConverter.toLocalDateTime(node.committedDate())))
+                .toList();
+
+        eventPublisher.publishEvent(new PullRequestEarlySynchronizedEvent(
+                request.githubPullRequestId(),
+                request.headCommitSha(),
+                changeStats,
+                request.commits().totalCount(),
+                githubChangedAt,
+                request.files(),
+                commits
+        ));
     }
 
     private void processSynchronize(PullRequest pullRequest, PullRequestSynchronizedRequest request) {
@@ -94,6 +118,7 @@ public class PullRequestSynchronizedService {
 
         eventPublisher.publishEvent(new PullRequestSynchronizedEvent(
                 pullRequest.getId(),
+                pullRequest.getGithubPullRequestId(),
                 request.headCommitSha(),
                 isNewer,
                 changeStats,
