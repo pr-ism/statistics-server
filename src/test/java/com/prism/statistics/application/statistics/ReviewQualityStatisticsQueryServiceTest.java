@@ -8,6 +8,7 @@ import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.statistics.dto.request.ReviewQualityStatisticsRequest;
 import com.prism.statistics.application.statistics.dto.response.ReviewQualityStatisticsResponse;
 import com.prism.statistics.domain.analysis.insight.activity.ReviewActivity;
+import com.prism.statistics.domain.analysis.insight.review.ReviewResponseTime;
 import com.prism.statistics.domain.analysis.insight.review.ReviewSession;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
@@ -17,6 +18,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestT
 import com.prism.statistics.domain.project.Project;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaReviewActivityRepository;
+import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaReviewResponseTimeRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaReviewSessionRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
 import com.prism.statistics.infrastructure.project.persistence.JpaProjectRepository;
@@ -46,6 +48,9 @@ class ReviewQualityStatisticsQueryServiceTest {
 
     @Autowired
     private JpaReviewSessionRepository reviewSessionRepository;
+
+    @Autowired
+    private JpaReviewResponseTimeRepository reviewResponseTimeRepository;
 
     @Test
     void 프로젝트의_리뷰_품질_통계를_조회한다() {
@@ -204,6 +209,31 @@ class ReviewQualityStatisticsQueryServiceTest {
         assertThatThrownBy(() ->
                 reviewQualityStatisticsQueryService.findReviewQualityStatistics(otherUserId, project.getId(), request)
         ).isInstanceOf(ProjectOwnershipException.class);
+    }
+
+    @Test
+    void 변경_해결_건수가_있으면_평균_해결_시간을_계산한다() {
+        // given
+        Long userId = 1L;
+        Project project = createAndSaveProject(userId);
+        PullRequest pr = createAndSavePullRequest(project.getId());
+
+        createAndSaveReviewActivity(pr.getId(), 2, 4, 60, 20, true, 12);
+
+        LocalDateTime changesRequestedAt = LocalDateTime.now().minusHours(2);
+        LocalDateTime approvedAt = LocalDateTime.now().minusHours(1);
+        ReviewResponseTime responseTime = ReviewResponseTime.createOnChangesRequested(pr.getId(), changesRequestedAt);
+        responseTime.updateOnApproveAfterChanges(approvedAt);
+        reviewResponseTimeRepository.save(responseTime);
+
+        ReviewQualityStatisticsRequest request = new ReviewQualityStatisticsRequest(null, null);
+
+        // when
+        ReviewQualityStatisticsResponse response = reviewQualityStatisticsQueryService
+                .findReviewQualityStatistics(userId, project.getId(), request);
+
+        // then
+        assertThat(response.reviewActivity().avgChangesResolutionMinutes()).isGreaterThan(0);
     }
 
     private Project createAndSaveProject(Long userId) {
