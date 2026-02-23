@@ -222,6 +222,14 @@ class PullRequestFileHistoryTest {
                 .hasMessage("Head Commit SHA는 필수입니다.");
     }
 
+    @Test
+    void createEarly에서_Head_Commit_SHA가_빈_문자열이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarly(GITHUB_PULL_REQUEST_ID, "  ", "file.java", FileChangeType.ADDED, FILE_CHANGES, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
     @ParameterizedTest
     @NullAndEmptySource
     void createEarly에서_파일명이_null이거나_빈_문자열이면_예외가_발생한다(String fileName) {
@@ -262,6 +270,55 @@ class PullRequestFileHistoryTest {
         assertThatThrownBy(() -> PullRequestFileHistory.createEarlyRenamed(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "NewName.java", previousFileName, FILE_CHANGES, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("이전 파일명은 필수입니다.");
+    }
+
+    @Test
+    void createEarlyRenamed에서_GitHub_Pull_Request_ID가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarlyRenamed(null, HEAD_COMMIT_SHA, "NewName.java", "OldName.java", FILE_CHANGES, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("GitHub PullRequest ID는 필수입니다.");
+    }
+
+    @Test
+    void createEarlyRenamed에서_Head_Commit_SHA가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarlyRenamed(GITHUB_PULL_REQUEST_ID, null, "NewName.java", "OldName.java", FILE_CHANGES, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
+    @Test
+    void createEarlyRenamed에서_Head_Commit_SHA가_빈_문자열이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarlyRenamed(GITHUB_PULL_REQUEST_ID, "  ", "NewName.java", "OldName.java", FILE_CHANGES, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Head Commit SHA는 필수입니다.");
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void createEarlyRenamed에서_파일명이_null이거나_빈_문자열이면_예외가_발생한다(String fileName) {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarlyRenamed(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, fileName, "OldName.java", FILE_CHANGES, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("파일명은 필수입니다.");
+    }
+
+    @Test
+    void createEarlyRenamed에서_파일_변경_정보가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarlyRenamed(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "NewName.java", "OldName.java", null, GITHUB_CHANGED_AT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("파일 변경 정보는 필수입니다.");
+    }
+
+    @Test
+    void createEarlyRenamed에서_변경_시각이_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFileHistory.createEarlyRenamed(GITHUB_PULL_REQUEST_ID, HEAD_COMMIT_SHA, "NewName.java", "OldName.java", FILE_CHANGES, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("변경 시각은 필수입니다.");
     }
 
     @Test
