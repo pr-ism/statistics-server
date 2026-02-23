@@ -40,6 +40,7 @@ import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullReq
 public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String NOT_AVAILABLE_GRADE = "N/A";
 
     @Override
     @Transactional(readOnly = true)
@@ -128,7 +129,7 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
 
     private String findDominantSizeGrade(List<PullRequestSize> sizes) {
         if (sizes.isEmpty()) {
-            return "N/A";
+            return NOT_AVAILABLE_GRADE;
         }
 
         Map<SizeGrade, Long> gradeCounts = sizes.stream()
@@ -137,7 +138,7 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
         return gradeCounts.entrySet().stream()
                 .max(Comparator.comparingLong(entry -> entry.getValue()))
                 .map(entry -> entry.getKey().name())
-                .orElse("N/A");
+                .orElse(NOT_AVAILABLE_GRADE);
     }
 
     private ReviewHealthDto buildReviewHealthDto(
