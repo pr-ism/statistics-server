@@ -18,15 +18,15 @@ import com.prism.statistics.global.exception.dto.response.RequestedReviewerError
 import com.prism.statistics.global.exception.dto.response.ReviewCommentErrorCode;
 import com.prism.statistics.global.exception.dto.response.ReviewErrorCode;
 import com.prism.statistics.global.exception.dto.response.UserErrorCode;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestLabelNotFoundException;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.HeadCommitNotFoundException;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.HeadCommitNotFoundException;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.PullRequestNotFoundException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.RequestedReviewerNotFoundException;
-import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewCommentNotFoundException;
-import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException;
+import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewCommentNotFoundException;
+import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewNotFoundException;
 import com.prism.statistics.infrastructure.auth.persistence.exception.OrphanedUserIdentityException;
-import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestLabelNotFoundException;
+import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
+import com.prism.statistics.domain.project.exception.ProjectNotFoundException;
 import com.prism.statistics.presentation.auth.exception.RefreshTokenNotFoundException;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -120,6 +120,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return createResponseEntity(ProjectErrorCode.PROJECT_NOT_FOUND);
     }
 
+    @ExceptionHandler(com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException.class)
+    public ResponseEntity<Object> handleInfraProjectNotFoundException(
+            com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException ex
+    ) {
+        log.info("InfraProjectNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(ProjectErrorCode.PROJECT_NOT_FOUND);
+    }
+
     @ExceptionHandler(ProjectOwnershipException.class)
     public ResponseEntity<Object> handleProjectOwnershipException(ProjectOwnershipException ex) {
         log.info("ProjectOwnershipException : {}", ex.getMessage());
@@ -148,6 +157,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return createResponseEntity(PullRequestErrorCode.PULL_REQUEST_NOT_FOUND);
     }
 
+    @ExceptionHandler(com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException.class)
+    public ResponseEntity<Object> handleInfraPullRequestNotFoundException(
+            com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException ex
+    ) {
+        log.info("InfraPullRequestNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(PullRequestErrorCode.PULL_REQUEST_NOT_FOUND);
+    }
+
     @ExceptionHandler(PullRequestLabelNotFoundException.class)
     public ResponseEntity<Object> handlePullRequestLabelNotFoundException(PullRequestLabelNotFoundException ex) {
         log.info("PullRequestLabelNotFoundException : {}", ex.getMessage());
@@ -172,6 +190,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ReviewNotFoundException.class)
     public ResponseEntity<Object> handleReviewNotFoundException(ReviewNotFoundException ex) {
         log.info("ReviewNotFoundException : {}", ex.getMessage());
+
+        return createResponseEntity(ReviewErrorCode.REVIEW_NOT_FOUND);
+    }
+
+    @ExceptionHandler(com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException.class)
+    public ResponseEntity<Object> handleInfraReviewNotFoundException(
+            com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewNotFoundException ex
+    ) {
+        log.info("InfraReviewNotFoundException : {}", ex.getMessage());
 
         return createResponseEntity(ReviewErrorCode.REVIEW_NOT_FOUND);
     }

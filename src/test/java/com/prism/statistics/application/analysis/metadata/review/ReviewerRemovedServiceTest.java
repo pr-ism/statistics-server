@@ -9,7 +9,7 @@ import com.prism.statistics.application.analysis.metadata.review.dto.request.Rev
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerRemovedRequest.ReviewerData;
 import com.prism.statistics.domain.analysis.metadata.review.history.RequestedReviewerHistory;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewerAction;
-import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
+import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaRequestedReviewerHistoryRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaRequestedReviewerRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;

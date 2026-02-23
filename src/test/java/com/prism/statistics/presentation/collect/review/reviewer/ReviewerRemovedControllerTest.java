@@ -9,8 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.prism.statistics.application.analysis.metadata.review.ReviewerRemovedService;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerRemovedRequest;
-import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
+import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.PullRequestNotFoundException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +41,12 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/collect/review/reviewer/removed")
-                        .header(API_KEY_HEADER, TEST_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload)
-        )
-        .andExpect(status().isOk());
+                        post("/collect/review/reviewer/removed")
+                                .header(API_KEY_HEADER, TEST_API_KEY)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(payload)
+                )
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -65,11 +65,11 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/collect/review/reviewer/removed")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload)
-        )
-        .andExpect(status().isBadRequest());
+                        post("/collect/review/reviewer/removed")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(payload)
+                )
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -91,14 +91,14 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/collect/review/reviewer/removed")
-                        .header(API_KEY_HEADER, TEST_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload)
-        )
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.errorCode").value("P01"))
-        .andExpect(jsonPath("$.message").value("유효하지 않은 API Key입니다."));
+                        post("/collect/review/reviewer/removed")
+                                .header(API_KEY_HEADER, TEST_API_KEY)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(payload)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("P01"))
+                .andExpect(jsonPath("$.message").value("유효하지 않은 API Key입니다."));
     }
 
     @Test
@@ -120,13 +120,13 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
 
         // when & then
         mockMvc.perform(
-                post("/collect/review/reviewer/removed")
-                        .header(API_KEY_HEADER, TEST_API_KEY)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload)
-        )
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.errorCode").value("PR00"))
-        .andExpect(jsonPath("$.message").value("PullRequest를 찾을 수 없습니다."));
+                        post("/collect/review/reviewer/removed")
+                                .header(API_KEY_HEADER, TEST_API_KEY)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(payload)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("PR00"))
+                .andExpect(jsonPath("$.message").value("PullRequest를 찾을 수 없습니다."));
     }
 }

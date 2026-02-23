@@ -13,6 +13,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestC
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestTiming;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
+import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewNotFoundException;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaReviewResponseTimeRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaReviewSessionRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
@@ -204,7 +205,7 @@ class ReviewActivityMetricsServiceTest {
         // when & then
         org.assertj.core.api.Assertions.assertThatThrownBy(() ->
                 reviewActivityMetricsService.deriveMetrics(999999L)
-        ).isInstanceOf(IllegalArgumentException.class)
+        ).isInstanceOf(ReviewNotFoundException.class)
                 .hasMessageContaining("Review not found");
     }
 

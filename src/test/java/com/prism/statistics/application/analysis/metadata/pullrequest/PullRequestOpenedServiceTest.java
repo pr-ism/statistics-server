@@ -21,7 +21,7 @@ import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persist
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestFileRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestStateHistoryRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
+import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;

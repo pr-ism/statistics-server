@@ -8,7 +8,7 @@ import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.InvalidApiKeyException;
+import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

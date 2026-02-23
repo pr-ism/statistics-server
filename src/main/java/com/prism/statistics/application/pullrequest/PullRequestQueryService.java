@@ -6,8 +6,8 @@ import com.prism.statistics.application.pullrequest.dto.response.PullRequestList
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
-import com.prism.statistics.infrastructure.project.persistence.exception.ProjectNotFoundException;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.exception.PullRequestNotFoundException;
+import com.prism.statistics.domain.project.exception.ProjectNotFoundException;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.PullRequestNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
