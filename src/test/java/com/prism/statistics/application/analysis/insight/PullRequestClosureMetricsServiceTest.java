@@ -203,7 +203,8 @@ class PullRequestClosureMetricsServiceTest {
         PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
                 savedPullRequest.getId(),
                 createdAt,
-                firstReviewAt
+                firstReviewAt,
+                false
         );
         bottleneck.updateOnNewReview(approvedAt, true);
         pullRequestBottleneckRepository.save(bottleneck);

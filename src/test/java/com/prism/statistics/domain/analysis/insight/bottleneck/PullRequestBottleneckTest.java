@@ -72,7 +72,7 @@ class PullRequestBottleneckTest {
 
         // when
         PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
-                pullRequestId, reviewReadyAt, firstReviewAt
+                pullRequestId, reviewReadyAt, firstReviewAt, false
         );
 
         // then
@@ -82,6 +82,25 @@ class PullRequestBottleneckTest {
                 () -> assertThat(bottleneck.getFirstReviewAt()).isEqualTo(firstReviewAt),
                 () -> assertThat(bottleneck.getLastReviewAt()).isEqualTo(firstReviewAt),
                 () -> assertThat(bottleneck.hasReview()).isTrue()
+        );
+    }
+
+    @Test
+    void 첫_리뷰가_승인인_경우_승인_시각을_설정한다() {
+        // given
+        Long pullRequestId = 1L;
+        LocalDateTime reviewReadyAt = LocalDateTime.of(2024, 1, 1, 10, 0);
+        LocalDateTime firstReviewAt = LocalDateTime.of(2024, 1, 1, 11, 0);
+
+        // when
+        PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
+                pullRequestId, reviewReadyAt, firstReviewAt, true
+        );
+
+        // then
+        assertAll(
+                () -> assertThat(bottleneck.getLastApproveAt()).isEqualTo(firstReviewAt),
+                () -> assertThat(bottleneck.hasApproval()).isTrue()
         );
     }
 
@@ -99,7 +118,7 @@ class PullRequestBottleneckTest {
         LocalDateTime reviewReadyAt = LocalDateTime.of(2024, 1, 1, 10, 0);
         LocalDateTime firstReviewAt = LocalDateTime.of(2024, 1, 1, 11, 0);
         PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
-                1L, reviewReadyAt, firstReviewAt
+                1L, reviewReadyAt, firstReviewAt, false
         );
         LocalDateTime secondReviewAt = LocalDateTime.of(2024, 1, 1, 13, 0);
 
@@ -120,7 +139,7 @@ class PullRequestBottleneckTest {
         LocalDateTime reviewReadyAt = LocalDateTime.of(2024, 1, 1, 10, 0);
         LocalDateTime firstReviewAt = LocalDateTime.of(2024, 1, 1, 11, 0);
         PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
-                1L, reviewReadyAt, firstReviewAt
+                1L, reviewReadyAt, firstReviewAt, false
         );
         LocalDateTime approveAt = LocalDateTime.of(2024, 1, 1, 14, 0);
 
@@ -141,7 +160,7 @@ class PullRequestBottleneckTest {
         LocalDateTime reviewReadyAt = LocalDateTime.of(2024, 1, 1, 10, 0);
         LocalDateTime firstReviewAt = LocalDateTime.of(2024, 1, 1, 11, 0);
         PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
-                1L, reviewReadyAt, firstReviewAt
+                1L, reviewReadyAt, firstReviewAt, false
         );
         LocalDateTime approveAt = LocalDateTime.of(2024, 1, 1, 14, 0);
         bottleneck.updateOnNewReview(approveAt, true);
@@ -250,7 +269,8 @@ class PullRequestBottleneckTest {
         PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
                 1L,
                 LocalDateTime.of(2024, 1, 1, 10, 0),
-                LocalDateTime.of(2024, 1, 1, 11, 0)
+                LocalDateTime.of(2024, 1, 1, 11, 0),
+                false
         );
         LocalDateTime mergedAt = LocalDateTime.of(2024, 1, 1, 14, 0);
 
@@ -282,7 +302,8 @@ class PullRequestBottleneckTest {
         PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
                 1L,
                 LocalDateTime.of(2024, 1, 1, 10, 0),
-                LocalDateTime.of(2024, 1, 1, 11, 0)
+                LocalDateTime.of(2024, 1, 1, 11, 0),
+                false
         );
 
         // when

@@ -337,7 +337,8 @@ class StatisticsSummaryQueryServiceTest {
         PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
                 pullRequestId,
                 now.minusMinutes(reviewWait),
-                now
+                now,
+                false
         );
 
         if (reviewProgress != null) {
