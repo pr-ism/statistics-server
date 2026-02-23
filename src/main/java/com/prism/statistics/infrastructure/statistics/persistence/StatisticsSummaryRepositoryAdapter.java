@@ -83,6 +83,7 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                 .selectFrom(pullRequest)
                 .where(
                         pullRequest.projectId.eq(projectId),
+                        pullRequest.id.in(pullRequestIds),
                         pullRequest.state.in(PullRequestState.MERGED, PullRequestState.CLOSED),
                         closedAtDateRangeCondition(startDate, endDate)
                 )
