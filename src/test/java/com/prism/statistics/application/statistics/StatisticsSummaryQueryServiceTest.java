@@ -99,7 +99,7 @@ class StatisticsSummaryQueryServiceTest {
                 () -> assertThat(response.overview().mergedPrCount()).isEqualTo(1),
                 () -> assertThat(response.overview().closedPrCount()).isEqualTo(1),
                 () -> assertThat(response.overview().mergeSuccessRate()).isEqualTo(50.0),
-                () -> assertThat(response.overview().avgSizeScore()).isGreaterThan(0),
+                () -> assertThat(response.overview().avgSizeScore()).isCloseTo(100.0, within(0.01)),
                 () -> assertThat(response.reviewHealth().reviewRate()).isGreaterThan(0),
                 () -> assertThat(response.teamActivity().totalReviewerCount()).isEqualTo(2),
                 () -> assertThat(response.bottleneck().avgReviewWaitMinutes()).isCloseTo(75.0, within(0.01))
@@ -181,7 +181,8 @@ class StatisticsSummaryQueryServiceTest {
                 () -> assertThat(response.overview().mergedPrCount()).isZero(),
                 () -> assertThat(response.overview().closedPrCount()).isEqualTo(1),
                 () -> assertThat(response.overview().mergeSuccessRate()).isZero(),
-                () -> assertThat(response.overview().avgMergeTimeMinutes()).isZero()
+                () -> assertThat(response.overview().avgMergeTimeMinutes()).isZero(),
+                () -> assertThat(response.overview().avgSizeScore()).isCloseTo(100.0, within(0.01))
         );
     }
 
@@ -288,7 +289,7 @@ class StatisticsSummaryQueryServiceTest {
                 100,
                 50,
                 5,
-                BigDecimal.valueOf(0.3)
+                sizeScore
         );
         sizeRepository.save(size);
     }
