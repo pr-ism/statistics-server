@@ -2,7 +2,7 @@ package com.prism.statistics.infrastructure.analysis.metadata.review.persistence
 
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewCommentRepository;
-import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.exception.ReviewCommentNotFoundException;
+import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewCommentNotFoundException;
 import com.prism.statistics.infrastructure.common.MysqlDuplicateKeyDetector;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
