@@ -343,7 +343,7 @@ class StatisticsSummaryQueryServiceTest {
             bottleneck.updateOnNewReview(now.plusMinutes(reviewProgress), mergeWait != null);
         }
 
-        if (mergeWait != null) {
+        if (reviewProgress != null && mergeWait != null) {
             bottleneck.updateOnMerge(now.plusMinutes(reviewProgress + mergeWait));
         }
 
