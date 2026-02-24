@@ -102,6 +102,10 @@ public record ReviewQualityStatisticsResponse(
     }
 
     private static double roundToTwoDecimals(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return ZERO_RATE;
+        }
+
         return Math.round(value * ROUNDING_SCALE) / ROUNDING_SCALE;
     }
 }
