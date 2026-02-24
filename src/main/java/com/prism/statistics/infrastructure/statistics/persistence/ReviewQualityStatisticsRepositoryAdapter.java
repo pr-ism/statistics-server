@@ -62,12 +62,18 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
 
         List<Review> reviews = queryFactory
                 .selectFrom(review)
-                .where(review.pullRequestId.in(pullRequestIds))
+                .where(
+                        review.pullRequestId.in(pullRequestIds),
+                        reviewDateRangeCondition(startDate, endDate)
+                )
                 .fetch();
 
         List<ReviewResponseTime> responseTimes = queryFactory
                 .selectFrom(reviewResponseTime)
-                .where(reviewResponseTime.pullRequestId.in(pullRequestIds))
+                .where(
+                        reviewResponseTime.pullRequestId.in(pullRequestIds),
+                        responseTimeDateRangeCondition(startDate, endDate)
+                )
                 .fetch();
 
         return Optional.of(aggregateActivityStatistics(activities, reviews, responseTimes));
@@ -246,6 +252,40 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
         }
 
         return reviewSession.createdAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay());
+    }
+
+    private BooleanExpression reviewDateRangeCondition(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null && endDate == null) {
+            return null;
+        }
+
+        if (startDate != null && endDate != null) {
+            return review.githubSubmittedAt.goe(startDate.atStartOfDay())
+                    .and(review.githubSubmittedAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay()));
+        }
+
+        if (startDate != null) {
+            return review.githubSubmittedAt.goe(startDate.atStartOfDay());
+        }
+
+        return review.githubSubmittedAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay());
+    }
+
+    private BooleanExpression responseTimeDateRangeCondition(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null && endDate == null) {
+            return null;
+        }
+
+        if (startDate != null && endDate != null) {
+            return reviewResponseTime.lastChangesRequestedAt.goe(startDate.atStartOfDay())
+                    .and(reviewResponseTime.lastChangesRequestedAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay()));
+        }
+
+        if (startDate != null) {
+            return reviewResponseTime.lastChangesRequestedAt.goe(startDate.atStartOfDay());
+        }
+
+        return reviewResponseTime.lastChangesRequestedAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay());
     }
 
     private Review selectEarlierReview(Review existing, Review replacement) {
