@@ -321,6 +321,36 @@ class ReviewQualityStatisticsQueryServiceTest {
         );
     }
 
+    @Test
+    void 리뷰_지표_비율을_계산한다() {
+        // given
+        Project project = createAndSaveProject(USER_ID);
+        PullRequest pr1 = createAndSavePullRequest(project.getId());
+        PullRequest pr2 = createAndSavePullRequest(project.getId());
+
+        createAndSaveReviewActivity(pr1.getId(), ONE_INT, TWENTY_INT, FIFTY_INT, FIFTY_INT, false, TEN_INT);
+        createAndSaveReviewActivity(pr2.getId(), ONE_INT, ONE_INT, HUNDRED_INT, HUNDRED_INT, false, ZERO_INT);
+
+        LocalDateTime now = LocalDateTime.now();
+        createAndSaveReview(pr1, now.minusMinutes(THIRTY_MINUTES), ReviewState.APPROVED);
+        createAndSaveReview(pr2, now.minusMinutes(SIXTY_MINUTES), ReviewState.CHANGES_REQUESTED);
+        createAndSaveReview(pr2, now.minusMinutes(THIRTY_MINUTES), ReviewState.APPROVED);
+
+        ReviewQualityStatisticsRequest request = new ReviewQualityStatisticsRequest(null, null);
+
+        // when
+        ReviewQualityStatisticsResponse response = reviewQualityStatisticsQueryService
+                .findReviewQualityStatistics(USER_ID, project.getId(), request);
+
+        // then
+        assertAll(
+                () -> assertThat(response.reviewActivity().highIntensityPrRate()).isEqualTo(REVIEW_RATE_50),
+                () -> assertThat(response.reviewActivity().postReviewCommitRate()).isEqualTo(REVIEW_RATE_50),
+                () -> assertThat(response.reviewActivity().firstReviewApproveRate()).isEqualTo(REVIEW_RATE_50),
+                () -> assertThat(response.reviewActivity().changesRequestedRate()).isEqualTo(REVIEW_RATE_50)
+        );
+    }
+
     private Project createAndSaveProject(Long userId) {
         Project project = Project.create(TEST_PROJECT_NAME, TEST_API_KEY_PREFIX + System.nanoTime(), userId);
         return projectRepository.save(project);
