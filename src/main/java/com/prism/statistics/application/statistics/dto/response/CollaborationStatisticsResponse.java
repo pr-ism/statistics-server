@@ -1,5 +1,7 @@
 package com.prism.statistics.application.statistics.dto.response;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
 
@@ -124,6 +126,8 @@ public record CollaborationStatisticsResponse(
     }
 
     private static double roundToTwoDecimals(double value) {
-        return Math.round(value * ROUND_SCALE) / ROUND_SCALE;
+        return BigDecimal.valueOf(value)
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 }
