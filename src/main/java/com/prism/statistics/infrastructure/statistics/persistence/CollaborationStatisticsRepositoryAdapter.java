@@ -116,7 +116,7 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
                 .filter(bottleneck -> bottleneck.hasReview())
                 .count();
 
-        Map<Long, Long> reviewerReviewCounts = calculateReviewerReviewCounts(reviews);
+        Map<Long, Long> reviewerReviewCounts = calculateReviewerReviewCounts(reviews, requestedReviewers);
 
         long repeatedDraftPrCount = calculateRepeatedDraftPrCount(stateHistories);
 
@@ -139,12 +139,19 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
         );
     }
 
-    private Map<Long, Long> calculateReviewerReviewCounts(List<Review> reviews) {
-        return reviews.stream()
+    private Map<Long, Long> calculateReviewerReviewCounts(
+            List<Review> reviews,
+            List<RequestedReviewer> requestedReviewers
+    ) {
+        Map<Long, Long> counts = reviews.stream()
                 .collect(Collectors.groupingBy(
                         r -> r.getReviewer().getUserId(),
                         Collectors.counting()
                 ));
+        requestedReviewers.stream()
+                .map(requested -> requested.getReviewer().getUserId())
+                .forEach(reviewerId -> counts.putIfAbsent(reviewerId, 0L));
+        return counts;
     }
 
     private long calculateRepeatedDraftPrCount(List<PullRequestStateHistory> stateHistories) {
