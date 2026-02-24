@@ -328,6 +328,19 @@ class CollaborationStatisticsQueryServiceTest {
         assertThat(result).isEqualTo(UNKNOWN_REVIEWER_NAME);
     }
 
+    @Test
+    void 소수점_반올림_경계값을_처리한다() {
+        CollaborationStatisticsResponse.ReviewerStats stats1 =
+                CollaborationStatisticsResponse.ReviewerStats.of(1L, "reviewer", 1L, 1.005);
+        CollaborationStatisticsResponse.ReviewerStats stats2 =
+                CollaborationStatisticsResponse.ReviewerStats.of(2L, "reviewer", 1L, 2.675);
+
+        assertAll(
+                () -> assertThat(stats1.avgResponseTimeMinutes()).isEqualTo(1.01),
+                () -> assertThat(stats2.avgResponseTimeMinutes()).isEqualTo(2.68)
+        );
+    }
+
     private Project createAndSaveProject(Long userId) {
         Project project = Project.create(TEST_PROJECT_NAME, TEST_API_KEY_PREFIX + System.nanoTime(), userId);
         return projectRepository.save(project);
