@@ -147,12 +147,14 @@ class PullRequestMetricsServiceTest {
         List<PullRequestFile> files = List.of(
                 PullRequestFile.create(
                         pullRequestId,
+                        100L,
                         "src/main/java/Example.java",
                         FileChangeType.MODIFIED,
                         FileChanges.create(8, 2)
                 ),
                 PullRequestFile.create(
                         pullRequestId,
+                        100L,
                         "src/main/java/NewFile.java",
                         FileChangeType.ADDED,
                         FileChanges.create(2, 4)

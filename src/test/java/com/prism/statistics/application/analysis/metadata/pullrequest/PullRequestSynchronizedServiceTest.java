@@ -5,10 +5,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
-import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.FileData;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest.CommitNode;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest.CommitsData;
+import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest.FileData;
+import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestEarlySynchronizedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSynchronizedEvent;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.HeadCommitNotFoundException;
@@ -37,6 +38,7 @@ class PullRequestSynchronizedServiceTest {
 
     private static final String TEST_API_KEY = "test-api-key";
     private static final int TEST_PULL_REQUEST_NUMBER = 123;
+    private static final Long TEST_GITHUB_PULL_REQUEST_ID = 1001L;
 
     @Autowired
     private PullRequestSynchronizedService pullRequestSynchronizedService;
@@ -87,9 +89,9 @@ class PullRequestSynchronizedServiceTest {
         assertAll(
                 () -> assertThat(pullRequest.getHeadCommitSha()).isEqualTo("sha3"),
                 () -> assertThat(pullRequest.getCommitCount()).isEqualTo(3),
-                () -> assertThat(pullRequest.getChangeStats().getAdditionCount()).isEqualTo(200),
-                () -> assertThat(pullRequest.getChangeStats().getDeletionCount()).isEqualTo(80),
-                () -> assertThat(pullRequest.getChangeStats().getChangedFileCount()).isEqualTo(15)
+                () -> assertThat(pullRequest.getChangeStats().getAdditionCount()).isEqualTo(205),
+                () -> assertThat(pullRequest.getChangeStats().getDeletionCount()).isEqualTo(82),
+                () -> assertThat(pullRequest.getChangeStats().getChangedFileCount()).isEqualTo(16)
         );
     }
 
@@ -134,11 +136,11 @@ class PullRequestSynchronizedServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(jpaPullRequestFileRepository.count()).isEqualTo(3),
+                () -> assertThat(jpaPullRequestFileRepository.count()).isEqualTo(4),
                 () -> assertThat(jpaPullRequestFileRepository.findAll().stream()
                         .map(file -> file.getFileName())
                         .toList()
-                ).containsExactlyInAnyOrder("src/main/java/NewFile.java", "src/main/java/NewFile2.java", "src/main/java/NewFile3.java")
+                ).containsExactlyInAnyOrder("src/main/java/NewFile.java", "src/main/java/NewFile2.java", "src/main/java/NewFile3.java", "src/main/java/RenamedFile.java")
         );
     }
 
@@ -156,11 +158,11 @@ class PullRequestSynchronizedServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(jpaPullRequestFileRepository.count()).isEqualTo(3),
+                () -> assertThat(jpaPullRequestFileRepository.count()).isEqualTo(4),
                 () -> assertThat(jpaPullRequestFileRepository.findAll().stream()
                         .map(file -> file.getFileName())
                         .toList()
-                ).containsExactlyInAnyOrder("src/main/java/NewFile.java", "src/main/java/NewFile2.java", "src/main/java/NewFile3.java")
+                ).containsExactlyInAnyOrder("src/main/java/NewFile.java", "src/main/java/NewFile2.java", "src/main/java/NewFile3.java", "src/main/java/RenamedFile.java")
         );
     }
 
@@ -193,12 +195,26 @@ class PullRequestSynchronizedServiceTest {
         pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, olderRequest);
 
         // then
-        assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(5);
+        assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(6);
     }
 
     @Sql("/sql/webhook/insert_project.sql")
     @Test
-    void PullRequest가_존재하지_않으면_아무_동작도_하지_않는다() {
+    void PullRequest가_존재하지_않으면_PullRequestEarlySynchronizedEvent가_발행된다() {
+        // given
+        PullRequestSynchronizedRequest request = createNewerRequest();
+
+        // when
+        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, request);
+
+        // then
+        long eventCount = applicationEvents.stream(PullRequestEarlySynchronizedEvent.class).count();
+        assertThat(eventCount).isEqualTo(1);
+    }
+
+    @Sql("/sql/webhook/insert_project.sql")
+    @Test
+    void PullRequest가_존재하지_않으면_early_데이터가_저장된다() {
         // given
         PullRequestSynchronizedRequest request = createNewerRequest();
 
@@ -207,10 +223,26 @@ class PullRequestSynchronizedServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(applicationEvents.stream(PullRequestSynchronizedEvent.class).count()).isEqualTo(0),
-                () -> assertThat(jpaCommitRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaPullRequestContentHistoryRepository.count()).isEqualTo(0),
-                () -> assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(0)
+                () -> assertThat(jpaCommitRepository.count()).isEqualTo(3),
+                () -> assertThat(jpaPullRequestFileRepository.count()).isEqualTo(4),
+                () -> assertThat(jpaPullRequestContentHistoryRepository.count()).isEqualTo(1),
+                () -> assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(4)
+        );
+    }
+
+    @Sql("/sql/webhook/insert_project.sql")
+    @Test
+    void PullRequest가_존재하지_않으면_early_데이터의_pullRequestId는_null이다() {
+        // given
+        PullRequestSynchronizedRequest request = createNewerRequest();
+
+        // when
+        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, request);
+
+        // then
+        assertAll(
+                () -> assertThat(jpaCommitRepository.findAll()).allMatch(commit -> !commit.hasAssignedPullRequestId()),
+                () -> assertThat(jpaPullRequestFileRepository.findAll()).allMatch(file -> !file.hasAssignedPullRequestId())
         );
     }
 
@@ -224,10 +256,11 @@ class PullRequestSynchronizedServiceTest {
         );
 
         List<FileData> files = List.of(
-                new FileData("src/main/java/File.java", "added", 10, 0)
+                new FileData("src/main/java/File.java", "added", 10, 0, null)
         );
 
         PullRequestSynchronizedRequest request = new PullRequestSynchronizedRequest(
+                TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
                 "non-existent-sha",
                 10,
@@ -266,17 +299,19 @@ class PullRequestSynchronizedServiceTest {
         );
 
         List<FileData> files = List.of(
-                new FileData("src/main/java/NewFile.java", "added", 100, 0),
-                new FileData("src/main/java/NewFile2.java", "modified", 60, 40),
-                new FileData("src/main/java/NewFile3.java", "added", 40, 40)
+                new FileData("src/main/java/NewFile.java", "added", 100, 0, null),
+                new FileData("src/main/java/NewFile2.java", "modified", 60, 40, null),
+                new FileData("src/main/java/NewFile3.java", "added", 40, 40, null),
+                new FileData("src/main/java/RenamedFile.java", "renamed", 5, 2, "src/main/java/OldName.java")
         );
 
         return new PullRequestSynchronizedRequest(
+                TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
                 "sha3",
-                200,
-                80,
-                15,
+                205,
+                82,
+                16,
                 new CommitsData(3, commitNodes),
                 files
         );
@@ -294,11 +329,12 @@ class PullRequestSynchronizedServiceTest {
         );
 
         List<FileData> files = List.of(
-                new FileData("src/main/java/OlderFile.java", "added", 30, 0),
-                new FileData("src/main/java/OlderFile2.java", "modified", 20, 10)
+                new FileData("src/main/java/OlderFile.java", "added", 30, 0, null),
+                new FileData("src/main/java/OlderFile2.java", "modified", 20, 10, null)
         );
 
         return new PullRequestSynchronizedRequest(
+                TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
                 "sha2",
                 50,

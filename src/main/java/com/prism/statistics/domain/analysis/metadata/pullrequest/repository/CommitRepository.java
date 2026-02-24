@@ -12,4 +12,8 @@ public interface CommitRepository {
     List<Commit> saveAll(List<Commit> commits);
 
     Set<String> findAllCommitShasByPullRequestId(Long pullRequestId);
+
+    long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId);
+
+    Set<String> findAllCommitShasByGithubPullRequestId(Long githubPullRequestId);
 }

@@ -9,4 +9,6 @@ public interface PullRequestFileHistoryRepository {
     PullRequestFileHistory save(PullRequestFileHistory pullRequestFileHistory);
 
     List<PullRequestFileHistory> saveAll(List<PullRequestFileHistory> pullRequestFileHistories);
+
+    long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId);
 }

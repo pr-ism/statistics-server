@@ -15,22 +15,48 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Commit extends CreatedAtEntity {
 
+    private Long githubPullRequestId;
+
     private Long pullRequestId;
 
     private String commitSha;
 
     private LocalDateTime committedAt;
 
-    public static Commit create(Long pullRequestId, String commitSha, LocalDateTime committedAt) {
+    public static Commit create(Long pullRequestId, Long githubPullRequestId, String commitSha, LocalDateTime committedAt) {
         validatePullRequestId(pullRequestId);
+        validateGithubPullRequestId(githubPullRequestId);
         validateCommitSha(commitSha);
         validateCommittedAt(committedAt);
-        return new Commit(pullRequestId, commitSha, committedAt);
+        return new Commit(pullRequestId, githubPullRequestId, commitSha, committedAt);
+    }
+
+    public static Commit createEarly(Long githubPullRequestId, String commitSha, LocalDateTime committedAt) {
+        validateGithubPullRequestId(githubPullRequestId);
+        validateCommitSha(commitSha);
+        validateCommittedAt(committedAt);
+        return new Commit(null, githubPullRequestId, commitSha, committedAt);
+    }
+
+    public void assignPullRequestId(Long pullRequestId) {
+        if (this.pullRequestId == null) {
+            this.pullRequestId = pullRequestId;
+        }
+    }
+
+    public boolean hasAssignedPullRequestId() {
+        return pullRequestId != null;
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
             throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
+        }
+    }
+
+    private static void validateGithubPullRequestId(Long githubPullRequestId) {
+        if (githubPullRequestId == null) {
+            throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
         }
     }
 
@@ -46,8 +72,9 @@ public class Commit extends CreatedAtEntity {
         }
     }
 
-    private Commit(Long pullRequestId, String commitSha, LocalDateTime committedAt) {
+    private Commit(Long pullRequestId, Long githubPullRequestId, String commitSha, LocalDateTime committedAt) {
         this.pullRequestId = pullRequestId;
+        this.githubPullRequestId = githubPullRequestId;
         this.commitSha = commitSha;
         this.committedAt = committedAt;
     }

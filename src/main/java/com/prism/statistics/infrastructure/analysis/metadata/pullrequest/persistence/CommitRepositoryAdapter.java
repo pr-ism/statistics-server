@@ -43,4 +43,29 @@ public class CommitRepositoryAdapter implements CommitRepository {
                 .stream()
                 .collect(Collectors.toUnmodifiableSet());
     }
+
+    @Override
+    @Transactional
+    public long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId) {
+        return queryFactory
+                .update(commit)
+                .set(commit.pullRequestId, pullRequestId)
+                .where(
+                        commit.githubPullRequestId.eq(githubPullRequestId),
+                        commit.pullRequestId.isNull()
+                )
+                .execute();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<String> findAllCommitShasByGithubPullRequestId(Long githubPullRequestId) {
+        return queryFactory
+                .select(commit.commitSha)
+                .from(commit)
+                .where(commit.githubPullRequestId.eq(githubPullRequestId))
+                .fetch()
+                .stream()
+                .collect(Collectors.toUnmodifiableSet());
+    }
 }

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequestFile;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -19,12 +18,15 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.FileChanges;
 class PullRequestFileTest {
 
     private static final FileChanges FILE_CHANGES = FileChanges.create(100, 50);
+    private static final Long PULL_REQUEST_ID = 1L;
+    private static final Long GITHUB_PULL_REQUEST_ID = 100L;
 
     @Test
     void PullRequestFile을_생성한다() {
         // when
         PullRequestFile pullRequestFile = PullRequestFile.create(
-                1L,
+                PULL_REQUEST_ID,
+                GITHUB_PULL_REQUEST_ID,
                 "src/main/java/com/example/Service.java",
                 FileChangeType.MODIFIED,
                 FILE_CHANGES
@@ -32,7 +34,8 @@ class PullRequestFileTest {
 
         // then
         assertAll(
-                () -> assertThat(pullRequestFile.getPullRequestId()).isEqualTo(1L),
+                () -> assertThat(pullRequestFile.getPullRequestId()).isEqualTo(PULL_REQUEST_ID),
+                () -> assertThat(pullRequestFile.getGithubPullRequestId()).isEqualTo(GITHUB_PULL_REQUEST_ID),
                 () -> assertThat(pullRequestFile.getFileName()).isEqualTo("src/main/java/com/example/Service.java"),
                 () -> assertThat(pullRequestFile.getChangeType()).isEqualTo(FileChangeType.MODIFIED),
                 () -> assertThat(pullRequestFile.getFileChanges()).isEqualTo(FILE_CHANGES)
@@ -42,16 +45,24 @@ class PullRequestFileTest {
     @Test
     void Pull_Request_ID가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestFile.create(null, "file.java", FileChangeType.ADDED, FILE_CHANGES))
+        assertThatThrownBy(() -> PullRequestFile.create(null, GITHUB_PULL_REQUEST_ID, "file.java", FileChangeType.ADDED, FILE_CHANGES))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("PullRequest ID는 필수입니다.");
+    }
+
+    @Test
+    void GitHub_Pull_Request_ID가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFile.create(PULL_REQUEST_ID, null, "file.java", FileChangeType.ADDED, FILE_CHANGES))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("GitHub PullRequest ID는 필수입니다.");
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     void 파일명이_null이거나_빈_문자열이면_예외가_발생한다(String fileName) {
         // when & then
-        assertThatThrownBy(() -> PullRequestFile.create(1L, fileName, FileChangeType.ADDED, FILE_CHANGES))
+        assertThatThrownBy(() -> PullRequestFile.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, fileName, FileChangeType.ADDED, FILE_CHANGES))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("파일명은 필수입니다.");
     }
@@ -59,7 +70,7 @@ class PullRequestFileTest {
     @Test
     void 변경_타입이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestFile.create(1L, "file.java", null, FILE_CHANGES))
+        assertThatThrownBy(() -> PullRequestFile.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, "file.java", null, FILE_CHANGES))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 타입은 필수입니다.");
     }
@@ -67,7 +78,7 @@ class PullRequestFileTest {
     @Test
     void 파일_변경_정보가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestFile.create(1L, "file.java", FileChangeType.ADDED, null))
+        assertThatThrownBy(() -> PullRequestFile.create(PULL_REQUEST_ID, GITHUB_PULL_REQUEST_ID, "file.java", FileChangeType.ADDED, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("파일 변경 정보는 필수입니다.");
     }
@@ -75,12 +86,90 @@ class PullRequestFileTest {
     @Test
     void 총_변경_라인_수를_계산한다() {
         // given
-        PullRequestFile pullRequestFile = PullRequestFile.create(1L, "file.java", FileChangeType.MODIFIED, FILE_CHANGES);
+        PullRequestFile pullRequestFile = PullRequestFile.create(
+                PULL_REQUEST_ID,
+                GITHUB_PULL_REQUEST_ID,
+                "file.java",
+                FileChangeType.MODIFIED,
+                FILE_CHANGES
+        );
 
         // when
         int totalChanges = pullRequestFile.getTotalChanges();
 
         // then
         assertThat(totalChanges).isEqualTo(150);
+    }
+
+    @Test
+    void createEarly에서_GitHub_Pull_Request_ID가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFile.createEarly(null, "file.java", FileChangeType.ADDED, FILE_CHANGES))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("GitHub PullRequest ID는 필수입니다.");
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void createEarly에서_파일명이_null이거나_빈_문자열이면_예외가_발생한다(String fileName) {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFile.createEarly(GITHUB_PULL_REQUEST_ID, fileName, FileChangeType.ADDED, FILE_CHANGES))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("파일명은 필수입니다.");
+    }
+
+    @Test
+    void createEarly에서_변경_타입이_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFile.createEarly(GITHUB_PULL_REQUEST_ID, "file.java", null, FILE_CHANGES))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("변경 타입은 필수입니다.");
+    }
+
+    @Test
+    void createEarly에서_파일_변경_정보가_null이면_예외가_발생한다() {
+        // when & then
+        assertThatThrownBy(() -> PullRequestFile.createEarly(GITHUB_PULL_REQUEST_ID, "file.java", FileChangeType.ADDED, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("파일 변경 정보는 필수입니다.");
+    }
+
+    @Test
+    void createEarly로_orphan_PullRequestFile을_생성한다() {
+        // when
+        PullRequestFile pullRequestFile = PullRequestFile.createEarly(
+                GITHUB_PULL_REQUEST_ID,
+                "file.java",
+                FileChangeType.ADDED,
+                FILE_CHANGES
+        );
+
+        // then
+        assertAll(
+                () -> assertThat(pullRequestFile.getPullRequestId()).isNull(),
+                () -> assertThat(pullRequestFile.getGithubPullRequestId()).isEqualTo(GITHUB_PULL_REQUEST_ID),
+                () -> assertThat(pullRequestFile.hasAssignedPullRequestId()).isFalse()
+        );
+    }
+
+    @Test
+    void assignPullRequestId는_pullRequestId가_null일때만_할당된다() {
+        // given
+        PullRequestFile orphan = PullRequestFile.createEarly(
+                GITHUB_PULL_REQUEST_ID,
+                "file.java",
+                FileChangeType.ADDED,
+                FILE_CHANGES
+        );
+
+        // when
+        orphan.assignPullRequestId(PULL_REQUEST_ID);
+        orphan.assignPullRequestId(2L);
+
+        // then
+        assertAll(
+                () -> assertThat(orphan.getPullRequestId()).isEqualTo(PULL_REQUEST_ID),
+                () -> assertThat(orphan.hasAssignedPullRequestId()).isTrue()
+        );
     }
 }

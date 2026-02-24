@@ -31,6 +31,7 @@ class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSup
         // given
         String payload = """
                 {
+                    "githubPullRequestId": 100,
                     "pullRequestNumber": 42,
                     "headCommitSha": "sha3",
                     "additions": 200,
@@ -81,6 +82,7 @@ class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSup
         // given
         String payload = """
                 {
+                    "githubPullRequestId": 100,
                     "pullRequestNumber": 42,
                     "headCommitSha": "sha3",
                     "additions": 200,

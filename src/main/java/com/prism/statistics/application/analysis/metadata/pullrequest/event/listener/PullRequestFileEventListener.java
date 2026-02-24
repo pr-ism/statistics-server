@@ -1,6 +1,6 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest.event.listener;
 
-import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.FileData;
+import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestEarlySynchronizedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSynchronizedEvent;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequestFile;
@@ -22,7 +22,21 @@ public class PullRequestFileEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void saveInitialFiles(PullRequestOpenCreatedEvent event) {
-        saveFiles(event.pullRequestId(), event.files());
+        if (pullRequestFileRepository.existsByGithubPullRequestId(event.githubPullRequestId())) {
+            return;
+        }
+
+        List<PullRequestFile> pullRequestFiles = event.files().stream()
+                .map(file -> PullRequestFile.create(
+                        event.pullRequestId(),
+                        event.githubPullRequestId(),
+                        file.filename(),
+                        FileChangeType.fromGitHubStatus(file.status()),
+                        FileChanges.create(file.additions(), file.deletions())
+                ))
+                .toList();
+
+        pullRequestFileRepository.saveAll(pullRequestFiles);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
@@ -32,23 +46,31 @@ public class PullRequestFileEventListener {
         }
 
         pullRequestFileRepository.deleteAllByPullRequestId(event.pullRequestId());
-        saveFiles(event.pullRequestId(), event.files());
-    }
 
-    private void saveFiles(Long pullRequestId, List<FileData> files) {
-        List<PullRequestFile> pullRequestFiles = files.stream()
-                .map(file -> toPullRequestFile(pullRequestId, file))
+        List<PullRequestFile> pullRequestFiles = event.files().stream()
+                .map(file -> PullRequestFile.create(
+                        event.pullRequestId(),
+                        event.githubPullRequestId(),
+                        file.filename(),
+                        FileChangeType.fromGitHubStatus(file.status()),
+                        FileChanges.create(file.additions(), file.deletions())
+                ))
                 .toList();
 
         pullRequestFileRepository.saveAll(pullRequestFiles);
     }
 
-    private PullRequestFile toPullRequestFile(Long pullRequestId, FileData file) {
-        return PullRequestFile.create(
-                pullRequestId,
-                file.filename(),
-                FileChangeType.fromGitHubStatus(file.status()),
-                FileChanges.create(file.additions(), file.deletions())
-        );
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void saveEarlyFiles(PullRequestEarlySynchronizedEvent event) {
+        List<PullRequestFile> pullRequestFiles = event.files().stream()
+                .map(file -> PullRequestFile.createEarly(
+                        event.githubPullRequestId(),
+                        file.filename(),
+                        FileChangeType.fromGitHubStatus(file.status()),
+                        FileChanges.create(file.additions(), file.deletions())
+                ))
+                .toList();
+
+        pullRequestFileRepository.saveAll(pullRequestFiles);
     }
 }

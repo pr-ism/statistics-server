@@ -99,6 +99,7 @@ class PullRequestMetricsEventListenerTest {
     private void createAndSavePullRequestFile(Long pullRequestId) {
         PullRequestFile file = PullRequestFile.create(
                 pullRequestId,
+                100L,
                 "src/main/java/Example.java",
                 FileChangeType.MODIFIED,
                 FileChanges.create(5, 5)

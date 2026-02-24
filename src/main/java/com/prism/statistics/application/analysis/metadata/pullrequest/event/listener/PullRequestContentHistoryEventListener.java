@@ -1,5 +1,6 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest.event.listener;
 
+import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestEarlySynchronizedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSynchronizedEvent;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullRequestContentHistory;
@@ -19,6 +20,7 @@ public class PullRequestContentHistoryEventListener {
     public void saveInitialContentHistory(PullRequestOpenCreatedEvent event) {
         PullRequestContentHistory pullRequestContentHistory = PullRequestContentHistory.create(
                 event.pullRequestId(),
+                event.githubPullRequestId(),
                 event.headCommitSha(),
                 event.changeStats(),
                 event.commitCount(),
@@ -32,6 +34,20 @@ public class PullRequestContentHistoryEventListener {
     public void saveContentHistory(PullRequestSynchronizedEvent event) {
         PullRequestContentHistory pullRequestContentHistory = PullRequestContentHistory.create(
                 event.pullRequestId(),
+                event.githubPullRequestId(),
+                event.headCommitSha(),
+                event.changeStats(),
+                event.commitCount(),
+                event.githubChangedAt()
+        );
+
+        pullRequestContentHistoryRepository.save(pullRequestContentHistory);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void saveEarlyContentHistory(PullRequestEarlySynchronizedEvent event) {
+        PullRequestContentHistory pullRequestContentHistory = PullRequestContentHistory.createEarly(
+                event.githubPullRequestId(),
                 event.headCommitSha(),
                 event.changeStats(),
                 event.commitCount(),

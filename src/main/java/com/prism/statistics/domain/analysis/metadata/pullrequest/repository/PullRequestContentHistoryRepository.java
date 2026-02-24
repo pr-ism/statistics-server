@@ -5,4 +5,6 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullReq
 public interface PullRequestContentHistoryRepository {
 
     PullRequestContentHistory save(PullRequestContentHistory pullRequestContentHistory);
+
+    long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId);
 }

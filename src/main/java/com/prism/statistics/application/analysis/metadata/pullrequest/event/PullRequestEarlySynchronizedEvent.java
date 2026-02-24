@@ -7,15 +7,13 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestC
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record PullRequestSynchronizedEvent(
-        Long pullRequestId,
+public record PullRequestEarlySynchronizedEvent(
         Long githubPullRequestId,
         String headCommitSha,
-        boolean isNewer,
         PullRequestChangeStats changeStats,
         int commitCount,
         LocalDateTime githubChangedAt,
         List<FileData> files,
-        List<CommitData> newCommits
+        List<CommitData> commits
 ) {
 }

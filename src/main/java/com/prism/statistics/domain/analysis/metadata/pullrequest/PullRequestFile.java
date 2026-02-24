@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PullRequestFile extends CreatedAtEntity {
 
+    private Long githubPullRequestId;
+
     private Long pullRequestId;
 
     private String fileName;
@@ -30,20 +32,51 @@ public class PullRequestFile extends CreatedAtEntity {
 
     public static PullRequestFile create(
             Long pullRequestId,
+            Long githubPullRequestId,
             String fileName,
             FileChangeType changeType,
             FileChanges fileChanges
     ) {
         validatePullRequestId(pullRequestId);
+        validateGithubPullRequestId(githubPullRequestId);
         validateFileName(fileName);
         validateChangeType(changeType);
         validateFileChanges(fileChanges);
-        return new PullRequestFile(pullRequestId, fileName, changeType, fileChanges);
+        return new PullRequestFile(pullRequestId, githubPullRequestId, fileName, changeType, fileChanges);
+    }
+
+    public static PullRequestFile createEarly(
+            Long githubPullRequestId,
+            String fileName,
+            FileChangeType changeType,
+            FileChanges fileChanges
+    ) {
+        validateGithubPullRequestId(githubPullRequestId);
+        validateFileName(fileName);
+        validateChangeType(changeType);
+        validateFileChanges(fileChanges);
+        return new PullRequestFile(null, githubPullRequestId, fileName, changeType, fileChanges);
+    }
+
+    public void assignPullRequestId(Long pullRequestId) {
+        if (this.pullRequestId == null) {
+            this.pullRequestId = pullRequestId;
+        }
+    }
+
+    public boolean hasAssignedPullRequestId() {
+        return pullRequestId != null;
     }
 
     private static void validatePullRequestId(Long pullRequestId) {
         if (pullRequestId == null) {
             throw new IllegalArgumentException("PullRequest ID는 필수입니다.");
+        }
+    }
+
+    private static void validateGithubPullRequestId(Long githubPullRequestId) {
+        if (githubPullRequestId == null) {
+            throw new IllegalArgumentException("GitHub PullRequest ID는 필수입니다.");
         }
     }
 
@@ -67,11 +100,13 @@ public class PullRequestFile extends CreatedAtEntity {
 
     private PullRequestFile(
             Long pullRequestId,
+            Long githubPullRequestId,
             String fileName,
             FileChangeType changeType,
             FileChanges fileChanges
     ) {
         this.pullRequestId = pullRequestId;
+        this.githubPullRequestId = githubPullRequestId;
         this.fileName = fileName;
         this.changeType = changeType;
         this.fileChanges = fileChanges;
