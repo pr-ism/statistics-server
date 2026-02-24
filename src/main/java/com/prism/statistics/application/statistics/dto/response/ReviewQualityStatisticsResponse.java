@@ -8,11 +8,15 @@ public record ReviewQualityStatisticsResponse(
         ReviewerStatistics reviewerStats
 ) {
 
+    private static final long ZERO_COUNT = 0L;
+    private static final double ZERO_RATE = 0.0d;
+    private static final double ROUNDING_SCALE = 100.0d;
+
     public static ReviewQualityStatisticsResponse empty() {
         return new ReviewQualityStatisticsResponse(
-                0L,
-                0L,
-                0.0,
+                ZERO_COUNT,
+                ZERO_COUNT,
+                ZERO_RATE,
                 ReviewActivityStatistics.empty(),
                 ReviewerStatistics.empty()
         );
@@ -23,10 +27,26 @@ public record ReviewQualityStatisticsResponse(
             double avgCommentCount,
             double avgCommentDensity,
             long withAdditionalReviewersCount,
-            long withChangesAfterReviewCount
+            long withChangesAfterReviewCount,
+            double firstReviewApproveRate,
+            double postReviewCommitRate,
+            double changesRequestedRate,
+            double avgChangesResolutionMinutes,
+            double highIntensityPrRate
     ) {
         public static ReviewActivityStatistics empty() {
-            return new ReviewActivityStatistics(0.0, 0.0, 0.0, 0L, 0L);
+            return new ReviewActivityStatistics(
+                    ZERO_RATE,
+                    ZERO_RATE,
+                    ZERO_RATE,
+                    ZERO_COUNT,
+                    ZERO_COUNT,
+                    ZERO_RATE,
+                    ZERO_RATE,
+                    ZERO_RATE,
+                    ZERO_RATE,
+                    ZERO_RATE
+            );
         }
 
         public static ReviewActivityStatistics of(
@@ -34,19 +54,25 @@ public record ReviewQualityStatisticsResponse(
                 double avgCommentCount,
                 double avgCommentDensity,
                 long withAdditionalReviewersCount,
-                long withChangesAfterReviewCount
+                long withChangesAfterReviewCount,
+                double firstReviewApproveRate,
+                double postReviewCommitRate,
+                double changesRequestedRate,
+                double avgChangesResolutionMinutes,
+                double highIntensityPrRate
         ) {
             return new ReviewActivityStatistics(
                     roundToTwoDecimals(avgReviewRoundTrips),
                     roundToTwoDecimals(avgCommentCount),
                     roundToTwoDecimals(avgCommentDensity),
                     withAdditionalReviewersCount,
-                    withChangesAfterReviewCount
+                    withChangesAfterReviewCount,
+                    roundToTwoDecimals(firstReviewApproveRate),
+                    roundToTwoDecimals(postReviewCommitRate),
+                    roundToTwoDecimals(changesRequestedRate),
+                    roundToTwoDecimals(avgChangesResolutionMinutes),
+                    roundToTwoDecimals(highIntensityPrRate)
             );
-        }
-
-        private static double roundToTwoDecimals(double value) {
-            return Math.round(value * 100.0) / 100.0;
         }
     }
 
@@ -57,7 +83,7 @@ public record ReviewQualityStatisticsResponse(
             double avgReviewsPerSession
     ) {
         public static ReviewerStatistics empty() {
-            return new ReviewerStatistics(0L, 0.0, 0.0, 0.0);
+            return new ReviewerStatistics(ZERO_COUNT, ZERO_RATE, ZERO_RATE, ZERO_RATE);
         }
 
         public static ReviewerStatistics of(
@@ -73,9 +99,13 @@ public record ReviewQualityStatisticsResponse(
                     roundToTwoDecimals(avgReviewsPerSession)
             );
         }
+    }
 
-        private static double roundToTwoDecimals(double value) {
-            return Math.round(value * 100.0) / 100.0;
+    private static double roundToTwoDecimals(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return ZERO_RATE;
         }
+
+        return Math.round(value * ROUNDING_SCALE) / ROUNDING_SCALE;
     }
 }

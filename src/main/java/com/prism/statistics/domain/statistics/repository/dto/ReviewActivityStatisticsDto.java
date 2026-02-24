@@ -9,6 +9,11 @@ public record ReviewActivityStatisticsDto(
         long totalCommentCount,
         BigDecimal totalCommentDensity,
         long withAdditionalReviewersCount,
-        long withChangesAfterReviewCount
+        long withChangesAfterReviewCount,
+        long firstReviewApproveCount,
+        long changesRequestedCount,
+        long totalChangesResolutionMinutes,
+        long changesResolvedCount,
+        long highIntensityPrCount
 ) {
 }

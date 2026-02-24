@@ -10,6 +10,7 @@ import com.prism.statistics.domain.statistics.repository.ReviewQualityStatistics
 import com.prism.statistics.domain.statistics.repository.dto.ReviewActivityStatisticsDto;
 import com.prism.statistics.domain.statistics.repository.dto.ReviewSessionStatisticsDto;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ReviewQualityStatisticsQueryService {
+
+    private static final double ZERO_DOUBLE = 0.0;
+    private static final long ZERO_COUNT = 0L;
+    private static final int COMMENT_DENSITY_SCALE = 6;
+    private static final RoundingMode COMMENT_DENSITY_ROUNDING = RoundingMode.HALF_UP;
+    private static final double PERCENT_SCALE = 100.0d;
+    private static final double PERCENT_ROUNDING_MULTIPLIER = 10000.0d;
 
     private final ReviewQualityStatisticsRepository reviewQualityStatisticsRepository;
     private final ProjectRepository projectRepository;
@@ -83,7 +91,7 @@ public class ReviewQualityStatisticsQueryService {
     }
 
     private ReviewActivityStatistics buildActivityStatistics(ReviewActivityStatisticsDto dto) {
-        if (dto == null || dto.reviewedCount() == 0) {
+        if (isEmptyActivityStatistics(dto)) {
             return ReviewActivityStatistics.empty();
         }
 
@@ -92,20 +100,39 @@ public class ReviewQualityStatisticsQueryService {
         double avgReviewRoundTrips = (double) dto.totalReviewRoundTrips() / reviewedCount;
         double avgCommentCount = (double) dto.totalCommentCount() / reviewedCount;
         double avgCommentDensity = dto.totalCommentDensity()
-                .divide(BigDecimal.valueOf(reviewedCount), 6, java.math.RoundingMode.HALF_UP)
+                .divide(BigDecimal.valueOf(reviewedCount), COMMENT_DENSITY_SCALE, COMMENT_DENSITY_ROUNDING)
                 .doubleValue();
+
+        double firstReviewApproveRate = calculatePercentage(dto.firstReviewApproveCount(), reviewedCount);
+        double postReviewCommitRate = calculatePercentage(dto.withChangesAfterReviewCount(), reviewedCount);
+        double changesRequestedRate = calculatePercentage(dto.changesRequestedCount(), reviewedCount);
+        double avgChangesResolutionMinutes = calculateAverage(
+                dto.totalChangesResolutionMinutes(), dto.changesResolvedCount());
+        double highIntensityPrRate = calculatePercentage(dto.highIntensityPrCount(), reviewedCount);
 
         return ReviewActivityStatistics.of(
                 avgReviewRoundTrips,
                 avgCommentCount,
                 avgCommentDensity,
                 dto.withAdditionalReviewersCount(),
-                dto.withChangesAfterReviewCount()
+                dto.withChangesAfterReviewCount(),
+                firstReviewApproveRate,
+                postReviewCommitRate,
+                changesRequestedRate,
+                avgChangesResolutionMinutes,
+                highIntensityPrRate
         );
     }
 
+    private double calculateAverage(long total, long count) {
+        if (count == ZERO_COUNT) {
+            return ZERO_DOUBLE;
+        }
+        return (double) total / count;
+    }
+
     private ReviewerStatistics buildReviewerStatistics(ReviewSessionStatisticsDto dto) {
-        if (dto == null || dto.totalSessionCount() == 0) {
+        if (isEmptyReviewerStatistics(dto)) {
             return ReviewerStatistics.empty();
         }
 
@@ -126,8 +153,8 @@ public class ReviewQualityStatisticsQueryService {
     private double calculateAvgReviewersPerPr(ReviewSessionStatisticsDto dto) {
         long uniquePullRequestCount = dto.uniquePullRequestCount();
 
-        if (uniquePullRequestCount == 0L) {
-            return 0.0;
+        if (uniquePullRequestCount == ZERO_COUNT) {
+            return ZERO_DOUBLE;
         }
 
         return (double) dto.uniqueReviewerCount() / uniquePullRequestCount;
@@ -140,9 +167,17 @@ public class ReviewQualityStatisticsQueryService {
     }
 
     private double calculatePercentage(long count, long totalCount) {
-        if (totalCount == 0) {
-            return 0.0;
+        if (totalCount == ZERO_COUNT) {
+            return ZERO_DOUBLE;
         }
-        return Math.round(count * 10000.0 / totalCount) / 100.0;
+        return Math.round(count * PERCENT_ROUNDING_MULTIPLIER / totalCount) / PERCENT_SCALE;
+    }
+
+    private boolean isEmptyActivityStatistics(ReviewActivityStatisticsDto dto) {
+        return dto == null || dto.reviewedCount() == ZERO_COUNT;
+    }
+
+    private boolean isEmptyReviewerStatistics(ReviewSessionStatisticsDto dto) {
+        return dto == null || dto.totalSessionCount() == ZERO_COUNT;
     }
 }

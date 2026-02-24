@@ -105,6 +105,22 @@ class PullRequestBottleneckTest {
     }
 
     @Test
+    void 리뷰_대기_시간과_승인_기반_머지_대기_여부를_판단한다() {
+        // given
+        LocalDateTime reviewReadyAt = LocalDateTime.of(2024, 1, 1, 10, 0);
+        LocalDateTime firstReviewAt = LocalDateTime.of(2024, 1, 1, 11, 0);
+        PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
+                1L, reviewReadyAt, firstReviewAt, true
+        );
+
+        // then
+        assertAll(
+                () -> assertThat(bottleneck.hasReviewWait()).isTrue(),
+                () -> assertThat(bottleneck.hasMergeWaitWithApproval()).isFalse()
+        );
+    }
+
+    @Test
     void PR_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> PullRequestBottleneck.createWithoutReview(null))
