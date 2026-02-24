@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ReviewQualityStatisticsQueryService {
 
-    private static final double ZERO_DOUBLE = 0.0d;
+    private static final double ZERO_DOUBLE = 0.0;
     private static final long ZERO_COUNT = 0L;
     private static final int COMMENT_DENSITY_SCALE = 6;
     private static final RoundingMode COMMENT_DENSITY_ROUNDING = RoundingMode.HALF_UP;

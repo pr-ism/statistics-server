@@ -22,9 +22,9 @@ import java.util.List;
 public class ReviewSpeedStatisticsQueryService {
 
     private static final long ZERO_COUNT = 0L;
-    private static final double ZERO_DOUBLE = 0.0d;
-    private static final double PERCENT_SCALE = 100.0d;
-    private static final double PERCENT_ROUNDING_MULTIPLIER = 10000.0d;
+    private static final double ZERO_DOUBLE = 0.0;
+    private static final double PERCENT_SCALE = 100.0;
+    private static final double PERCENT_ROUNDING_MULTIPLIER = 10000.0;
     private static final int PERCENTILE_P50 = 50;
     private static final int PERCENTILE_P90 = 90;
 

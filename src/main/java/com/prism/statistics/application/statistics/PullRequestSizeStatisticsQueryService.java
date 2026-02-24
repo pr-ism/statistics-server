@@ -23,17 +23,17 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PullRequestSizeStatisticsQueryService {
 
-    private static final double ZERO_DOUBLE = 0.0d;
+    private static final double ZERO_DOUBLE = 0.0;
     private static final long ZERO_COUNT = 0L;
     private static final int AVG_SIZE_SCORE_SCALE = 2;
     private static final RoundingMode AVG_SIZE_SCORE_ROUNDING = RoundingMode.HALF_UP;
     private static final int MIN_CORRELATION_SAMPLE_SIZE = 3;
     private static final int MIN_CORRELATION_DENOMINATOR = 2;
     private static final double CORRELATION_EPSILON = 1e-10;
-    private static final double MIN_CORRELATION = -1.0d;
-    private static final double MAX_CORRELATION = 1.0d;
+    private static final double MIN_CORRELATION = -1.0;
+    private static final double MAX_CORRELATION = 1.0;
     private static final double PERCENT_SCALE = 100.0d;
-    private static final double PERCENT_ROUNDING_MULTIPLIER = 10000.0d;
+    private static final double PERCENT_ROUNDING_MULTIPLIER = 10000.0;
 
     private final PullRequestSizeStatisticsRepository pullRequestSizeStatisticsRepository;
     private final ProjectRepository projectRepository;
