@@ -130,7 +130,7 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
                 .count();
 
         long withChangesAfterReviewCount = activities.stream()
-                .filter(activity -> activity.hasSignificantChangesAfterReview())
+                .filter(activity -> activity.hasCodeChangesAfterReview())
                 .count();
 
         long firstReviewApproveCount = calculateFirstReviewApproveCount(reviews);
