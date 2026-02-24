@@ -119,12 +119,12 @@ public class CollaborationStatisticsQueryService {
                 .sorted(Comparator.reverseOrder())
                 .toList();
 
-        long top3Sum = sorted.stream()
+        long topSum = sorted.stream()
                 .limit(TOP_REVIEWER_COUNT)
                 .mapToLong(value -> value)
                 .sum();
 
-        return (double) top3Sum / totalReviews * PERCENT_MULTIPLIER;
+        return (double) topSum / totalReviews * PERCENT_MULTIPLIER;
     }
 
     private DraftPrStatistics buildDraftPullRequestStatistics(CollaborationStatisticsDto dto, long totalCount) {
