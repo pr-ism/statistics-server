@@ -232,6 +232,28 @@ class CollaborationStatisticsQueryServiceTest {
     }
 
     @Test
+    void 리뷰_요청만_받은_리뷰어도_지니계수_모수에_포함된다() {
+        Long userId = DEFAULT_USER_ID;
+        Project project = createAndSaveProject(userId);
+
+        PullRequest pr = createAndSavePullRequest(project.getId());
+        LocalDateTime requestedAt = LocalDateTime.now().minusMinutes(10);
+
+        createAndSaveRequestedReviewer(pr, REVIEWER_ID_1, REVIEWER_NAME_1, requestedAt);
+        createAndSaveRequestedReviewer(pr, REVIEWER_ID_2, REVIEWER_NAME_2, requestedAt);
+
+        createAndSaveReview(pr, REVIEWER_ID_1, REVIEWER_NAME_1);
+
+        CollaborationStatisticsResponse response = collaborationStatisticsQueryService
+                .findCollaborationStatistics(userId, project.getId(), new CollaborationStatisticsRequest(null, null));
+
+        assertAll(
+                () -> assertThat(response.reviewerConcentration().totalReviewerCount()).isEqualTo(REVIEWER_COUNT),
+                () -> assertThat(response.reviewerConcentration().giniCoefficient()).isGreaterThan(ZERO_DOUBLE)
+        );
+    }
+
+    @Test
     void 리뷰어가_한_명일_때_지니_계수는_0이다() {
         // given
         Long userId = DEFAULT_USER_ID;
