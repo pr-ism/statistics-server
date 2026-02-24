@@ -262,7 +262,9 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
                 }
             }
 
-            result.add(new ReviewerResponseTimeDto(reviewerId, reviewerName, totalResponseTimeMinutes, reviewCount));
+            if (reviewCount > 0) {
+                result.add(new ReviewerResponseTimeDto(reviewerId, reviewerName, totalResponseTimeMinutes, reviewCount));
+            }
         }
 
         return result;
