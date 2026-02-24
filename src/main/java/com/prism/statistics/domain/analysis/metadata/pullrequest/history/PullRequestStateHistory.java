@@ -98,4 +98,12 @@ public class PullRequestStateHistory extends CreatedAtEntity {
     public boolean isInitialState() {
         return previousState == null;
     }
+
+    public boolean isDraftOpenTransition() {
+        if (previousState == null) {
+            return false;
+        }
+        return (previousState == PullRequestState.DRAFT && newState == PullRequestState.OPEN)
+                || (previousState == PullRequestState.OPEN && newState == PullRequestState.DRAFT);
+    }
 }

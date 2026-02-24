@@ -149,7 +149,7 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
 
     private long calculateRepeatedDraftPrCount(List<PullRequestStateHistory> stateHistories) {
         Map<Long, Long> draftOpenTransitionCounts = stateHistories.stream()
-                .filter(h -> isDraftOpenTransition(h))
+                .filter(history -> history.isDraftOpenTransition())
                 .collect(Collectors.groupingBy(
                         history -> history.getPullRequestId(),
                         Collectors.counting()
@@ -158,14 +158,6 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
         return draftOpenTransitionCounts.values().stream()
                 .filter(count -> count >= 2)
                 .count();
-    }
-
-    private boolean isDraftOpenTransition(PullRequestStateHistory history) {
-        if (history.getPreviousState() == null) {
-            return false;
-        }
-        return (history.getPreviousState() == PullRequestState.DRAFT && history.getNewState() == PullRequestState.OPEN)
-                || (history.getPreviousState() == PullRequestState.OPEN && history.getNewState() == PullRequestState.DRAFT);
     }
 
     private long calculateReviewerAddedPrCount(
