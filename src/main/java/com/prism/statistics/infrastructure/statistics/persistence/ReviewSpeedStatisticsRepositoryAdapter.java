@@ -94,13 +94,13 @@ public class ReviewSpeedStatisticsRepositoryAdapter implements ReviewSpeedStatis
 
             reviewedCount++;
 
-            if (bottleneck.getReviewWait() != null) {
+            if (bottleneck.hasReviewWait()) {
                 long reviewWaitMinutes = bottleneck.getReviewWait().getMinutes();
                 reviewWaitMinutesList.add(reviewWaitMinutes);
                 totalReviewWaitMinutes += reviewWaitMinutes;
             }
 
-            if (bottleneck.getMergeWait() != null && bottleneck.hasApproval()) {
+            if (bottleneck.hasMergeWaitWithApproval()) {
                 totalMergeWaitMinutes += bottleneck.getMergeWait().getMinutes();
                 mergedWithApprovalCount++;
             }

@@ -113,8 +113,16 @@ public class PullRequestBottleneck extends BaseTimeEntity {
         return firstReviewAt != null;
     }
 
+    public boolean hasReviewWait() {
+        return reviewWait != null;
+    }
+
     public boolean hasApproval() {
         return lastApproveAt != null;
+    }
+
+    public boolean hasMergeWaitWithApproval() {
+        return mergeWait != null && hasApproval();
     }
 
     public boolean isMerged() {
