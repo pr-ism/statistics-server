@@ -18,7 +18,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualityStatisticsRepository {
 
-    private static final long ZERO_COUNT = 0L;
     private static final long DATE_RANGE_INCLUSIVE_DAYS = 1L;
 
     private final JPAQueryFactory queryFactory;
