@@ -116,7 +116,7 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
                 .filter(bottleneck -> bottleneck.hasReview())
                 .count();
 
-        Map<Long, Long> reviewerReviewCounts = calculateReviewerReviewCounts(reviews, requestedReviewers);
+        Map<Long, Long> reviewerReviewCounts = calculateReviewerParticipationCounts(reviews, requestedReviewers);
 
         long repeatedDraftPrCount = calculateRepeatedDraftPrCount(stateHistories);
 
@@ -139,7 +139,7 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
         );
     }
 
-    private Map<Long, Long> calculateReviewerReviewCounts(
+    private Map<Long, Long> calculateReviewerParticipationCounts(
             List<Review> reviews,
             List<RequestedReviewer> requestedReviewers
     ) {
