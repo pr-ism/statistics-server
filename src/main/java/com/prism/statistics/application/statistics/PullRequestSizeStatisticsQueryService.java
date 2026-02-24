@@ -83,9 +83,11 @@ public class PullRequestSizeStatisticsQueryService {
     }
 
     private Map<SizeGrade, Long> ensureAllGrades(Map<SizeGrade, Long> distribution) {
+        Map<SizeGrade, Long> safeDistribution = (distribution == null) ? Map.of() : distribution;
         Map<SizeGrade, Long> result = new EnumMap<>(SizeGrade.class);
+
         for (SizeGrade grade : SizeGrade.values()) {
-            result.put(grade, distribution.getOrDefault(grade, 0L));
+            result.put(grade, safeDistribution.getOrDefault(grade, 0L));
         }
         return result;
     }
