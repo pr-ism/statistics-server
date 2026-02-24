@@ -15,12 +15,15 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestTiming;
+import com.prism.statistics.domain.analysis.metadata.review.Review;
+import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.project.Project;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaReviewActivityRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaReviewResponseTimeRepository;
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaReviewSessionRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewRepository;
 import com.prism.statistics.infrastructure.project.persistence.JpaProjectRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -103,6 +106,9 @@ class ReviewQualityStatisticsQueryServiceTest {
 
     @Autowired
     private JpaReviewResponseTimeRepository reviewResponseTimeRepository;
+
+    @Autowired
+    private JpaReviewRepository reviewRepository;
 
     @Test
     void 프로젝트의_리뷰_품질_통계를_조회한다() {
@@ -279,6 +285,42 @@ class ReviewQualityStatisticsQueryServiceTest {
         assertThat(response.reviewActivity().avgChangesResolutionMinutes()).isGreaterThan(0);
     }
 
+    @Test
+    void 기간_밖_리뷰와_응답시간은_통계에서_제외된다() {
+        // given
+        Project project = createAndSaveProject(USER_ID);
+        PullRequest pr = createAndSavePullRequest(project.getId());
+
+        createAndSaveReviewActivity(pr.getId(), ONE_INT, ONE_INT, FIFTY_INT, THIRTY_INT, false, ZERO_INT);
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime inRangeReviewedAt = now.minusHours(ONE_HOUR);
+        LocalDateTime outOfRangeReviewedAt = now.minusDays(THIRTY_INT);
+
+        createAndSaveReview(pr, inRangeReviewedAt, ReviewState.APPROVED);
+        createAndSaveReview(pr, outOfRangeReviewedAt, ReviewState.CHANGES_REQUESTED);
+
+        ReviewResponseTime responseTime = ReviewResponseTime.createOnChangesRequested(pr.getId(), outOfRangeReviewedAt);
+        responseTime.updateOnApproveAfterChanges(outOfRangeReviewedAt.plusHours(TWO_HOURS));
+        reviewResponseTimeRepository.save(responseTime);
+
+        ReviewQualityStatisticsRequest request = new ReviewQualityStatisticsRequest(
+                LocalDate.now().minusDays(ONE_DAY),
+                LocalDate.now().plusDays(ONE_DAY)
+        );
+
+        // when
+        ReviewQualityStatisticsResponse response = reviewQualityStatisticsQueryService
+                .findReviewQualityStatistics(USER_ID, project.getId(), request);
+
+        // then
+        assertAll(
+                () -> assertThat(response.reviewActivity().changesRequestedRate()).isZero(),
+                () -> assertThat(response.reviewActivity().firstReviewApproveRate()).isEqualTo(REVIEW_RATE_100),
+                () -> assertThat(response.reviewActivity().avgChangesResolutionMinutes()).isZero()
+        );
+    }
+
     private Project createAndSaveProject(Long userId) {
         Project project = Project.create(TEST_PROJECT_NAME, TEST_API_KEY_PREFIX + System.nanoTime(), userId);
         return projectRepository.save(project);
@@ -289,7 +331,7 @@ class ReviewQualityStatisticsQueryServiceTest {
                 .githubPullRequestId(System.nanoTime())
                 .projectId(projectId)
                 .author(GithubUser.create(TEST_USER_NAME, USER_ID))
-                .pullRequestNumber((int) (System.nanoTime() % PR_NUMBER_BOUND))
+                .pullRequestNumber((int) (Math.abs(System.nanoTime() % PR_NUMBER_BOUND) + 1))
                 .headCommitSha(TEST_HEAD_COMMIT_SHA)
                 .title(TEST_PR_TITLE)
                 .state(PullRequestState.MERGED)
@@ -304,6 +346,23 @@ class ReviewQualityStatisticsQueryServiceTest {
                 .build();
 
         return pullRequestRepository.save(pullRequest);
+    }
+
+    private void createAndSaveReview(PullRequest pullRequest, LocalDateTime reviewedAt, ReviewState reviewState) {
+        Review review = Review.builder()
+                .githubPullRequestId(pullRequest.getGithubPullRequestId())
+                .pullRequestNumber(pullRequest.getPullRequestNumber())
+                .githubReviewId(System.nanoTime())
+                .reviewer(GithubUser.create(FIRST_REVIEWER_NAME, FIRST_REVIEWER_ID))
+                .reviewState(reviewState)
+                .headCommitSha(TEST_HEAD_COMMIT_SHA)
+                .body("LGTM")
+                .commentCount(ONE_INT)
+                .githubSubmittedAt(reviewedAt)
+                .build();
+        review.assignPullRequestId(pullRequest.getId());
+
+        reviewRepository.save(review);
     }
 
     private void createAndSaveReviewActivity(
