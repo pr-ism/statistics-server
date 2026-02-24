@@ -1,5 +1,8 @@
 package com.prism.statistics.application.statistics.dto.response;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public record ThroughputStatisticsResponse(
         long mergedPrCount,
         long closedPrCount,
@@ -33,6 +36,8 @@ public record ThroughputStatisticsResponse(
     }
 
     private static double roundToTwoDecimals(double value) {
-        return Math.round(value * ROUND_SCALE) / ROUND_SCALE;
+        return BigDecimal.valueOf(value)
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 }
