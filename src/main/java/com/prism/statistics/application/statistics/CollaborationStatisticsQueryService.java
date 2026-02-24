@@ -51,7 +51,7 @@ public class CollaborationStatisticsQueryService {
         long reviewedCount = dto.reviewedCount();
 
         ReviewerConcentrationStatistics reviewerConcentration = buildReviewerConcentration(dto.reviewerReviewCounts());
-        DraftPrStatistics draftPr = buildDraftPrStatistics(dto, totalCount);
+        DraftPrStatistics draftPullRequest = buildDraftPullRequestStatistics(dto, totalCount);
         ReviewerAdditionStatistics reviewerAddition = buildReviewerAdditionStatistics(dto, totalCount);
         List<AuthorReviewWaitTime> authorReviewWaitTimes = buildAuthorReviewWaitTimes(dto.authorReviewWaitTimes());
         List<ReviewerStats> reviewerStats = buildReviewerStats(dto.reviewerReviewCounts(), dto.reviewerResponseTimes());
@@ -60,7 +60,7 @@ public class CollaborationStatisticsQueryService {
                 totalCount,
                 reviewedCount,
                 reviewerConcentration,
-                draftPr,
+                draftPullRequest,
                 reviewerAddition,
                 authorReviewWaitTimes,
                 reviewerStats
@@ -127,13 +127,13 @@ public class CollaborationStatisticsQueryService {
         return (double) top3Sum / totalReviews * PERCENT_MULTIPLIER;
     }
 
-    private DraftPrStatistics buildDraftPrStatistics(CollaborationStatisticsDto dto, long totalCount) {
+    private DraftPrStatistics buildDraftPullRequestStatistics(CollaborationStatisticsDto dto, long totalCount) {
         if (totalCount == 0) {
             return DraftPrStatistics.empty();
         }
 
-        double repeatedDraftPrRate = calculatePercentage(dto.repeatedDraftPrCount(), totalCount);
-        return DraftPrStatistics.of(repeatedDraftPrRate, dto.repeatedDraftPrCount());
+        double repeatedDraftPullRequestRate = calculatePercentage(dto.repeatedDraftPrCount(), totalCount);
+        return DraftPrStatistics.of(repeatedDraftPullRequestRate, dto.repeatedDraftPrCount());
     }
 
     private ReviewerAdditionStatistics buildReviewerAdditionStatistics(CollaborationStatisticsDto dto, long totalCount) {
