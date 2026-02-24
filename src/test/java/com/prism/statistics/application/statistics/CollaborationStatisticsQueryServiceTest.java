@@ -12,6 +12,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullReque
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestTiming;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
+import com.prism.statistics.domain.analysis.metadata.review.RequestedReviewer;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.project.Project;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
@@ -21,6 +22,7 @@ import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaPullR
 import com.prism.statistics.infrastructure.analysis.insight.persistence.JpaReviewSessionRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewRepository;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaRequestedReviewerRepository;
 import com.prism.statistics.infrastructure.project.persistence.JpaProjectRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -101,6 +103,9 @@ class CollaborationStatisticsQueryServiceTest {
 
     @Autowired
     private JpaReviewRepository reviewRepository;
+
+    @Autowired
+    private JpaRequestedReviewerRepository requestedReviewerRepository;
 
     @Autowired
     private JpaReviewSessionRepository reviewSessionRepository;
@@ -341,6 +346,60 @@ class CollaborationStatisticsQueryServiceTest {
         );
     }
 
+    @Test
+    void 짧은_리뷰_본문은_응답시간_집계에서_제외된다() {
+        Long userId = DEFAULT_USER_ID;
+        Project project = createAndSaveProject(userId);
+
+        PullRequest pr1 = createAndSavePullRequest(project.getId());
+        PullRequest pr2 = createAndSavePullRequest(project.getId());
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime requestedAt1 = now.minusMinutes(20);
+        LocalDateTime requestedAt2 = now.minusMinutes(30);
+
+        createAndSaveRequestedReviewer(pr1, REVIEWER_ID_1, REVIEWER_NAME_1, requestedAt1);
+        createAndSaveRequestedReviewer(pr2, REVIEWER_ID_2, REVIEWER_NAME_2, requestedAt2);
+
+        createAndSaveReviewWithDetails(
+                pr1,
+                REVIEWER_ID_1,
+                REVIEWER_NAME_1,
+                "ok",
+                REVIEW_COMMENT_COUNT,
+                requestedAt1.plusMinutes(5)
+        );
+        createAndSaveReviewWithDetails(
+                pr1,
+                REVIEWER_ID_1,
+                REVIEWER_NAME_1,
+                "Looks good overall",
+                REVIEW_COMMENT_COUNT,
+                requestedAt1.plusMinutes(10)
+        );
+
+        createAndSaveReviewWithDetails(
+                pr2,
+                REVIEWER_ID_2,
+                REVIEWER_NAME_2,
+                "Solid changes",
+                REVIEW_COMMENT_COUNT,
+                requestedAt2.plusMinutes(12)
+        );
+
+        CollaborationStatisticsResponse response = collaborationStatisticsQueryService
+                .findCollaborationStatistics(userId, project.getId(), new CollaborationStatisticsRequest(null, null));
+
+        ReviewerStats reviewer1Stats = findReviewerStats(response, REVIEWER_ID_1);
+        ReviewerStats reviewer2Stats = findReviewerStats(response, REVIEWER_ID_2);
+
+        assertAll(
+                () -> assertThat(reviewer1Stats.reviewCount()).isEqualTo(REVIEW_COUNT_TWO),
+                () -> assertThat(reviewer1Stats.avgResponseTimeMinutes()).isZero(),
+                () -> assertThat(reviewer2Stats.avgResponseTimeMinutes()).isEqualTo(12.0)
+        );
+    }
+
     private Project createAndSaveProject(Long userId) {
         Project project = Project.create(TEST_PROJECT_NAME, TEST_API_KEY_PREFIX + System.nanoTime(), userId);
         return projectRepository.save(project);
@@ -381,6 +440,54 @@ class CollaborationStatisticsQueryServiceTest {
         review.assignPullRequestId(pullRequest.getId());
 
         reviewRepository.save(review);
+    }
+
+    private void createAndSaveReviewWithDetails(
+            PullRequest pullRequest,
+            Long reviewerId,
+            String reviewerName,
+            String body,
+            int commentCount,
+            LocalDateTime submittedAt
+    ) {
+        Review review = Review.builder()
+                .githubPullRequestId(pullRequest.getGithubPullRequestId())
+                .pullRequestNumber(pullRequest.getPullRequestNumber())
+                .githubReviewId(System.nanoTime())
+                .reviewer(GithubUser.create(reviewerName, reviewerId))
+                .reviewState(ReviewState.APPROVED)
+                .headCommitSha(TEST_HEAD_SHA)
+                .body(body)
+                .commentCount(commentCount)
+                .githubSubmittedAt(submittedAt)
+                .build();
+        review.assignPullRequestId(pullRequest.getId());
+
+        reviewRepository.save(review);
+    }
+
+    private void createAndSaveRequestedReviewer(
+            PullRequest pullRequest,
+            Long reviewerId,
+            String reviewerName,
+            LocalDateTime requestedAt
+    ) {
+        RequestedReviewer requestedReviewer = RequestedReviewer.create(
+                pullRequest.getGithubPullRequestId(),
+                pullRequest.getPullRequestNumber(),
+                TEST_HEAD_SHA,
+                GithubUser.create(reviewerName, reviewerId),
+                requestedAt
+        );
+        requestedReviewer.assignPullRequestId(pullRequest.getId());
+        requestedReviewerRepository.save(requestedReviewer);
+    }
+
+    private ReviewerStats findReviewerStats(CollaborationStatisticsResponse response, Long reviewerId) {
+        return response.reviewerStats().stream()
+                .filter(stats -> stats.reviewerId().equals(reviewerId))
+                .findFirst()
+                .orElseThrow();
     }
 
     private void createAndSaveReviewSession(Long pullRequestId, Long reviewerId, String reviewerName) {
