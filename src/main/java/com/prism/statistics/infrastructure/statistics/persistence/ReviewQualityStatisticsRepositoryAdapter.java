@@ -137,7 +137,7 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
         long changesRequestedCount = calculateChangesRequestedCount(reviews);
         long totalChangesResolutionMinutes = calculateTotalChangesResolutionMinutes(responseTimes);
         long changesResolvedCount = calculateChangesResolvedCount(responseTimes);
-        long highIntensityPrCount = ZERO_COUNT;
+        long highIntensityPrCount = calculateHighIntensityPrCount(activities);
 
         return new ReviewActivityStatisticsDto(
                 totalCount,
@@ -218,6 +218,13 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
                 totalSessionDurationMinutes,
                 totalReviewCount
         );
+    }
+
+    private long calculateHighIntensityPrCount(List<ReviewActivity> activities) {
+        return activities.stream()
+                .filter(activity -> activity.hasReviewActivity())
+                .filter(activity -> activity.hasHighCommentDensity() || activity.hasSignificantChangesAfterReview())
+                .count();
     }
 
     private BooleanExpression activityDateRangeCondition(LocalDate startDate, LocalDate endDate) {
