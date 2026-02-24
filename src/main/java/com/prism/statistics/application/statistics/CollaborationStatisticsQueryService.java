@@ -167,7 +167,12 @@ public class CollaborationStatisticsQueryService {
             return Collections.emptyList();
         }
 
-        Map<Long, ReviewerResponseTimeDto> responseTimeMap = responseTimes.stream()
+        List<ReviewerResponseTimeDto> safeResponseTimes = responseTimes;
+        if (safeResponseTimes == null) {
+            safeResponseTimes = Collections.emptyList();
+        }
+
+        Map<Long, ReviewerResponseTimeDto> responseTimeMap = safeResponseTimes.stream()
                 .collect(Collectors.toMap(
                         dto -> dto.reviewerId(),
                         dto -> dto,
