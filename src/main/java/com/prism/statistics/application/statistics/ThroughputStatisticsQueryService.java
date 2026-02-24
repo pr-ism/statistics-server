@@ -52,7 +52,7 @@ public class ThroughputStatisticsQueryService {
     }
 
     private double calculateAvgMergeTime(long totalMergeTimeMinutes, long mergedCount) {
-        if (mergedCount == 0) {
+        if (mergedCount == 0L) {
             return ZERO_DOUBLE;
         }
         return (double) totalMergeTimeMinutes / mergedCount;
@@ -60,7 +60,7 @@ public class ThroughputStatisticsQueryService {
 
     private double calculateMergeSuccessRate(long mergedCount, long closedCount) {
         long totalClosedPrs = mergedCount + closedCount;
-        if (totalClosedPrs == 0) {
+        if (totalClosedPrs == 0L) {
             return ZERO_DOUBLE;
         }
         return (double) mergedCount / totalClosedPrs * PERCENT_MULTIPLIER;
@@ -68,7 +68,7 @@ public class ThroughputStatisticsQueryService {
 
     private double calculateClosedPrRate(long mergedCount, long closedCount) {
         long totalClosedPrs = mergedCount + closedCount;
-        if (totalClosedPrs == 0) {
+        if (totalClosedPrs == 0L) {
             return ZERO_DOUBLE;
         }
         return (double) closedCount / totalClosedPrs * PERCENT_MULTIPLIER;
