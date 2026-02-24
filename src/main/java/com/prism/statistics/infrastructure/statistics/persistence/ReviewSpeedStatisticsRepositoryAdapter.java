@@ -144,14 +144,14 @@ public class ReviewSpeedStatisticsRepositoryAdapter implements ReviewSpeedStatis
         }
 
         if (startDate != null && endDate != null) {
-            return pullRequest.createdAt.goe(startDate.atStartOfDay())
-                    .and(pullRequest.createdAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay()));
+            return pullRequest.timing.githubCreatedAt.goe(startDate.atStartOfDay())
+                    .and(pullRequest.timing.githubCreatedAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay()));
         }
 
         if (startDate != null) {
-            return pullRequest.createdAt.goe(startDate.atStartOfDay());
+            return pullRequest.timing.githubCreatedAt.goe(startDate.atStartOfDay());
         }
 
-        return pullRequest.createdAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay());
+        return pullRequest.timing.githubCreatedAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay());
     }
 }
