@@ -6,6 +6,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullReque
 import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullRequestStateHistory;
 import com.prism.statistics.domain.analysis.metadata.review.RequestedReviewer;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
+import com.prism.statistics.domain.analysis.metadata.review.vo.ReviewBody;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewerAction;
 import com.prism.statistics.domain.analysis.metadata.review.history.RequestedReviewerHistory;
 import com.prism.statistics.domain.statistics.repository.CollaborationStatisticsRepository;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -254,11 +256,14 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
             long reviewCount = 0L;
 
             for (Review rev : reviewerReviews) {
+                if (isTrivialReview(rev)) {
+                    continue;
+                }
                 String key = buildReviewerKey(rev.getPullRequestId(), reviewerId);
                 RequestedReviewer requested = requestedReviewerMap.get(key);
 
                 if (requested != null && requested.getGithubRequestedAt() != null) {
-                    long responseMinutes = java.time.Duration.between(
+                    long responseMinutes = Duration.between(
                             requested.getGithubRequestedAt(),
                             rev.getGithubSubmittedAt()
                     ).toMinutes();
@@ -276,6 +281,24 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
         }
 
         return result;
+    }
+
+    private boolean isTrivialReview(Review review) {
+        if (review.getCommentCount() == 0) {
+            return true;
+        }
+
+        ReviewBody body = review.getBody();
+        if (body == null || body.isEmpty()) {
+            return true;
+        }
+
+        String normalized = body.getValue().trim().toLowerCase();
+        if (normalized.length() < 5) {
+            return true;
+        }
+
+        return false;
     }
 
     private BooleanExpression dateRangeCondition(LocalDate startDate, LocalDate endDate) {
