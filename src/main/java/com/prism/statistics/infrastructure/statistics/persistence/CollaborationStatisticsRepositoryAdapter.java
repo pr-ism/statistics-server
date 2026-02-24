@@ -124,7 +124,7 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
                 pullRequests, bottleneckMap);
 
         List<ReviewerResponseTimeDto> reviewerResponseTimes = calculateReviewerResponseTimes(
-                reviews, requestedReviewers, prMap);
+                reviews, requestedReviewers);
 
         return new CollaborationStatisticsDto(
                 totalCount,
@@ -222,8 +222,7 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
 
     private List<ReviewerResponseTimeDto> calculateReviewerResponseTimes(
             List<Review> reviews,
-            List<RequestedReviewer> requestedReviewers,
-            Map<Long, PullRequest> prMap
+            List<RequestedReviewer> requestedReviewers
     ) {
         Map<String, RequestedReviewer> requestedReviewerMap = requestedReviewers.stream()
                 .collect(Collectors.toMap(
