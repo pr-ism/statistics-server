@@ -139,7 +139,7 @@ class ReviewQualityStatisticsQueryServiceTest {
                 () -> assertThat(response.reviewActivity().avgReviewRoundTrips()).isEqualTo(AVG_REVIEW_ROUND_TRIPS),
                 () -> assertThat(response.reviewActivity().avgCommentCount()).isEqualTo(AVG_COMMENT_COUNT),
                 () -> assertThat(response.reviewActivity().withAdditionalReviewersCount()).isEqualTo(ONE_INT),
-                () -> assertThat(response.reviewActivity().withChangesAfterReviewCount()).isEqualTo(ONE_INT),
+                () -> assertThat(response.reviewActivity().withChangesAfterReviewCount()).isEqualTo(TWO_INT),
                 () -> assertThat(response.reviewerStats().totalReviewerCount()).isEqualTo(TWO_PR_COUNT),
                 () -> assertThat(response.reviewerStats().avgReviewersPerPr()).isEqualTo(AVG_REVIEWERS_PER_PR)
         );
