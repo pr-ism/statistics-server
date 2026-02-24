@@ -2,6 +2,7 @@ package com.prism.statistics.application.statistics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
@@ -282,7 +283,7 @@ class ReviewQualityStatisticsQueryServiceTest {
                 .findReviewQualityStatistics(USER_ID, project.getId(), request);
 
         // then
-        assertThat(response.reviewActivity().avgChangesResolutionMinutes()).isGreaterThan(0);
+        assertThat(response.reviewActivity().avgChangesResolutionMinutes()).isCloseTo(60.0, within(0.01));
     }
 
     @Test
