@@ -53,6 +53,7 @@ class CollaborationStatisticsQueryServiceTest {
     private static final String AUTHOR_NAME_1 = "author-1";
     private static final String AUTHOR_NAME_2 = "author-2";
     private static final String DUP_REVIEWER_NAME = "reviewer1-dup";
+    private static final String UNKNOWN_REVIEWER_NAME = "Unknown";
     private static final long REVIEWER_COUNT = 2L;
     private static final long PULL_REQUEST_COUNT_ONE = 1L;
     private static final long PULL_REQUEST_COUNT_TWO = 2L;
@@ -296,6 +297,35 @@ class CollaborationStatisticsQueryServiceTest {
         );
 
         assertThat(result).isZero();
+    }
+
+    @Test
+    void 작성자_PR_개수가_0이면_리뷰_대기_평균은_0이다() {
+        AuthorReviewWaitTimeDto dto = new AuthorReviewWaitTimeDto(
+                AUTHOR_USER_ID,
+                AUTHOR_NAME_1,
+                REVIEW_WAIT_MINUTES_60,
+                COUNT_ZERO
+        );
+
+        double result = ReflectionTestUtils.invokeMethod(
+                collaborationStatisticsQueryService,
+                "calculateAverageReviewWaitMinutes",
+                dto
+        );
+
+        assertThat(result).isZero();
+    }
+
+    @Test
+    void 리뷰어_응답_시간이_없으면_Unknown을_반환한다() {
+        String result = ReflectionTestUtils.invokeMethod(
+                collaborationStatisticsQueryService,
+                "resolveReviewerName",
+                new Object[]{null}
+        );
+
+        assertThat(result).isEqualTo(UNKNOWN_REVIEWER_NAME);
     }
 
     private Project createAndSaveProject(Long userId) {
