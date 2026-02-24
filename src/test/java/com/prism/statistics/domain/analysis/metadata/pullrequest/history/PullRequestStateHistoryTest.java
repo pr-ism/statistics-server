@@ -17,17 +17,18 @@ class PullRequestStateHistoryTest {
 
     private static final LocalDateTime GITHUB_CHANGED_AT = LocalDateTime.of(2024, 1, 15, 10, 0);
     private static final String HEAD_COMMIT_SHA = "abc123";
+    private static final Long PULL_REQUEST_ID = 1L;
 
     @Test
     void 상태_변경_이력을_생성한다() {
         // when
         PullRequestStateHistory history = PullRequestStateHistory.create(
-                1L, HEAD_COMMIT_SHA, PullRequestState.OPEN, PullRequestState.MERGED, GITHUB_CHANGED_AT
+                PULL_REQUEST_ID, HEAD_COMMIT_SHA, PullRequestState.OPEN, PullRequestState.MERGED, GITHUB_CHANGED_AT
         );
 
         // then
         assertAll(
-                () -> assertThat(history.getPullRequestId()).isEqualTo(1L),
+                () -> assertThat(history.getPullRequestId()).isEqualTo(PULL_REQUEST_ID),
                 () -> assertThat(history.getHeadCommitSha()).isEqualTo(HEAD_COMMIT_SHA),
                 () -> assertThat(history.getPreviousState()).isEqualTo(PullRequestState.OPEN),
                 () -> assertThat(history.getNewState()).isEqualTo(PullRequestState.MERGED),
@@ -39,11 +40,11 @@ class PullRequestStateHistoryTest {
     @Test
     void 최초_상태_이력을_생성한다() {
         // when
-        PullRequestStateHistory history = PullRequestStateHistory.createInitial(1L, HEAD_COMMIT_SHA, PullRequestState.OPEN, GITHUB_CHANGED_AT);
+        PullRequestStateHistory history = PullRequestStateHistory.createInitial(PULL_REQUEST_ID, HEAD_COMMIT_SHA, PullRequestState.OPEN, GITHUB_CHANGED_AT);
 
         // then
         assertAll(
-                () -> assertThat(history.getPullRequestId()).isEqualTo(1L),
+                () -> assertThat(history.getPullRequestId()).isEqualTo(PULL_REQUEST_ID),
                 () -> assertThat(history.getHeadCommitSha()).isEqualTo(HEAD_COMMIT_SHA),
                 () -> assertThat(history.getPreviousState()).isNull(),
                 () -> assertThat(history.getNewState()).isEqualTo(PullRequestState.OPEN),
@@ -55,7 +56,7 @@ class PullRequestStateHistoryTest {
     @Test
     void 최초_상태가_DRAFT인_이력을_생성한다() {
         // when
-        PullRequestStateHistory history = PullRequestStateHistory.createInitial(1L, HEAD_COMMIT_SHA, PullRequestState.DRAFT, GITHUB_CHANGED_AT);
+        PullRequestStateHistory history = PullRequestStateHistory.createInitial(PULL_REQUEST_ID, HEAD_COMMIT_SHA, PullRequestState.DRAFT, GITHUB_CHANGED_AT);
 
         // then
         assertAll(
@@ -100,7 +101,7 @@ class PullRequestStateHistoryTest {
     @Test
     void 새로운_상태가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestStateHistory.create(1L, HEAD_COMMIT_SHA, PullRequestState.OPEN, null, GITHUB_CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestStateHistory.create(PULL_REQUEST_ID, HEAD_COMMIT_SHA, PullRequestState.OPEN, null, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("새로운 상태는 필수입니다.");
     }
@@ -108,7 +109,7 @@ class PullRequestStateHistoryTest {
     @Test
     void 최초_상태_생성시_상태가_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(1L, HEAD_COMMIT_SHA, null, GITHUB_CHANGED_AT))
+        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(PULL_REQUEST_ID, HEAD_COMMIT_SHA, null, GITHUB_CHANGED_AT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("새로운 상태는 필수입니다.");
     }
@@ -116,7 +117,7 @@ class PullRequestStateHistoryTest {
     @Test
     void 변경_시각이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestStateHistory.create(1L, HEAD_COMMIT_SHA, PullRequestState.OPEN, PullRequestState.MERGED, null))
+        assertThatThrownBy(() -> PullRequestStateHistory.create(PULL_REQUEST_ID, HEAD_COMMIT_SHA, PullRequestState.OPEN, PullRequestState.MERGED, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 시각은 필수입니다.");
     }
@@ -124,8 +125,44 @@ class PullRequestStateHistoryTest {
     @Test
     void 최초_상태_생성시_변경_시각이_null이면_예외가_발생한다() {
         // when & then
-        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(1L, HEAD_COMMIT_SHA, PullRequestState.OPEN, null))
+        assertThatThrownBy(() -> PullRequestStateHistory.createInitial(PULL_REQUEST_ID, HEAD_COMMIT_SHA, PullRequestState.OPEN, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("변경 시각은 필수입니다.");
+    }
+
+    @Test
+    void DRAFT에서_OPEN으로_전환되면_True를_반환한다() {
+        PullRequestStateHistory history = PullRequestStateHistory.create(
+                PULL_REQUEST_ID, HEAD_COMMIT_SHA, PullRequestState.DRAFT, PullRequestState.OPEN, GITHUB_CHANGED_AT
+        );
+
+        assertThat(history.isDraftOpenTransition()).isTrue();
+    }
+
+    @Test
+    void OPEN에서_DRAFT로_전환되면_True를_반환한다() {
+        PullRequestStateHistory history = PullRequestStateHistory.create(
+                PULL_REQUEST_ID, HEAD_COMMIT_SHA, PullRequestState.OPEN, PullRequestState.DRAFT, GITHUB_CHANGED_AT
+        );
+
+        assertThat(history.isDraftOpenTransition()).isTrue();
+    }
+
+    @Test
+    void 다른_상태_전환이면_False를_반환한다() {
+        PullRequestStateHistory history = PullRequestStateHistory.create(
+                PULL_REQUEST_ID, HEAD_COMMIT_SHA, PullRequestState.OPEN, PullRequestState.MERGED, GITHUB_CHANGED_AT
+        );
+
+        assertThat(history.isDraftOpenTransition()).isFalse();
+    }
+
+    @Test
+    void 이전_상태가_없으면_False를_반환한다() {
+        PullRequestStateHistory history = PullRequestStateHistory.createInitial(
+                PULL_REQUEST_ID, HEAD_COMMIT_SHA, PullRequestState.OPEN, GITHUB_CHANGED_AT
+        );
+
+        assertThat(history.isDraftOpenTransition()).isFalse();
     }
 }
