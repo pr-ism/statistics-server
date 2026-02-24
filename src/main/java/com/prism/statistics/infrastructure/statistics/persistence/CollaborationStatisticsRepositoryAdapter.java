@@ -284,15 +284,15 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
         }
 
         if (startDate != null && endDate != null) {
-            return pullRequest.createdAt.goe(startDate.atStartOfDay())
-                    .and(pullRequest.createdAt.lt(endDate.plusDays(1).atStartOfDay()));
+            return pullRequest.timing.githubCreatedAt.goe(startDate.atStartOfDay())
+                    .and(pullRequest.timing.githubCreatedAt.lt(endDate.plusDays(1).atStartOfDay()));
         }
 
         if (startDate != null) {
-            return pullRequest.createdAt.goe(startDate.atStartOfDay());
+            return pullRequest.timing.githubCreatedAt.goe(startDate.atStartOfDay());
         }
 
-        return pullRequest.createdAt.lt(endDate.plusDays(1).atStartOfDay());
+        return pullRequest.timing.githubCreatedAt.lt(endDate.plusDays(1).atStartOfDay());
     }
 
     private String buildReviewerKey(Long pullRequestId, Long reviewerId) {
