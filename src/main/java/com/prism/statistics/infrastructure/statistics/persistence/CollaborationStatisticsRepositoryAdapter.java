@@ -231,7 +231,16 @@ public class CollaborationStatisticsRepositoryAdapter implements CollaborationSt
                         (existing, replacement) -> existing
                 ));
 
-        Map<Long, List<Review>> reviewsByReviewer = reviews.stream()
+        Map<String, Review> firstReviewByPrAndReviewer = reviews.stream()
+                .collect(Collectors.toMap(
+                        r -> buildReviewerKey(r.getPullRequestId(), r.getReviewer().getUserId()),
+                        r -> r,
+                        (existing, replacement) ->
+                                existing.getGithubSubmittedAt().isBefore(replacement.getGithubSubmittedAt())
+                                        ? existing : replacement
+                ));
+
+        Map<Long, List<Review>> reviewsByReviewer = firstReviewByPrAndReviewer.values().stream()
                 .collect(Collectors.groupingBy(r -> r.getReviewer().getUserId()));
 
         List<ReviewerResponseTimeDto> result = new ArrayList<>();
