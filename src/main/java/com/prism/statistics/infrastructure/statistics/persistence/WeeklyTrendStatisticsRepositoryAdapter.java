@@ -2,7 +2,6 @@ package com.prism.statistics.infrastructure.statistics.persistence;
 
 import com.prism.statistics.domain.analysis.insight.bottleneck.PullRequestBottleneck;
 import com.prism.statistics.domain.analysis.insight.size.PullRequestSize;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.statistics.repository.WeeklyTrendStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.WeeklyTrendStatisticsDto;
@@ -46,13 +45,20 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
             LocalDate startDate,
             LocalDate endDate
     ) {
-        List<PullRequest> createdPullRequests = queryFactory
-                .selectFrom(pullRequest)
+        List<CreatedPullRequest> createdPullRequests = queryFactory
+                .select(pullRequest.id, pullRequest.timing.githubCreatedAt)
+                .from(pullRequest)
                 .where(
                         pullRequest.projectId.eq(projectId),
                         dateRangeCondition(startDate, endDate)
                 )
-                .fetch();
+                .fetch()
+                .stream()
+                .map(tuple -> new CreatedPullRequest(
+                        tuple.get(pullRequest.id),
+                        tuple.get(pullRequest.timing.githubCreatedAt)
+                ))
+                .toList();
 
         List<ClosedPullRequest> closedPullRequests = queryFactory
                 .select(pullRequest.state, pullRequest.timing.githubClosedAt)
@@ -76,7 +82,7 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
         }
 
         List<Long> pullRequestIds = createdPullRequests.stream()
-                .map(pr -> pr.getId())
+                .map(pr -> pr.pullRequestId())
                 .toList();
 
         Map<Long, PullRequestBottleneck> bottleneckMap = fetchBottleneckMap(pullRequestIds);
@@ -153,21 +159,24 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
         return Integer.compare(first.month(), second.month());
     }
 
+    private record CreatedPullRequest(Long pullRequestId, LocalDateTime githubCreatedAt) {
+    }
+
     private record ClosedPullRequest(PullRequestState state, LocalDateTime closedAt) {
     }
 
     private List<WeeklyReviewWaitTimeDto> aggregateWeeklyReviewWaitTime(
-            List<PullRequest> pullRequests,
+            List<CreatedPullRequest> pullRequests,
             Map<Long, PullRequestBottleneck> bottleneckMap
     ) {
         Map<LocalDate, List<Long>> reviewWaitTimesByWeek = pullRequests.stream()
-                .filter(pr -> bottleneckMap.containsKey(pr.getId()))
-                .filter(pr -> bottleneckMap.get(pr.getId()).hasReview())
-                .filter(pr -> bottleneckMap.get(pr.getId()).getReviewWait() != null)
+                .filter(pr -> bottleneckMap.containsKey(pr.pullRequestId()))
+                .filter(pr -> bottleneckMap.get(pr.pullRequestId()).hasReview())
+                .filter(pr -> bottleneckMap.get(pr.pullRequestId()).getReviewWait() != null)
                 .collect(Collectors.groupingBy(
-                        pr -> getWeekStartDate(pr.getTiming().getGithubCreatedAt().toLocalDate()),
+                        pr -> getWeekStartDate(pr.githubCreatedAt().toLocalDate()),
                         Collectors.mapping(
-                                pr -> bottleneckMap.get(pr.getId()).getReviewWait().getMinutes(),
+                                pr -> bottleneckMap.get(pr.pullRequestId()).getReviewWait().getMinutes(),
                                 Collectors.toList()
                         )
                 ));
@@ -189,15 +198,15 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
     }
 
     private List<WeeklyPrSizeDto> aggregateWeeklyPrSize(
-            List<PullRequest> pullRequests,
+            List<CreatedPullRequest> pullRequests,
             Map<Long, PullRequestSize> sizeMap
     ) {
         Map<LocalDate, List<Double>> sizeScoresByWeek = pullRequests.stream()
-                .filter(pr -> sizeMap.containsKey(pr.getId()))
+                .filter(pr -> sizeMap.containsKey(pr.pullRequestId()))
                 .collect(Collectors.groupingBy(
-                        pr -> getWeekStartDate(pr.getTiming().getGithubCreatedAt().toLocalDate()),
+                        pr -> getWeekStartDate(pr.githubCreatedAt().toLocalDate()),
                         Collectors.mapping(
-                                pr -> sizeMap.get(pr.getId()).getSizeScore().doubleValue(),
+                                pr -> sizeMap.get(pr.pullRequestId()).getSizeScore().doubleValue(),
                                 Collectors.toList()
                         )
                 ));
