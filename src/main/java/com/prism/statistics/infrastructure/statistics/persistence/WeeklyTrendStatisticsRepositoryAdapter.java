@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
@@ -53,14 +54,22 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
                 )
                 .fetch();
 
-        List<PullRequest> closedPullRequests = queryFactory
-                .selectFrom(pullRequest)
+        List<ClosedPullRequest> closedPullRequests = queryFactory
+                .select(pullRequest.state, pullRequest.timing.githubClosedAt)
+                .from(pullRequest)
                 .where(
                         pullRequest.projectId.eq(projectId),
                         pullRequest.state.in(PullRequestState.MERGED, PullRequestState.CLOSED),
+                        pullRequest.timing.githubClosedAt.isNotNull(),
                         closedAtDateRangeCondition(startDate, endDate)
                 )
-                .fetch();
+                .fetch()
+                .stream()
+                .map(tuple -> new ClosedPullRequest(
+                        tuple.get(pullRequest.state),
+                        tuple.get(pullRequest.timing.githubClosedAt)
+                ))
+                .toList();
 
         if (createdPullRequests.isEmpty() && closedPullRequests.isEmpty()) {
             return Optional.empty();
@@ -86,24 +95,23 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
         ));
     }
 
-    private List<WeeklyThroughputDto> aggregateWeeklyThroughput(List<PullRequest> pullRequests) {
-        Map<LocalDate, List<PullRequest>> prsByWeek = pullRequests.stream()
-                .filter(pr -> pr.getTiming().getGithubClosedAt() != null)
+    private List<WeeklyThroughputDto> aggregateWeeklyThroughput(List<ClosedPullRequest> pullRequests) {
+        Map<LocalDate, List<ClosedPullRequest>> prsByWeek = pullRequests.stream()
                 .collect(Collectors.groupingBy(
-                        pr -> getWeekStartDate(pr.getTiming().getGithubClosedAt().toLocalDate())
+                        pr -> getWeekStartDate(pr.closedAt().toLocalDate())
                 ));
 
         return prsByWeek.entrySet().stream()
                 .map(entry -> {
                     LocalDate weekStart = entry.getKey();
-                    List<PullRequest> weekPrs = entry.getValue();
+                    List<ClosedPullRequest> weekPrs = entry.getValue();
 
                     long mergedCount = weekPrs.stream()
-                            .filter(pr -> pr.getState() == PullRequestState.MERGED)
+                            .filter(pr -> pr.state() == PullRequestState.MERGED)
                             .count();
 
                     long closedCount = weekPrs.stream()
-                            .filter(pr -> pr.getState() == PullRequestState.CLOSED)
+                            .filter(pr -> pr.state() == PullRequestState.CLOSED)
                             .count();
 
                     return new WeeklyThroughputDto(weekStart, mergedCount, closedCount);
@@ -112,24 +120,23 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
                 .toList();
     }
 
-    private List<MonthlyThroughputDto> aggregateMonthlyThroughput(List<PullRequest> pullRequests) {
-        Map<YearMonth, List<PullRequest>> prsByMonth = pullRequests.stream()
-                .filter(pr -> pr.getTiming().getGithubClosedAt() != null)
+    private List<MonthlyThroughputDto> aggregateMonthlyThroughput(List<ClosedPullRequest> pullRequests) {
+        Map<YearMonth, List<ClosedPullRequest>> prsByMonth = pullRequests.stream()
                 .collect(Collectors.groupingBy(
-                        pr -> YearMonth.from(pr.getTiming().getGithubClosedAt().toLocalDate())
+                        pr -> YearMonth.from(pr.closedAt().toLocalDate())
                 ));
 
         return prsByMonth.entrySet().stream()
                 .map(entry -> {
                     YearMonth yearMonth = entry.getKey();
-                    List<PullRequest> monthPrs = entry.getValue();
+                    List<ClosedPullRequest> monthPrs = entry.getValue();
 
                     long mergedCount = monthPrs.stream()
-                            .filter(pr -> pr.getState() == PullRequestState.MERGED)
+                            .filter(pr -> pr.state() == PullRequestState.MERGED)
                             .count();
 
                     long closedCount = monthPrs.stream()
-                            .filter(pr -> pr.getState() == PullRequestState.CLOSED)
+                            .filter(pr -> pr.state() == PullRequestState.CLOSED)
                             .count();
 
                     return new MonthlyThroughputDto(yearMonth.getYear(), yearMonth.getMonthValue(), mergedCount, closedCount);
@@ -144,6 +151,9 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
             return yearCompare;
         }
         return Integer.compare(first.month(), second.month());
+    }
+
+    private record ClosedPullRequest(PullRequestState state, LocalDateTime closedAt) {
     }
 
     private List<WeeklyReviewWaitTimeDto> aggregateWeeklyReviewWaitTime(
