@@ -1,33 +1,5 @@
 package com.prism.statistics.infrastructure.statistics.persistence;
 
-import com.prism.statistics.domain.analysis.insight.activity.ReviewActivity;
-import com.prism.statistics.domain.analysis.insight.bottleneck.PullRequestBottleneck;
-import com.prism.statistics.domain.analysis.insight.lifecycle.PullRequestLifecycle;
-import com.prism.statistics.domain.analysis.insight.review.ReviewSession;
-import com.prism.statistics.domain.analysis.insight.size.PullRequestSize;
-import com.prism.statistics.domain.analysis.insight.size.enums.SizeGrade;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
-import com.prism.statistics.domain.statistics.repository.StatisticsSummaryRepository;
-import com.prism.statistics.domain.statistics.repository.dto.StatisticsSummaryDto;
-import com.prism.statistics.domain.statistics.repository.dto.StatisticsSummaryDto.BottleneckDto;
-import com.prism.statistics.domain.statistics.repository.dto.StatisticsSummaryDto.OverviewDto;
-import com.prism.statistics.domain.statistics.repository.dto.StatisticsSummaryDto.ReviewHealthDto;
-import com.prism.statistics.domain.statistics.repository.dto.StatisticsSummaryDto.TeamActivityDto;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import static com.prism.statistics.domain.analysis.insight.activity.QReviewActivity.reviewActivity;
 import static com.prism.statistics.domain.analysis.insight.bottleneck.QPullRequestBottleneck.pullRequestBottleneck;
 import static com.prism.statistics.domain.analysis.insight.lifecycle.QPullRequestLifecycle.pullRequestLifecycle;
@@ -35,12 +7,35 @@ import static com.prism.statistics.domain.analysis.insight.review.QReviewSession
 import static com.prism.statistics.domain.analysis.insight.size.QPullRequestSize.pullRequestSize;
 import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
 
+import com.prism.statistics.domain.analysis.insight.size.enums.SizeGrade;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
+import com.prism.statistics.domain.statistics.repository.StatisticsSummaryRepository;
+import com.prism.statistics.domain.statistics.repository.dto.StatisticsSummaryDto;
+import com.prism.statistics.domain.statistics.repository.dto.StatisticsSummaryDto.BottleneckDto;
+import com.prism.statistics.domain.statistics.repository.dto.StatisticsSummaryDto.OverviewDto;
+import com.prism.statistics.domain.statistics.repository.dto.StatisticsSummaryDto.ReviewHealthDto;
+import com.prism.statistics.domain.statistics.repository.dto.StatisticsSummaryDto.TeamActivityDto;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 @Repository
 @RequiredArgsConstructor
 public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepository {
 
-    private final JPAQueryFactory queryFactory;
     private static final String NOT_AVAILABLE_GRADE = "N/A";
+
+    private final JPAQueryFactory queryFactory;
 
     @Override
     @Transactional(readOnly = true)
@@ -49,250 +44,298 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
             LocalDate startDate,
             LocalDate endDate
     ) {
-        List<Long> pullRequestIds = fetchPullRequestIds(projectId, startDate, endDate);
-
-        if (pullRequestIds.isEmpty()) {
+        long totalPrCount = fetchTotalPrCount(projectId, startDate, endDate);
+        if (totalPrCount == 0L) {
             return Optional.empty();
         }
 
-        List<ReviewActivity> activities = fetchReviewActivities(pullRequestIds);
-        List<PullRequestBottleneck> bottlenecks = fetchPullRequestBottlenecks(pullRequestIds);
+        OverviewDto overview = buildOverviewDto(projectId, startDate, endDate, totalPrCount);
+        ReviewActivityAggregate reviewActivityAggregate = fetchReviewActivityAggregate(projectId, startDate, endDate);
+        BottleneckAggregate bottleneckAggregate = fetchBottleneckAggregate(projectId, startDate, endDate);
 
-        OverviewDto overview = buildOverviewDto(projectId, pullRequestIds, startDate, endDate);
-        ReviewHealthDto reviewHealth = buildReviewHealthDto(pullRequestIds, activities, bottlenecks);
-        TeamActivityDto teamActivity = buildTeamActivityDto(pullRequestIds, activities);
-        BottleneckDto bottleneck = buildBottleneckDto(bottlenecks);
+        ReviewHealthDto reviewHealth = buildReviewHealthDto(
+                projectId,
+                startDate,
+                endDate,
+                totalPrCount,
+                reviewActivityAggregate,
+                bottleneckAggregate
+        );
+        TeamActivityDto teamActivity = buildTeamActivityDto(
+                projectId,
+                startDate,
+                endDate,
+                reviewActivityAggregate
+        );
+        BottleneckDto bottleneck = buildBottleneckDto(bottleneckAggregate);
 
         return Optional.of(new StatisticsSummaryDto(overview, reviewHealth, teamActivity, bottleneck));
     }
 
-    private List<Long> fetchPullRequestIds(Long projectId, LocalDate startDate, LocalDate endDate) {
-        return queryFactory
-                .select(pullRequest.id)
+    private long fetchTotalPrCount(Long projectId, LocalDate startDate, LocalDate endDate) {
+        Long totalPrCount = queryFactory
+                .select(pullRequest.count())
                 .from(pullRequest)
-                .where(
-                        pullRequest.projectId.eq(projectId),
-                        createdAtDateRangeCondition(startDate, endDate)
-                )
-                .fetch();
+                .where(pullRequestScopeCondition(projectId, startDate, endDate))
+                .fetchOne();
+        return totalPrCount != null ? totalPrCount : 0L;
     }
 
-    private OverviewDto buildOverviewDto(
-            Long projectId,
-            List<Long> pullRequestIds,
-            LocalDate startDate,
-            LocalDate endDate
-    ) {
-        List<PullRequest> closedPullRequests = queryFactory
-                .selectFrom(pullRequest)
-                .where(
-                        pullRequest.projectId.eq(projectId),
-                        pullRequest.id.in(pullRequestIds),
-                        pullRequest.state.in(PullRequestState.MERGED, PullRequestState.CLOSED),
-                        closedAtDateRangeCondition(startDate, endDate)
-                )
-                .fetch();
+    private OverviewDto buildOverviewDto(Long projectId, LocalDate startDate, LocalDate endDate, long totalPrCount) {
+        Tuple closedAggregate = fetchClosedOverviewAggregate(projectId, startDate, endDate);
+        long mergedPrCount = nullableLong(closedAggregate, 0);
+        long closedPrCount = nullableLong(closedAggregate, 1);
+        long totalMergeTimeMinutes = nullableLong(closedAggregate, 2);
 
-        long totalPrCount = pullRequestIds.size();
-        long mergedPrCount = closedPullRequests.stream()
-                .filter(pr -> pr.isMerged())
-                .count();
-        long closedPrCount = closedPullRequests.stream()
-                .filter(pr -> pr.isClosed())
-                .count();
-        long totalMergeTimeMinutes = closedPullRequests.stream()
-                .filter(pr -> pr.isMerged())
-                .mapToLong(pr -> pr.calculateMergeTimeMinutes())
-                .sum();
-
-        List<PullRequestSize> sizes = queryFactory
-                .selectFrom(pullRequestSize)
-                .where(pullRequestSize.pullRequestId.in(pullRequestIds))
-                .fetch();
-
-        BigDecimal totalSizeScore = sizes.stream()
-                .map(size -> size.getSizeScore())
-                .reduce(BigDecimal.ZERO, (left, right) -> left.add(right));
-
-        String dominantSizeGrade = findDominantSizeGrade(sizes);
+        SizeAggregate sizeAggregate = fetchSizeAggregate(projectId, startDate, endDate);
 
         return new OverviewDto(
                 totalPrCount,
                 mergedPrCount,
                 closedPrCount,
                 totalMergeTimeMinutes,
-                totalSizeScore,
-                sizes.size(),
-                dominantSizeGrade
+                sizeAggregate.totalSizeScore(),
+                sizeAggregate.sizeMeasuredCount(),
+                sizeAggregate.dominantSizeGrade()
         );
     }
 
-    private String findDominantSizeGrade(List<PullRequestSize> sizes) {
-        if (sizes.isEmpty()) {
-            return NOT_AVAILABLE_GRADE;
-        }
+    private Tuple fetchClosedOverviewAggregate(Long projectId, LocalDate startDate, LocalDate endDate) {
+        NumberExpression<Long> mergeMinutesExpression = new CaseBuilder()
+                .when(
+                        pullRequest.state.eq(PullRequestState.MERGED)
+                                         .and(pullRequest.timing.githubCreatedAt.isNotNull())
+                                         .and(pullRequest.timing.githubMergedAt.isNotNull())
+                )
+                .then(Expressions.numberTemplate(
+                        Long.class,
+                        "timestampdiff(minute, {0}, {1})",
+                        pullRequest.timing.githubCreatedAt,
+                        pullRequest.timing.githubMergedAt
+                ))
+                .otherwise(0L);
 
-        Map<SizeGrade, Long> gradeCounts = sizes.stream()
-                .collect(Collectors.groupingBy(size -> size.getSizeGrade(), Collectors.counting()));
+        return queryFactory
+                .select(
+                        new CaseBuilder()
+                                .when(pullRequest.state.eq(PullRequestState.MERGED)).then(1L)
+                                .otherwise(0L).sumLong().coalesce(0L),
+                        new CaseBuilder()
+                                .when(pullRequest.state.eq(PullRequestState.CLOSED)).then(1L)
+                                .otherwise(0L).sumLong().coalesce(0L),
+                        mergeMinutesExpression.sumLong().coalesce(0L)
+                )
+                .from(pullRequest)
+                .where(
+                        pullRequestScopeCondition(projectId, startDate, endDate),
+                        pullRequest.state.in(PullRequestState.MERGED, PullRequestState.CLOSED),
+                        closedAtDateRangeCondition(startDate, endDate)
+                )
+                .fetchOne();
+    }
 
-        return gradeCounts.entrySet().stream()
-                .max(Comparator.comparingLong(entry -> entry.getValue()))
-                .map(entry -> entry.getKey().name())
-                .orElse(NOT_AVAILABLE_GRADE);
+    private SizeAggregate fetchSizeAggregate(Long projectId, LocalDate startDate, LocalDate endDate) {
+        Tuple summary = queryFactory
+                .select(
+                        pullRequestSize.sizeScore.sumBigDecimal().coalesce(BigDecimal.ZERO),
+                        pullRequestSize.count()
+                )
+                .from(pullRequestSize)
+                .join(pullRequest).on(pullRequest.id.eq(pullRequestSize.pullRequestId))
+                .where(pullRequestScopeCondition(projectId, startDate, endDate))
+                .fetchOne();
+
+        BigDecimal totalSizeScore = summary != null
+                ? summary.get(0, BigDecimal.class)
+                : BigDecimal.ZERO;
+        long sizeMeasuredCount = nullableLong(summary, 1);
+
+        Tuple dominantGrade = queryFactory
+                .select(pullRequestSize.sizeGrade, pullRequestSize.count())
+                .from(pullRequestSize)
+                .join(pullRequest).on(pullRequest.id.eq(pullRequestSize.pullRequestId))
+                .where(pullRequestScopeCondition(projectId, startDate, endDate))
+                .groupBy(pullRequestSize.sizeGrade)
+                .orderBy(pullRequestSize.count().desc(), pullRequestSize.sizeGrade.asc())
+                .limit(1)
+                .fetchOne();
+
+        String dominantSizeGrade = Optional.ofNullable(dominantGrade)
+                                           .map(tuple -> tuple.get(pullRequestSize.sizeGrade))
+                                           .map(SizeGrade::name)
+                                           .orElse(NOT_AVAILABLE_GRADE);
+
+        return new SizeAggregate(totalSizeScore != null ? totalSizeScore : BigDecimal.ZERO, sizeMeasuredCount, dominantSizeGrade);
+    }
+
+    private ReviewActivityAggregate fetchReviewActivityAggregate(Long projectId, LocalDate startDate, LocalDate endDate) {
+        Tuple aggregate = queryFactory
+                .select(
+                        new CaseBuilder()
+                                .when(reviewActivity.totalCommentCount.gt(0).or(reviewActivity.reviewRoundTrips.gt(0))).then(1L)
+                                .otherwise(0L).sumLong().coalesce(0L),
+                        new CaseBuilder()
+                                .when(reviewActivity.reviewRoundTrips.eq(1).and(reviewActivity.hasAdditionalReviewers.isFalse())).then(1L)
+                                .otherwise(0L).sumLong().coalesce(0L),
+                        new CaseBuilder()
+                                .when(reviewActivity.codeAdditionsAfterReview.gt(0).or(reviewActivity.codeDeletionsAfterReview.gt(0))).then(1L)
+                                .otherwise(0L).sumLong().coalesce(0L),
+                        reviewActivity.reviewRoundTrips.sumLong().coalesce(0L),
+                        reviewActivity.totalCommentCount.sumLong().coalesce(0L)
+                )
+                .from(reviewActivity)
+                .join(pullRequest).on(pullRequest.id.eq(reviewActivity.pullRequestId))
+                .where(pullRequestScopeCondition(projectId, startDate, endDate))
+                .fetchOne();
+
+        return new ReviewActivityAggregate(
+                nullableLong(aggregate, 0),
+                nullableLong(aggregate, 1),
+                nullableLong(aggregate, 2),
+                nullableLong(aggregate, 3),
+                nullableLong(aggregate, 4)
+        );
     }
 
     private ReviewHealthDto buildReviewHealthDto(
-            List<Long> pullRequestIds,
-            List<ReviewActivity> activities,
-            List<PullRequestBottleneck> bottlenecks
+            Long projectId,
+            LocalDate startDate,
+            LocalDate endDate,
+            long totalPrCount,
+            ReviewActivityAggregate reviewActivityAggregate,
+            BottleneckAggregate bottleneckAggregate
     ) {
-        List<PullRequestLifecycle> lifecycles = queryFactory
-                .selectFrom(pullRequestLifecycle)
-                .where(pullRequestLifecycle.pullRequestId.in(pullRequestIds))
-                .fetch();
-
-        long totalPrCount = pullRequestIds.size();
-        long reviewedPrCount = activities.stream()
-                .filter(a -> a.getTotalCommentCount() > 0 || a.getReviewRoundTrips() > 0)
-                .count();
-
-        long totalReviewWaitMinutes = bottlenecks.stream()
-                .filter(b -> b.getReviewWait() != null)
-                .mapToLong(b -> b.getReviewWait().getMinutes())
-
-                .sum();
-
-        long firstReviewApproveCount = activities.stream()
-                .filter(activity -> activity.isFirstReviewApproved())
-                .count();
-
-        long changesRequestedCount = activities.stream()
-                .filter(activity -> activity.hasCodeChangesAfterReview())
-                .count();
-
-        long closedWithoutReviewCount = lifecycles.stream()
-                .filter(lifecycle -> lifecycle.isClosedWithoutReview())
-                .count();
+        Long closedWithoutReviewCount = queryFactory
+                .select(pullRequestLifecycle.count())
+                .from(pullRequestLifecycle)
+                .join(pullRequest).on(pullRequest.id.eq(pullRequestLifecycle.pullRequestId))
+                .where(
+                        pullRequestScopeCondition(projectId, startDate, endDate),
+                        pullRequestLifecycle.closedWithoutReview.isTrue()
+                )
+                .fetchOne();
 
         return new ReviewHealthDto(
                 totalPrCount,
-                reviewedPrCount,
-                totalReviewWaitMinutes,
-                firstReviewApproveCount,
-                changesRequestedCount,
-                closedWithoutReviewCount
+                reviewActivityAggregate.reviewedPrCount(),
+                bottleneckAggregate.totalReviewWaitMinutes(),
+                reviewActivityAggregate.firstReviewApproveCount(),
+                reviewActivityAggregate.changesRequestedCount(),
+                closedWithoutReviewCount != null ? closedWithoutReviewCount : 0L
         );
     }
 
-    private TeamActivityDto buildTeamActivityDto(List<Long> pullRequestIds, List<ReviewActivity> activities) {
-        List<ReviewSession> sessions = queryFactory
-                .selectFrom(reviewSession)
-                .where(reviewSession.pullRequestId.in(pullRequestIds))
+    private TeamActivityDto buildTeamActivityDto(
+            Long projectId,
+            LocalDate startDate,
+            LocalDate endDate,
+            ReviewActivityAggregate reviewActivityAggregate
+    ) {
+        Tuple sessionAggregate = queryFactory
+                .select(
+                        reviewSession.reviewer.userId.countDistinct(),
+                        reviewSession.pullRequestId.countDistinct(),
+                        reviewSession.count()
+                )
+                .from(reviewSession)
+                .join(pullRequest).on(pullRequest.id.eq(reviewSession.pullRequestId))
+                .where(pullRequestScopeCondition(projectId, startDate, endDate))
+                .fetchOne();
+
+        long uniqueReviewerCount = nullableLong(sessionAggregate, 0);
+        long uniquePullRequestCount = nullableLong(sessionAggregate, 1);
+        long totalReviewerAssignments = nullableLong(sessionAggregate, 2);
+
+        List<Long> reviewerAssignmentCounts = queryFactory
+                .select(reviewSession.count())
+                .from(reviewSession)
+                .join(pullRequest).on(pullRequest.id.eq(reviewSession.pullRequestId))
+                .where(pullRequestScopeCondition(projectId, startDate, endDate))
+                .groupBy(reviewSession.reviewer.userId)
                 .fetch();
 
-        long uniqueReviewerCount = sessions.stream()
-                .map(s -> s.getReviewer().getUserId())
-                .distinct()
-                .count();
-
-        long uniquePullRequestCount = sessions.stream()
-                .map(session -> session.getPullRequestId())
-                .distinct()
-                .count();
-
-        long totalReviewerAssignments = sessions.size();
-
-        long totalReviewRoundTrips = activities.stream()
-                .mapToLong(activity -> activity.getReviewRoundTrips())
-                .sum();
-
-        long totalCommentCount = activities.stream()
-                .mapToLong(activity -> activity.getTotalCommentCount())
-                .sum();
-
-        double giniCoefficient = calculateGiniCoefficient(sessions);
+        double giniCoefficient = calculateGiniCoefficient(reviewerAssignmentCounts);
 
         return new TeamActivityDto(
                 uniqueReviewerCount,
                 uniquePullRequestCount,
                 totalReviewerAssignments,
-                totalReviewRoundTrips,
-                totalCommentCount,
+                reviewActivityAggregate.totalReviewRoundTrips(),
+                reviewActivityAggregate.totalCommentCount(),
                 giniCoefficient
         );
     }
 
-    private double calculateGiniCoefficient(List<ReviewSession> sessions) {
-        if (sessions.isEmpty()) {
+    private double calculateGiniCoefficient(List<Long> reviewerAssignmentCounts) {
+        if (reviewerAssignmentCounts.isEmpty()) {
             return 0.0;
         }
 
-        Map<Long, Long> reviewerCounts = sessions.stream()
-                .collect(Collectors.groupingBy(
-                        s -> s.getReviewer().getUserId(),
-                        Collectors.counting()
-                ));
-
-        List<Long> counts = reviewerCounts.values().stream()
-                .sorted()
-                .toList();
+        List<Long> counts = reviewerAssignmentCounts.stream()
+                                                    .sorted()
+                                                    .toList();
 
         int n = counts.size();
         if (n <= 1) {
             return 0.0;
         }
 
-        double totalSum = counts.stream().mapToDouble(value -> value).sum();
-        if (totalSum == 0) {
+        double totalSum = counts.stream()
+                                .mapToDouble(Long::doubleValue)
+                                .sum();
+        if (totalSum == 0.0) {
             return 0.0;
         }
 
-        double cumulativeSum = 0;
-        double giniSum = 0;
+        double giniSum = 0.0;
         for (int i = 0; i < n; i++) {
-            cumulativeSum += counts.get(i);
-            giniSum += (2 * (i + 1) - n - 1) * counts.get(i);
+            giniSum += (2.0 * (i + 1) - n - 1) * counts.get(i);
         }
 
         return giniSum / (n * totalSum);
     }
 
-    private BottleneckDto buildBottleneckDto(List<PullRequestBottleneck> bottlenecks) {
-        long totalReviewWaitMinutes = bottlenecks.stream()
-                .filter(b -> b.getReviewWait() != null)
-                .mapToLong(b -> b.getReviewWait().getMinutes())
-                .sum();
+    private BottleneckAggregate fetchBottleneckAggregate(Long projectId, LocalDate startDate, LocalDate endDate) {
+        Tuple aggregate = queryFactory
+                .select(
+                        pullRequestBottleneck.reviewWait.minutes.sumLong().coalesce(0L),
+                        pullRequestBottleneck.reviewProgress.minutes.sumLong().coalesce(0L),
+                        pullRequestBottleneck.mergeWait.minutes.sumLong().coalesce(0L),
+                        pullRequestBottleneck.count()
+                )
+                .from(pullRequestBottleneck)
+                .join(pullRequest).on(pullRequest.id.eq(pullRequestBottleneck.pullRequestId))
+                .where(pullRequestScopeCondition(projectId, startDate, endDate))
+                .fetchOne();
 
-        long totalReviewProgressMinutes = bottlenecks.stream()
-                .filter(b -> b.getReviewProgress() != null)
-                .mapToLong(b -> b.getReviewProgress().getMinutes())
-                .sum();
-
-        long totalMergeWaitMinutes = bottlenecks.stream()
-                .filter(b -> b.getMergeWait() != null)
-                .mapToLong(b -> b.getMergeWait().getMinutes())
-                .sum();
-
-        return new BottleneckDto(
-                totalReviewWaitMinutes,
-                totalReviewProgressMinutes,
-                totalMergeWaitMinutes,
-                bottlenecks.size()
+        return new BottleneckAggregate(
+                nullableLong(aggregate, 0),
+                nullableLong(aggregate, 1),
+                nullableLong(aggregate, 2),
+                nullableLong(aggregate, 3)
         );
     }
 
-    private List<ReviewActivity> fetchReviewActivities(List<Long> pullRequestIds) {
-        return queryFactory
-                .selectFrom(reviewActivity)
-                .where(reviewActivity.pullRequestId.in(pullRequestIds))
-                .fetch();
+    private BottleneckDto buildBottleneckDto(BottleneckAggregate bottleneckAggregate) {
+        return new BottleneckDto(
+                bottleneckAggregate.totalReviewWaitMinutes(),
+                bottleneckAggregate.totalReviewProgressMinutes(),
+                bottleneckAggregate.totalMergeWaitMinutes(),
+                bottleneckAggregate.bottleneckCount()
+        );
     }
 
-    private List<PullRequestBottleneck> fetchPullRequestBottlenecks(List<Long> pullRequestIds) {
-        return queryFactory
-                .selectFrom(pullRequestBottleneck)
-                .where(pullRequestBottleneck.pullRequestId.in(pullRequestIds))
-                .fetch();
+    private long nullableLong(Tuple tuple, int index) {
+        if (tuple == null) {
+            return 0L;
+        }
+        Number value = tuple.get(index, Number.class);
+        return value != null ? value.longValue() : 0L;
+    }
+
+    private BooleanExpression pullRequestScopeCondition(Long projectId, LocalDate startDate, LocalDate endDate) {
+        return pullRequest.projectId.eq(projectId)
+                                    .and(createdAtDateRangeCondition(startDate, endDate));
     }
 
     private BooleanExpression createdAtDateRangeCondition(LocalDate startDate, LocalDate endDate) {
@@ -302,7 +345,7 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
 
         if (startDate != null && endDate != null) {
             return pullRequest.timing.githubCreatedAt.goe(startDate.atStartOfDay())
-                    .and(pullRequest.timing.githubCreatedAt.lt(endDate.plusDays(1).atStartOfDay()));
+                                                     .and(pullRequest.timing.githubCreatedAt.lt(endDate.plusDays(1).atStartOfDay()));
         }
 
         if (startDate != null) {
@@ -319,7 +362,7 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
 
         if (startDate != null && endDate != null) {
             return pullRequest.timing.githubClosedAt.goe(startDate.atStartOfDay())
-                    .and(pullRequest.timing.githubClosedAt.lt(endDate.plusDays(1).atStartOfDay()));
+                                                    .and(pullRequest.timing.githubClosedAt.lt(endDate.plusDays(1).atStartOfDay()));
         }
 
         if (startDate != null) {
@@ -327,5 +370,29 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
         }
 
         return pullRequest.timing.githubClosedAt.lt(endDate.plusDays(1).atStartOfDay());
+    }
+
+    private record SizeAggregate(
+            BigDecimal totalSizeScore,
+            long sizeMeasuredCount,
+            String dominantSizeGrade
+    ) {
+    }
+
+    private record ReviewActivityAggregate(
+            long reviewedPrCount,
+            long firstReviewApproveCount,
+            long changesRequestedCount,
+            long totalReviewRoundTrips,
+            long totalCommentCount
+    ) {
+    }
+
+    private record BottleneckAggregate(
+            long totalReviewWaitMinutes,
+            long totalReviewProgressMinutes,
+            long totalMergeWaitMinutes,
+            long bottleneckCount
+    ) {
     }
 }

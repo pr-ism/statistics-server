@@ -284,4 +284,40 @@ class ReviewActivityTest {
                 () -> assertThat(insignificant.hasSignificantChangesAfterReview()).isFalse()
         );
     }
+
+    @Test
+    void 첫_리뷰_승인_여부를_확인한다() {
+        // given
+        ReviewActivity approvedOnFirstReview = ReviewActivity.builder()
+                .pullRequestId(1L)
+                .reviewRoundTrips(1)
+                .totalCommentCount(1)
+                .additionalReviewerCount(0)
+                .totalAdditions(100)
+                .totalDeletions(50)
+                .build();
+        ReviewActivity notFirstReview = ReviewActivity.builder()
+                .pullRequestId(2L)
+                .reviewRoundTrips(2)
+                .totalCommentCount(2)
+                .additionalReviewerCount(0)
+                .totalAdditions(100)
+                .totalDeletions(50)
+                .build();
+        ReviewActivity withAdditionalReviewer = ReviewActivity.builder()
+                .pullRequestId(3L)
+                .reviewRoundTrips(1)
+                .totalCommentCount(1)
+                .additionalReviewerCount(1)
+                .totalAdditions(100)
+                .totalDeletions(50)
+                .build();
+
+        // then
+        assertAll(
+                () -> assertThat(approvedOnFirstReview.isFirstReviewApproved()).isTrue(),
+                () -> assertThat(notFirstReview.isFirstReviewApproved()).isFalse(),
+                () -> assertThat(withAdditionalReviewer.isFirstReviewApproved()).isFalse()
+        );
+    }
 }
