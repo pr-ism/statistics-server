@@ -64,7 +64,7 @@ class WeeklyTrendStatisticsControllerTest extends CommonControllerSliceTestSuppo
     private static final String ERROR_CODE_PROJECT_NOT_FOUND = "P00";
     private static final String ERROR_CODE_INVALID_DATE = "D03";
     private static final String MESSAGE_UNAUTHORIZED = "인가되지 않은 회원";
-    private static final String MESSAGE_INVALID_DATE_RANGE = "시작일과 종료일은 둘 다 입력하거나 둘 다 생략해야 하며, 종료일은 시작일보다 빠를 수 없습니다.";
+    private static final String MESSAGE_INVALID_DATE_RANGE = "종료일은 시작일보다 빠를 수 없습니다.";
     private static final LocalDate WEEK_START_1 = LocalDate.of(2026, 1, 6);
     private static final LocalDate WEEK_START_2 = LocalDate.of(2026, 1, 13);
     private static final LocalDate WEEK_START_3 = LocalDate.of(2026, 1, 20);
