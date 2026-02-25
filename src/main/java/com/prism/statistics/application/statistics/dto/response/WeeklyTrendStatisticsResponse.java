@@ -62,6 +62,10 @@ public record WeeklyTrendStatisticsResponse(
     }
 
     private static double roundToTwoDecimals(double value) {
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("값은 유한해야 합니다.");
+        }
+
         return BigDecimal.valueOf(value)
                 .setScale(2, RoundingMode.HALF_UP)
                 .doubleValue();
