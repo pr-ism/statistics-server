@@ -10,6 +10,7 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestC
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestTiming;
 import com.prism.statistics.domain.project.Project;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
+import com.prism.statistics.domain.statistics.repository.dto.DailyTrendStatisticsDto;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
 import com.prism.statistics.infrastructure.project.persistence.JpaProjectRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -20,6 +21,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,6 +39,7 @@ class DailyTrendStatisticsQueryServiceTest {
     private static final int DAYS_2 = 2;
     private static final int DAYS_3 = 3;
     private static final int DATE_RANGE_DAYS = 3;
+    private static final int DATE_RANGE_OVERLAP_DAYS = 1;
     private static final long ZERO_DAYS = 0L;
     private static final long TOTAL_CREATED_COUNT = 3L;
     private static final long TOTAL_MERGED_COUNT = 2L;
@@ -53,6 +56,10 @@ class DailyTrendStatisticsQueryServiceTest {
     private static final int CHANGE_STATS_FILES = 6;
     private static final int COMMIT_COUNT = 4;
     private static final int PULL_REQUEST_NUMBER_MODULUS = 10000;
+    private static final long COUNT_ONE = 1L;
+    private static final long COUNT_TWO = 2L;
+    private static final long COUNT_THREE = 3L;
+    private static final long DATE_RANGE_TWO_DAYS = 2L;
 
     @Autowired
     private DailyTrendStatisticsQueryService dailyTrendStatisticsQueryService;
@@ -141,6 +148,144 @@ class DailyTrendStatisticsQueryServiceTest {
         );
 
         assertThat(result).isZero();
+    }
+
+    @Test
+    void 시작일이_null이면_데이터의_최소_날짜로_기간을_계산한다() {
+        LocalDate startDate = null;
+        LocalDate endDate = LocalDate.now();
+        LocalDate minDate = endDate.minusDays(DATE_RANGE_OVERLAP_DAYS);
+        LocalDate maxDate = endDate;
+
+        List<DailyTrendStatisticsDto.DailyPrCountDto> createdCounts = List.of(
+                new DailyTrendStatisticsDto.DailyPrCountDto(minDate, COUNT_ONE)
+        );
+        List<DailyTrendStatisticsDto.DailyPrCountDto> mergedCounts = List.of(
+                new DailyTrendStatisticsDto.DailyPrCountDto(maxDate, COUNT_ONE)
+        );
+
+        long result = ReflectionTestUtils.invokeMethod(
+                dailyTrendStatisticsQueryService,
+                "calculateDateRangeDays",
+                startDate,
+                endDate,
+                createdCounts,
+                mergedCounts
+        );
+
+        assertThat(result).isEqualTo(DATE_RANGE_TWO_DAYS);
+    }
+
+    @Test
+    void 종료일이_null이면_데이터의_최대_날짜로_기간을_계산한다() {
+        LocalDate startDate = LocalDate.now().minusDays(DATE_RANGE_OVERLAP_DAYS);
+        LocalDate endDate = null;
+        LocalDate minDate = startDate;
+        LocalDate maxDate = startDate.plusDays(DATE_RANGE_OVERLAP_DAYS);
+
+        List<DailyTrendStatisticsDto.DailyPrCountDto> createdCounts = List.of(
+                new DailyTrendStatisticsDto.DailyPrCountDto(minDate, COUNT_ONE)
+        );
+        List<DailyTrendStatisticsDto.DailyPrCountDto> mergedCounts = List.of(
+                new DailyTrendStatisticsDto.DailyPrCountDto(maxDate, COUNT_ONE)
+        );
+
+        long result = ReflectionTestUtils.invokeMethod(
+                dailyTrendStatisticsQueryService,
+                "calculateDateRangeDays",
+                startDate,
+                endDate,
+                createdCounts,
+                mergedCounts
+        );
+
+        assertThat(result).isEqualTo(DATE_RANGE_TWO_DAYS);
+    }
+
+    @Test
+    void 시작일과_종료일이_모두_null이면_데이터_범위로_기간을_계산한다() {
+        LocalDate minDate = LocalDate.now().minusDays(DATE_RANGE_DAYS);
+        LocalDate maxDate = minDate.plusDays(DATE_RANGE_OVERLAP_DAYS);
+
+        List<DailyTrendStatisticsDto.DailyPrCountDto> createdCounts = List.of(
+                new DailyTrendStatisticsDto.DailyPrCountDto(minDate, COUNT_ONE)
+        );
+        List<DailyTrendStatisticsDto.DailyPrCountDto> mergedCounts = List.of(
+                new DailyTrendStatisticsDto.DailyPrCountDto(maxDate, COUNT_ONE)
+        );
+
+        long result = ReflectionTestUtils.invokeMethod(
+                dailyTrendStatisticsQueryService,
+                "calculateDateRangeDays",
+                null,
+                null,
+                createdCounts,
+                mergedCounts
+        );
+
+        assertThat(result).isEqualTo(DATE_RANGE_TWO_DAYS);
+    }
+
+    @Test
+    void 데이터가_없고_기간이_null이면_0일을_반환한다() {
+        long result = ReflectionTestUtils.invokeMethod(
+                dailyTrendStatisticsQueryService,
+                "calculateDateRangeDays",
+                null,
+                null,
+                List.of(),
+                List.of()
+        );
+
+        assertThat(result).isEqualTo(ZERO_COUNT);
+    }
+
+    @Test
+    void 종료일이_시작일보다_이르면_0일을_반환한다() {
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = startDate.minusDays(DATE_RANGE_OVERLAP_DAYS);
+
+        long result = ReflectionTestUtils.invokeMethod(
+                dailyTrendStatisticsQueryService,
+                "calculateDateRangeDays",
+                startDate,
+                endDate,
+                List.of(),
+                List.of()
+        );
+
+        assertThat(result).isEqualTo(ZERO_COUNT);
+    }
+
+    @Test
+    void 최소_최대_날짜_계산시_두_리스트를_합산한다() {
+        LocalDate minDate = LocalDate.now().minusDays(DATE_RANGE_DAYS);
+        LocalDate maxDate = minDate.plusDays(DATE_RANGE_OVERLAP_DAYS);
+
+        List<DailyTrendStatisticsDto.DailyPrCountDto> createdCounts = List.of(
+                new DailyTrendStatisticsDto.DailyPrCountDto(maxDate, COUNT_TWO)
+        );
+        List<DailyTrendStatisticsDto.DailyPrCountDto> mergedCounts = List.of(
+                new DailyTrendStatisticsDto.DailyPrCountDto(minDate, COUNT_THREE)
+        );
+
+        LocalDate resolvedMin = ReflectionTestUtils.invokeMethod(
+                dailyTrendStatisticsQueryService,
+                "resolveMinDate",
+                createdCounts,
+                mergedCounts
+        );
+        LocalDate resolvedMax = ReflectionTestUtils.invokeMethod(
+                dailyTrendStatisticsQueryService,
+                "resolveMaxDate",
+                createdCounts,
+                mergedCounts
+        );
+
+        assertAll(
+                () -> assertThat(resolvedMin).isEqualTo(minDate),
+                () -> assertThat(resolvedMax).isEqualTo(maxDate)
+        );
     }
 
 
