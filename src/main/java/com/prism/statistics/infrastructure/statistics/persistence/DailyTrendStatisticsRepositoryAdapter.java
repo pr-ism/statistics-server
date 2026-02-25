@@ -62,6 +62,7 @@ public class DailyTrendStatisticsRepositoryAdapter implements DailyTrendStatisti
                 .from(pullRequest)
                 .where(
                         pullRequest.projectId.eq(projectId),
+                        pullRequest.timing.githubCreatedAt.isNotNull(),
                         createdAtDateRangeCondition(startDate, endDate)
                 )
                 .groupBy(createdDate)
