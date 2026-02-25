@@ -5,7 +5,10 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullReque
 import com.prism.statistics.domain.statistics.repository.DailyTrendStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.DailyTrendStatisticsDto;
 import com.prism.statistics.domain.statistics.repository.dto.DailyTrendStatisticsDto.DailyPrCountDto;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -35,15 +38,7 @@ public class DailyTrendStatisticsRepositoryAdapter implements DailyTrendStatisti
             LocalDate startDate,
             LocalDate endDate
     ) {
-        List<PullRequest> createdPullRequests = queryFactory
-                .selectFrom(pullRequest)
-                .where(
-                        pullRequest.projectId.eq(projectId),
-                        createdAtDateRangeCondition(startDate, endDate)
-                )
-                .fetch();
-
-        List<DailyPrCountDto> dailyCreatedCounts = aggregateDailyCreatedCounts(createdPullRequests);
+        List<DailyPrCountDto> dailyCreatedCounts = aggregateDailyCreatedCountsFromDb(projectId, startDate, endDate);
         List<DailyPrCountDto> dailyMergedCounts = aggregateDailyMergedCountsFromDb(projectId, startDate, endDate);
 
         if (dailyCreatedCounts.isEmpty() && dailyMergedCounts.isEmpty()) {
@@ -53,17 +48,38 @@ public class DailyTrendStatisticsRepositoryAdapter implements DailyTrendStatisti
         return Optional.of(new DailyTrendStatisticsDto(dailyCreatedCounts, dailyMergedCounts));
     }
 
-    private List<DailyPrCountDto> aggregateDailyCreatedCounts(List<PullRequest> pullRequests) {
-        Map<LocalDate, Long> countsByDate = pullRequests.stream()
-                .collect(Collectors.groupingBy(
-                        pr -> pr.getTiming().getGithubCreatedAt().toLocalDate(),
-                        Collectors.counting()
-                ));
+    private List<DailyPrCountDto> aggregateDailyCreatedCountsFromDb(
+            Long projectId,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        DateTemplate<java.sql.Date> createdDate = Expressions.dateTemplate(
+                java.sql.Date.class,
+                "cast({0} as date)",
+                pullRequest.timing.githubCreatedAt
+        );
 
-        return countsByDate.entrySet().stream()
-                .map(entry -> new DailyPrCountDto(entry.getKey(), entry.getValue()))
-                .sorted((a, b) -> a.date().compareTo(b.date()))
+        List<Tuple> rows = queryFactory
+                .select(createdDate, pullRequest.count())
+                .from(pullRequest)
+                .where(
+                        pullRequest.projectId.eq(projectId),
+                        createdAtDateRangeCondition(startDate, endDate)
+                )
+                .groupBy(createdDate)
+                .fetch();
+
+        return rows.stream()
+                .map(row -> new DailyPrCountDto(resolveLocalDate(row.get(createdDate)), row.get(pullRequest.count())))
+                .sorted(Comparator.comparing((DailyPrCountDto item) -> item.date()))
                 .toList();
+    }
+
+    private LocalDate resolveLocalDate(java.sql.Date sqlDate) {
+        if (sqlDate == null) {
+            return null;
+        }
+        return sqlDate.toLocalDate();
     }
 
     private List<DailyPrCountDto> aggregateDailyMergedCountsFromDb(
