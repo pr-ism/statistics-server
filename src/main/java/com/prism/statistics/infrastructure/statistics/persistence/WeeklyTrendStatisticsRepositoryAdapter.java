@@ -45,7 +45,7 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
             LocalDate startDate,
             LocalDate endDate
     ) {
-        List<PullRequest> pullRequests = queryFactory
+        List<PullRequest> createdPullRequests = queryFactory
                 .selectFrom(pullRequest)
                 .where(
                         pullRequest.projectId.eq(projectId),
@@ -53,32 +53,30 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
                 )
                 .fetch();
 
-        if (pullRequests.isEmpty()) {
+        List<PullRequest> closedPullRequests = queryFactory
+                .selectFrom(pullRequest)
+                .where(
+                        pullRequest.projectId.eq(projectId),
+                        pullRequest.state.in(PullRequestState.MERGED, PullRequestState.CLOSED),
+                        closedAtDateRangeCondition(startDate, endDate)
+                )
+                .fetch();
+
+        if (createdPullRequests.isEmpty() && closedPullRequests.isEmpty()) {
             return Optional.empty();
         }
 
-        List<Long> pullRequestIds = pullRequests.stream()
+        List<Long> pullRequestIds = createdPullRequests.stream()
                 .map(pr -> pr.getId())
                 .toList();
 
-        Map<Long, PullRequestBottleneck> bottleneckMap = queryFactory
-                .selectFrom(pullRequestBottleneck)
-                .where(pullRequestBottleneck.pullRequestId.in(pullRequestIds))
-                .fetch()
-                .stream()
-                .collect(Collectors.toMap(bottleneck -> bottleneck.getPullRequestId(), bottleneck -> bottleneck));
+        Map<Long, PullRequestBottleneck> bottleneckMap = fetchBottleneckMap(pullRequestIds);
+        Map<Long, PullRequestSize> sizeMap = fetchSizeMap(pullRequestIds);
 
-        Map<Long, PullRequestSize> sizeMap = queryFactory
-                .selectFrom(pullRequestSize)
-                .where(pullRequestSize.pullRequestId.in(pullRequestIds))
-                .fetch()
-                .stream()
-                .collect(Collectors.toMap(size -> size.getPullRequestId(), size -> size));
-
-        List<WeeklyThroughputDto> weeklyThroughputs = aggregateWeeklyThroughput(pullRequests, startDate, endDate);
-        List<MonthlyThroughputDto> monthlyThroughputs = aggregateMonthlyThroughput(pullRequests, startDate, endDate);
-        List<WeeklyReviewWaitTimeDto> weeklyReviewWaitTimes = aggregateWeeklyReviewWaitTime(pullRequests, bottleneckMap);
-        List<WeeklyPrSizeDto> weeklyPrSizes = aggregateWeeklyPrSize(pullRequests, sizeMap);
+        List<WeeklyThroughputDto> weeklyThroughputs = aggregateWeeklyThroughput(closedPullRequests);
+        List<MonthlyThroughputDto> monthlyThroughputs = aggregateMonthlyThroughput(closedPullRequests);
+        List<WeeklyReviewWaitTimeDto> weeklyReviewWaitTimes = aggregateWeeklyReviewWaitTime(createdPullRequests, bottleneckMap);
+        List<WeeklyPrSizeDto> weeklyPrSizes = aggregateWeeklyPrSize(createdPullRequests, sizeMap);
 
         return Optional.of(new WeeklyTrendStatisticsDto(
                 weeklyThroughputs,
@@ -88,15 +86,9 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
         ));
     }
 
-    private List<WeeklyThroughputDto> aggregateWeeklyThroughput(
-            List<PullRequest> pullRequests,
-            LocalDate startDate,
-            LocalDate endDate
-    ) {
+    private List<WeeklyThroughputDto> aggregateWeeklyThroughput(List<PullRequest> pullRequests) {
         Map<LocalDate, List<PullRequest>> prsByWeek = pullRequests.stream()
-                .filter(pr -> pr.getState() == PullRequestState.MERGED || pr.getState() == PullRequestState.CLOSED)
                 .filter(pr -> pr.getTiming().getGithubClosedAt() != null)
-                .filter(pr -> isWithinDateRange(pr.getTiming().getGithubClosedAt().toLocalDate(), startDate, endDate))
                 .collect(Collectors.groupingBy(
                         pr -> getWeekStartDate(pr.getTiming().getGithubClosedAt().toLocalDate())
                 ));
@@ -120,15 +112,9 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
                 .toList();
     }
 
-    private List<MonthlyThroughputDto> aggregateMonthlyThroughput(
-            List<PullRequest> pullRequests,
-            LocalDate startDate,
-            LocalDate endDate
-    ) {
+    private List<MonthlyThroughputDto> aggregateMonthlyThroughput(List<PullRequest> pullRequests) {
         Map<YearMonth, List<PullRequest>> prsByMonth = pullRequests.stream()
-                .filter(pr -> pr.getState() == PullRequestState.MERGED || pr.getState() == PullRequestState.CLOSED)
                 .filter(pr -> pr.getTiming().getGithubClosedAt() != null)
-                .filter(pr -> isWithinDateRange(pr.getTiming().getGithubClosedAt().toLocalDate(), startDate, endDate))
                 .collect(Collectors.groupingBy(
                         pr -> YearMonth.from(pr.getTiming().getGithubClosedAt().toLocalDate())
                 ));
@@ -226,17 +212,28 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
         return date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
 
-    private boolean isWithinDateRange(LocalDate date, LocalDate startDate, LocalDate endDate) {
-        if (startDate == null && endDate == null) {
-            return true;
+    private Map<Long, PullRequestBottleneck> fetchBottleneckMap(List<Long> pullRequestIds) {
+        if (pullRequestIds.isEmpty()) {
+            return Map.of();
         }
-        if (startDate != null && endDate != null) {
-            return !date.isBefore(startDate) && !date.isAfter(endDate);
+        return queryFactory
+                .selectFrom(pullRequestBottleneck)
+                .where(pullRequestBottleneck.pullRequestId.in(pullRequestIds))
+                .fetch()
+                .stream()
+                .collect(Collectors.toMap(bottleneck -> bottleneck.getPullRequestId(), bottleneck -> bottleneck));
+    }
+
+    private Map<Long, PullRequestSize> fetchSizeMap(List<Long> pullRequestIds) {
+        if (pullRequestIds.isEmpty()) {
+            return Map.of();
         }
-        if (startDate != null) {
-            return !date.isBefore(startDate);
-        }
-        return !date.isAfter(endDate);
+        return queryFactory
+                .selectFrom(pullRequestSize)
+                .where(pullRequestSize.pullRequestId.in(pullRequestIds))
+                .fetch()
+                .stream()
+                .collect(Collectors.toMap(size -> size.getPullRequestId(), size -> size));
     }
 
     private BooleanExpression dateRangeCondition(LocalDate startDate, LocalDate endDate) {
@@ -254,5 +251,22 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
         }
 
         return pullRequest.timing.githubCreatedAt.lt(endDate.plusDays(END_DATE_INCLUSIVE_DAYS).atStartOfDay());
+    }
+
+    private BooleanExpression closedAtDateRangeCondition(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null && endDate == null) {
+            return null;
+        }
+
+        if (startDate != null && endDate != null) {
+            return pullRequest.timing.githubClosedAt.goe(startDate.atStartOfDay())
+                    .and(pullRequest.timing.githubClosedAt.lt(endDate.plusDays(END_DATE_INCLUSIVE_DAYS).atStartOfDay()));
+        }
+
+        if (startDate != null) {
+            return pullRequest.timing.githubClosedAt.goe(startDate.atStartOfDay());
+        }
+
+        return pullRequest.timing.githubClosedAt.lt(endDate.plusDays(END_DATE_INCLUSIVE_DAYS).atStartOfDay());
     }
 }
