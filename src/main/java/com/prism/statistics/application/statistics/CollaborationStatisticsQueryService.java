@@ -2,7 +2,11 @@ package com.prism.statistics.application.statistics;
 
 import com.prism.statistics.application.statistics.dto.request.CollaborationStatisticsRequest;
 import com.prism.statistics.application.statistics.dto.response.CollaborationStatisticsResponse;
-import com.prism.statistics.application.statistics.dto.response.CollaborationStatisticsResponse.*;
+import com.prism.statistics.application.statistics.dto.response.CollaborationStatisticsResponse.AuthorReviewWaitTime;
+import com.prism.statistics.application.statistics.dto.response.CollaborationStatisticsResponse.DraftPrStatistics;
+import com.prism.statistics.application.statistics.dto.response.CollaborationStatisticsResponse.ReviewerAdditionStatistics;
+import com.prism.statistics.application.statistics.dto.response.CollaborationStatisticsResponse.ReviewerConcentrationStatistics;
+import com.prism.statistics.application.statistics.dto.response.CollaborationStatisticsResponse.ReviewerStats;
 import com.prism.statistics.domain.project.exception.ProjectOwnershipException;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.statistics.repository.CollaborationStatisticsRepository;
