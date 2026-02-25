@@ -13,9 +13,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -42,8 +45,8 @@ public class DailyTrendStatisticsQueryService {
 
     private DailyTrendStatisticsResponse toResponse(
             DailyTrendStatisticsDto dto,
-            java.time.LocalDate startDate,
-            java.time.LocalDate endDate
+            LocalDate startDate,
+            LocalDate endDate
     ) {
         List<DailyPrTrend> dailyCreatedTrend = dto.dailyCreatedCounts().stream()
                 .map(d -> DailyPrTrend.of(d.date(), d.count()))
@@ -61,8 +64,8 @@ public class DailyTrendStatisticsQueryService {
     private TrendSummary buildSummary(
             List<DailyPrCountDto> createdCounts,
             List<DailyPrCountDto> mergedCounts,
-            java.time.LocalDate startDate,
-            java.time.LocalDate endDate
+            LocalDate startDate,
+            LocalDate endDate
     ) {
         long totalCreatedCount = createdCounts.stream()
                 .mapToLong(item -> item.count())
@@ -96,17 +99,17 @@ public class DailyTrendStatisticsQueryService {
     }
 
     private long calculateDateRangeDays(
-            java.time.LocalDate startDate,
-            java.time.LocalDate endDate,
+            LocalDate startDate,
+            LocalDate endDate,
             List<DailyPrCountDto> createdCounts,
             List<DailyPrCountDto> mergedCounts
     ) {
-        java.time.LocalDate resolvedStart = startDate;
-        java.time.LocalDate resolvedEnd = endDate;
+        LocalDate resolvedStart = startDate;
+        LocalDate resolvedEnd = endDate;
 
         if (resolvedStart == null || resolvedEnd == null) {
-            java.time.LocalDate minDate = resolveMinDate(createdCounts, mergedCounts);
-            java.time.LocalDate maxDate = resolveMaxDate(createdCounts, mergedCounts);
+            LocalDate minDate = resolveMinDate(createdCounts, mergedCounts);
+            LocalDate maxDate = resolveMaxDate(createdCounts, mergedCounts);
 
             if (resolvedStart == null) {
                 resolvedStart = minDate;
@@ -122,7 +125,7 @@ public class DailyTrendStatisticsQueryService {
         if (resolvedEnd.isBefore(resolvedStart)) {
             return 0L;
         }
-        return java.time.temporal.ChronoUnit.DAYS.between(resolvedStart, resolvedEnd) + 1L;
+        return ChronoUnit.DAYS.between(resolvedStart, resolvedEnd) + 1L;
     }
 
     private double calculateAverage(long total, long days) {
@@ -132,23 +135,23 @@ public class DailyTrendStatisticsQueryService {
         return (double) total / days;
     }
 
-    private java.time.LocalDate resolveMinDate(
+    private LocalDate resolveMinDate(
             List<DailyPrCountDto> createdCounts,
             List<DailyPrCountDto> mergedCounts
     ) {
-        return java.util.stream.Stream.concat(createdCounts.stream(), mergedCounts.stream())
+        return Stream.concat(createdCounts.stream(), mergedCounts.stream())
                 .map(item -> item.date())
-                .min(java.time.LocalDate::compareTo)
+                .min(LocalDate::compareTo)
                 .orElse(null);
     }
 
-    private java.time.LocalDate resolveMaxDate(
+    private LocalDate resolveMaxDate(
             List<DailyPrCountDto> createdCounts,
             List<DailyPrCountDto> mergedCounts
     ) {
-        return java.util.stream.Stream.concat(createdCounts.stream(), mergedCounts.stream())
+        return Stream.concat(createdCounts.stream(), mergedCounts.stream())
                 .map(item -> item.date())
-                .max(java.time.LocalDate::compareTo)
+                .max(LocalDate::compareTo)
                 .orElse(null);
     }
 
