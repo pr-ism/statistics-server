@@ -316,8 +316,8 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                         pullRequestBottleneck.mergeWait.minutes.sumLong().coalesce(0L),
                         pullRequestBottleneck.count()
                 )
-                .from(pullRequestBottleneck)
-                .join(pullRequest).on(pullRequest.id.eq(pullRequestBottleneck.pullRequestId))
+                .from(pullRequest)
+                .join(pullRequestBottleneck).on(pullRequest.id.eq(pullRequestBottleneck.pullRequestId))
                 .where(pullRequestScopeCondition(projectId, startDate, endDate))
                 .fetchOne();
 
