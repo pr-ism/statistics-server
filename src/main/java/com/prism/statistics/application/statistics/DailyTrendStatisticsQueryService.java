@@ -36,11 +36,15 @@ public class DailyTrendStatisticsQueryService {
 
         return dailyTrendStatisticsRepository
                 .findDailyTrendStatisticsByProjectId(projectId, request.startDate(), request.endDate())
-                .map(dto -> toResponse(dto))
+                .map(dto -> toResponse(dto, request.startDate(), request.endDate()))
                 .orElse(DailyTrendStatisticsResponse.empty());
     }
 
-    private DailyTrendStatisticsResponse toResponse(DailyTrendStatisticsDto dto) {
+    private DailyTrendStatisticsResponse toResponse(
+            DailyTrendStatisticsDto dto,
+            java.time.LocalDate startDate,
+            java.time.LocalDate endDate
+    ) {
         List<DailyPrTrend> dailyCreatedTrend = dto.dailyCreatedCounts().stream()
                 .map(d -> DailyPrTrend.of(d.date(), d.count()))
                 .toList();
@@ -49,14 +53,16 @@ public class DailyTrendStatisticsQueryService {
                 .map(d -> DailyPrTrend.of(d.date(), d.count()))
                 .toList();
 
-        TrendSummary summary = buildSummary(dto.dailyCreatedCounts(), dto.dailyMergedCounts());
+        TrendSummary summary = buildSummary(dto.dailyCreatedCounts(), dto.dailyMergedCounts(), startDate, endDate);
 
         return new DailyTrendStatisticsResponse(dailyCreatedTrend, dailyMergedTrend, summary);
     }
 
     private TrendSummary buildSummary(
             List<DailyPrCountDto> createdCounts,
-            List<DailyPrCountDto> mergedCounts
+            List<DailyPrCountDto> mergedCounts,
+            java.time.LocalDate startDate,
+            java.time.LocalDate endDate
     ) {
         long totalCreatedCount = createdCounts.stream()
                 .mapToLong(item -> item.count())
@@ -66,11 +72,10 @@ public class DailyTrendStatisticsQueryService {
                 .mapToLong(item -> item.count())
                 .sum();
 
-        int createdDays = createdCounts.size();
-        int mergedDays = mergedCounts.size();
+        long dateRangeDays = calculateDateRangeDays(startDate, endDate, createdCounts, mergedCounts);
 
-        double avgDailyCreatedCount = calculateAverage(totalCreatedCount, createdDays);
-        double avgDailyMergedCount = calculateAverage(totalMergedCount, mergedDays);
+        double avgDailyCreatedCount = calculateAverage(totalCreatedCount, dateRangeDays);
+        double avgDailyMergedCount = calculateAverage(totalMergedCount, dateRangeDays);
 
         Optional<DailyPrCountDto> peakCreated = createdCounts.stream()
                 .max(Comparator.comparingLong(item -> item.count()));
@@ -90,11 +95,61 @@ public class DailyTrendStatisticsQueryService {
         );
     }
 
-    private double calculateAverage(long total, int days) {
-        if (days <= 0) {
+    private long calculateDateRangeDays(
+            java.time.LocalDate startDate,
+            java.time.LocalDate endDate,
+            List<DailyPrCountDto> createdCounts,
+            List<DailyPrCountDto> mergedCounts
+    ) {
+        java.time.LocalDate resolvedStart = startDate;
+        java.time.LocalDate resolvedEnd = endDate;
+
+        if (resolvedStart == null || resolvedEnd == null) {
+            java.time.LocalDate minDate = resolveMinDate(createdCounts, mergedCounts);
+            java.time.LocalDate maxDate = resolveMaxDate(createdCounts, mergedCounts);
+
+            if (resolvedStart == null) {
+                resolvedStart = minDate;
+            }
+            if (resolvedEnd == null) {
+                resolvedEnd = maxDate;
+            }
+        }
+
+        if (resolvedStart == null || resolvedEnd == null) {
+            return 0L;
+        }
+        if (resolvedEnd.isBefore(resolvedStart)) {
+            return 0L;
+        }
+        return java.time.temporal.ChronoUnit.DAYS.between(resolvedStart, resolvedEnd) + 1L;
+    }
+
+    private double calculateAverage(long total, long days) {
+        if (days <= 0L) {
             return ZERO_DOUBLE;
         }
         return (double) total / days;
+    }
+
+    private java.time.LocalDate resolveMinDate(
+            List<DailyPrCountDto> createdCounts,
+            List<DailyPrCountDto> mergedCounts
+    ) {
+        return java.util.stream.Stream.concat(createdCounts.stream(), mergedCounts.stream())
+                .map(item -> item.date())
+                .min(java.time.LocalDate::compareTo)
+                .orElse(null);
+    }
+
+    private java.time.LocalDate resolveMaxDate(
+            List<DailyPrCountDto> createdCounts,
+            List<DailyPrCountDto> mergedCounts
+    ) {
+        return java.util.stream.Stream.concat(createdCounts.stream(), mergedCounts.stream())
+                .map(item -> item.date())
+                .max(java.time.LocalDate::compareTo)
+                .orElse(null);
     }
 
     private void validateProjectOwnership(Long projectId, Long userId) {
