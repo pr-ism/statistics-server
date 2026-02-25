@@ -13,8 +13,6 @@ public record WeeklyTrendStatisticsResponse(
         List<WeeklyPrSize> weeklyPrSizeTrend
 ) {
 
-    private static final double ROUND_SCALE = 100.0;
-
     public static WeeklyTrendStatisticsResponse empty() {
         return new WeeklyTrendStatisticsResponse(
                 Collections.emptyList(),

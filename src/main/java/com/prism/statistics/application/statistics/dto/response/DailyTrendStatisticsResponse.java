@@ -12,7 +12,6 @@ public record DailyTrendStatisticsResponse(
         TrendSummary summary
 ) {
 
-    private static final double ROUND_SCALE = 100.0;
     private static final long ZERO_LONG = 0L;
     private static final double ZERO_DOUBLE = 0.0;
 
