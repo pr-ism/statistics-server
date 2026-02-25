@@ -232,19 +232,6 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
             LocalDate endDate,
             ReviewActivityAggregate reviewActivityAggregate
     ) {
-        Tuple sessionAggregate = queryFactory
-                .select(
-                        reviewSession.reviewer.userId.countDistinct(),
-                        reviewSession.count()
-                )
-                .from(reviewSession)
-                .join(pullRequest).on(pullRequest.id.eq(reviewSession.pullRequestId))
-                .where(pullRequestScopeCondition(projectId, startDate, endDate))
-                .fetchOne();
-
-        long uniqueReviewerCount = nullableLong(sessionAggregate, 0);
-        long totalReviewerAssignments = nullableLong(sessionAggregate, 1);
-
         Long uniquePullRequestCountResult = queryFactory
                 .select(pullRequest.count())
                 .from(pullRequest)
@@ -262,10 +249,23 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
         List<Long> reviewerAssignmentCounts = queryFactory
                 .select(reviewSession.count())
                 .from(reviewSession)
-                .join(pullRequest).on(pullRequest.id.eq(reviewSession.pullRequestId))
-                .where(pullRequestScopeCondition(projectId, startDate, endDate))
+                .where(
+                        JPAExpressions
+                                .selectOne()
+                                .from(pullRequest)
+                                .where(
+                                        pullRequest.id.eq(reviewSession.pullRequestId),
+                                        pullRequestScopeCondition(projectId, startDate, endDate)
+                                )
+                                .exists()
+                )
                 .groupBy(reviewSession.reviewer.userId)
                 .fetch();
+
+        long uniqueReviewerCount = reviewerAssignmentCounts.size();
+        long totalReviewerAssignments = reviewerAssignmentCounts.stream()
+                .mapToLong(Long::longValue)
+                .sum();
 
         double giniCoefficient = calculateGiniCoefficient(reviewerAssignmentCounts);
 
