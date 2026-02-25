@@ -37,7 +37,7 @@ class DailyTrendStatisticsQueryServiceTest {
     private static final int DAYS_2 = 2;
     private static final int DAYS_3 = 3;
     private static final int DATE_RANGE_DAYS = 3;
-    private static final int ZERO_DAYS = 0;
+    private static final long ZERO_DAYS = 0L;
     private static final long TOTAL_CREATED_COUNT = 3L;
     private static final long TOTAL_MERGED_COUNT = 2L;
     private static final long ZERO_COUNT = 0L;
