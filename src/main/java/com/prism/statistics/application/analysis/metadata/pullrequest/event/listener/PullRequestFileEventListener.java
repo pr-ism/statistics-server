@@ -36,7 +36,7 @@ public class PullRequestFileEventListener {
                 ))
                 .toList();
 
-        pullRequestFileRepository.saveAll(pullRequestFiles);
+        pullRequestFileRepository.saveAllInBatch(pullRequestFiles);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
@@ -57,7 +57,7 @@ public class PullRequestFileEventListener {
                 ))
                 .toList();
 
-        pullRequestFileRepository.saveAll(pullRequestFiles);
+        pullRequestFileRepository.saveAllInBatch(pullRequestFiles);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
@@ -71,6 +71,6 @@ public class PullRequestFileEventListener {
                 ))
                 .toList();
 
-        pullRequestFileRepository.saveAll(pullRequestFiles);
+        pullRequestFileRepository.saveAllInBatch(pullRequestFiles);
     }
 }
