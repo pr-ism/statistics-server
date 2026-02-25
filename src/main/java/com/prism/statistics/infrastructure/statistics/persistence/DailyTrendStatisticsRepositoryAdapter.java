@@ -1,6 +1,5 @@
 package com.prism.statistics.infrastructure.statistics.persistence;
 
-import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.statistics.repository.DailyTrendStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.DailyTrendStatisticsDto;
@@ -14,12 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
 
@@ -53,8 +51,8 @@ public class DailyTrendStatisticsRepositoryAdapter implements DailyTrendStatisti
             LocalDate startDate,
             LocalDate endDate
     ) {
-        DateTemplate<java.sql.Date> createdDate = Expressions.dateTemplate(
-                java.sql.Date.class,
+        DateTemplate<Date> createdDate = Expressions.dateTemplate(
+                Date.class,
                 "cast({0} as date)",
                 pullRequest.timing.githubCreatedAt
         );
@@ -75,7 +73,7 @@ public class DailyTrendStatisticsRepositoryAdapter implements DailyTrendStatisti
                 .toList();
     }
 
-    private LocalDate resolveLocalDate(java.sql.Date sqlDate) {
+    private LocalDate resolveLocalDate(Date sqlDate) {
         if (sqlDate == null) {
             return null;
         }
@@ -87,24 +85,26 @@ public class DailyTrendStatisticsRepositoryAdapter implements DailyTrendStatisti
             LocalDate startDate,
             LocalDate endDate
     ) {
-        List<PullRequest> mergedPullRequests = queryFactory
-                .selectFrom(pullRequest)
+        DateTemplate<Date> mergedDate = Expressions.dateTemplate(
+                Date.class,
+                "cast({0} as date)",
+                pullRequest.timing.githubMergedAt
+        );
+
+        List<Tuple> rows = queryFactory
+                .select(mergedDate, pullRequest.count())
+                .from(pullRequest)
                 .where(
                         pullRequest.projectId.eq(projectId),
                         pullRequest.state.eq(PullRequestState.MERGED),
+                        pullRequest.timing.githubMergedAt.isNotNull(),
                         mergedAtDateRangeCondition(startDate, endDate)
                 )
+                .groupBy(mergedDate)
                 .fetch();
 
-        Map<LocalDate, Long> countsByDate = mergedPullRequests.stream()
-                .filter(pr -> pr.getTiming().getGithubMergedAt() != null)
-                .collect(Collectors.groupingBy(
-                        pr -> pr.getTiming().getGithubMergedAt().toLocalDate(),
-                        Collectors.counting()
-                ));
-
-        return countsByDate.entrySet().stream()
-                .map(entry -> new DailyPrCountDto(entry.getKey(), entry.getValue()))
+        return rows.stream()
+                .map(row -> new DailyPrCountDto(resolveLocalDate(row.get(mergedDate)), row.get(pullRequest.count())))
                 .sorted(Comparator.comparing((DailyPrCountDto item) -> item.date()))
                 .toList();
     }
