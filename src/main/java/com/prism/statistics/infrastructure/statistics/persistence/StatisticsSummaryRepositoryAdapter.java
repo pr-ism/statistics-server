@@ -20,6 +20,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -234,7 +235,6 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
         Tuple sessionAggregate = queryFactory
                 .select(
                         reviewSession.reviewer.userId.countDistinct(),
-                        reviewSession.pullRequestId.countDistinct(),
                         reviewSession.count()
                 )
                 .from(reviewSession)
@@ -243,8 +243,21 @@ public class StatisticsSummaryRepositoryAdapter implements StatisticsSummaryRepo
                 .fetchOne();
 
         long uniqueReviewerCount = nullableLong(sessionAggregate, 0);
-        long uniquePullRequestCount = nullableLong(sessionAggregate, 1);
-        long totalReviewerAssignments = nullableLong(sessionAggregate, 2);
+        long totalReviewerAssignments = nullableLong(sessionAggregate, 1);
+
+        Long uniquePullRequestCountResult = queryFactory
+                .select(pullRequest.count())
+                .from(pullRequest)
+                .where(
+                        pullRequestScopeCondition(projectId, startDate, endDate),
+                        JPAExpressions
+                                .selectOne()
+                                .from(reviewSession)
+                                .where(reviewSession.pullRequestId.eq(pullRequest.id))
+                                .exists()
+                )
+                .fetchOne();
+        long uniquePullRequestCount = uniquePullRequestCountResult != null ? uniquePullRequestCountResult : 0L;
 
         List<Long> reviewerAssignmentCounts = queryFactory
                 .select(reviewSession.count())
