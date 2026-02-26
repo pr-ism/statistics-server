@@ -4,6 +4,7 @@ import static com.prism.statistics.domain.analysis.metadata.pullrequest.history.
 
 import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullRequestFileHistory;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestFileHistoryRepository;
+import com.prism.statistics.global.config.properties.BatchInsertProperties;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,6 +25,7 @@ public class PullRequestFileHistoryRepositoryAdapter implements PullRequestFileH
     private final JPAQueryFactory queryFactory;
     private final JdbcTemplate jdbcTemplate;
     private final Clock clock;
+    private final BatchInsertProperties batchInsertProperties;
 
     @Override
     @Transactional
@@ -74,7 +76,7 @@ public class PullRequestFileHistoryRepositoryAdapter implements PullRequestFileH
 
         Timestamp now = Timestamp.valueOf(LocalDateTime.now(clock));
 
-        jdbcTemplate.batchUpdate(sql, pullRequestFileHistories, pullRequestFileHistories.size(), (ps, history) -> {
+        jdbcTemplate.batchUpdate(sql, pullRequestFileHistories, batchInsertProperties.chunkSize(), (ps, history) -> {
             ps.setLong(1, history.getGithubPullRequestId());
             ps.setObject(2, history.getPullRequestId(), Types.BIGINT);
             ps.setString(3, history.getHeadCommitSha());

@@ -37,3 +37,7 @@ app:
         - 파랑
         - 남색
         - 보라
+  analysis:
+    metadata:
+      batch-insert:
+        chunk-size: 100

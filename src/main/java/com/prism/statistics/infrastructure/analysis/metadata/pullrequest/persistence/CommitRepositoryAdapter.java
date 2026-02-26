@@ -4,6 +4,7 @@ import static com.prism.statistics.domain.analysis.metadata.pullrequest.QCommit.
 
 import com.prism.statistics.domain.analysis.metadata.pullrequest.Commit;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.CommitRepository;
+import com.prism.statistics.global.config.properties.BatchInsertProperties;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,6 +27,7 @@ public class CommitRepositoryAdapter implements CommitRepository {
     private final JPAQueryFactory queryFactory;
     private final JdbcTemplate jdbcTemplate;
     private final Clock clock;
+    private final BatchInsertProperties batchInsertProperties;
 
     @Override
     @Transactional
@@ -95,7 +97,7 @@ public class CommitRepositoryAdapter implements CommitRepository {
 
         Timestamp now = Timestamp.valueOf(LocalDateTime.now(clock));
 
-        jdbcTemplate.batchUpdate(sql, commits, commits.size(), (ps, commit) -> {
+        jdbcTemplate.batchUpdate(sql, commits, batchInsertProperties.chunkSize(), (ps, commit) -> {
             ps.setLong(1, commit.getGithubPullRequestId());
             ps.setObject(2, commit.getPullRequestId(), Types.BIGINT);
             ps.setString(3, commit.getCommitSha());
