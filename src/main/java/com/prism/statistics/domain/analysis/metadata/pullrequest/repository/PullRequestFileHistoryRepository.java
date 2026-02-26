@@ -11,4 +11,6 @@ public interface PullRequestFileHistoryRepository {
     List<PullRequestFileHistory> saveAll(List<PullRequestFileHistory> pullRequestFileHistories);
 
     long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId);
+
+    void saveAllInBatch(List<PullRequestFileHistory> pullRequestFileHistories);
 }

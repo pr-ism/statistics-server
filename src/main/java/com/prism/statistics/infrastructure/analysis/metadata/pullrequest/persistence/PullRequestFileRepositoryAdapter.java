@@ -4,11 +4,19 @@ import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullReq
 
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequestFile;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestFileRepository;
+import com.prism.statistics.global.config.properties.BatchInsertProperties;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -17,6 +25,9 @@ public class PullRequestFileRepositoryAdapter implements PullRequestFileReposito
 
     private final JpaPullRequestFileRepository jpaPullRequestFileRepository;
     private final JPAQueryFactory queryFactory;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final Clock clock;
+    private final BatchInsertProperties batchInsertProperties;
 
     @Override
     @Transactional
@@ -69,5 +80,60 @@ public class PullRequestFileRepositoryAdapter implements PullRequestFileReposito
                 .from(pullRequestFile)
                 .where(pullRequestFile.githubPullRequestId.eq(githubPullRequestId))
                 .fetchFirst() != null;
+    }
+
+    @Override
+    @Transactional
+    public void saveAllInBatch(List<PullRequestFile> pullRequestFiles) {
+        if (pullRequestFiles.isEmpty()) {
+            return;
+        }
+
+        String sql = """
+                INSERT INTO pull_request_files (
+                    github_pull_request_id,
+                    pull_request_id,
+                    file_name,
+                    change_type,
+                    additions,
+                    deletions,
+                    created_at
+                ) VALUES (
+                    :githubPullRequestId,
+                    :pullRequestId,
+                    :fileName,
+                    :changeType,
+                    :additions,
+                    :deletions,
+                    :createdAt
+                )
+                """;
+
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now(clock));
+        List<SqlParameterSource> parameterSources = pullRequestFiles.stream()
+                .map(file -> toParameterSource(file, now))
+                .toList();
+
+        batchUpdateInChunks(sql, parameterSources);
+    }
+
+    private SqlParameterSource toParameterSource(PullRequestFile file, Timestamp now) {
+        return new MapSqlParameterSource()
+                .addValue("githubPullRequestId", file.getGithubPullRequestId())
+                .addValue("pullRequestId", file.getPullRequestId(), Types.BIGINT)
+                .addValue("fileName", file.getFileName())
+                .addValue("changeType", file.getChangeType().name())
+                .addValue("additions", file.getFileChanges().getAdditions())
+                .addValue("deletions", file.getFileChanges().getDeletions())
+                .addValue("createdAt", now);
+    }
+
+    private void batchUpdateInChunks(String sql, List<SqlParameterSource> parameterSources) {
+        int chunkSize = batchInsertProperties.chunkSize();
+        for (int start = 0; start < parameterSources.size(); start += chunkSize) {
+            int end = Math.min(start + chunkSize, parameterSources.size());
+            SqlParameterSource[] chunk = parameterSources.subList(start, end).toArray(SqlParameterSource[]::new);
+            namedParameterJdbcTemplate.batchUpdate(sql, chunk);
+        }
     }
 }

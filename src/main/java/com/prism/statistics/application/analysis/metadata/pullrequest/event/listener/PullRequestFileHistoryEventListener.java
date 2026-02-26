@@ -36,7 +36,7 @@ public class PullRequestFileHistoryEventListener {
                 ))
                 .toList();
 
-        pullRequestFileHistoryRepository.saveAll(pullRequestFileHistories);
+        pullRequestFileHistoryRepository.saveAllInBatch(pullRequestFileHistories);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
@@ -45,7 +45,7 @@ public class PullRequestFileHistoryEventListener {
                 .map(file -> toFileHistory(event.pullRequestId(), event.githubPullRequestId(), event.headCommitSha(), file, event.githubChangedAt()))
                 .toList();
 
-        pullRequestFileHistoryRepository.saveAll(pullRequestFileHistories);
+        pullRequestFileHistoryRepository.saveAllInBatch(pullRequestFileHistories);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
@@ -54,7 +54,7 @@ public class PullRequestFileHistoryEventListener {
                 .map(file -> toEarlyFileHistory(event.githubPullRequestId(), event.headCommitSha(), file, event.githubChangedAt()))
                 .toList();
 
-        pullRequestFileHistoryRepository.saveAll(pullRequestFileHistories);
+        pullRequestFileHistoryRepository.saveAllInBatch(pullRequestFileHistories);
     }
 
     private PullRequestFileHistory toFileHistory(Long pullRequestId, Long githubPullRequestId, String headCommitSha, FileData file, LocalDateTime githubChangedAt) {

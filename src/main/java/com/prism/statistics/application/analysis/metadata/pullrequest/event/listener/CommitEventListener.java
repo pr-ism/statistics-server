@@ -29,7 +29,7 @@ public class CommitEventListener {
                 .map(commitData -> Commit.create(event.pullRequestId(), event.githubPullRequestId(), commitData.sha(), commitData.committedAt()))
                 .toList();
 
-        commitRepository.saveAll(commits);
+        commitRepository.saveAllInBatch(commits);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
@@ -38,7 +38,7 @@ public class CommitEventListener {
                 .map(commitData -> Commit.create(event.pullRequestId(), event.githubPullRequestId(), commitData.sha(), commitData.committedAt()))
                 .toList();
 
-        commitRepository.saveAll(commits);
+        commitRepository.saveAllInBatch(commits);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
@@ -47,6 +47,6 @@ public class CommitEventListener {
                 .map(commitData -> Commit.createEarly(event.githubPullRequestId(), commitData.sha(), commitData.committedAt()))
                 .toList();
 
-        commitRepository.saveAll(commits);
+        commitRepository.saveAllInBatch(commits);
     }
 }

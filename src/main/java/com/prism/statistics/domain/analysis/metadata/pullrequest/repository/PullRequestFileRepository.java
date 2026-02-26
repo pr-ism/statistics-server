@@ -17,4 +17,6 @@ public interface PullRequestFileRepository {
     long backfillPullRequestId(Long githubPullRequestId, Long pullRequestId);
 
     boolean existsByGithubPullRequestId(Long githubPullRequestId);
+
+    void saveAllInBatch(List<PullRequestFile> pullRequestFiles);
 }
