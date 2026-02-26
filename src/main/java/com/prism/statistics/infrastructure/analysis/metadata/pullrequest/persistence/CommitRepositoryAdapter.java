@@ -7,7 +7,9 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.Comm
 import com.prism.statistics.global.config.properties.BatchInsertProperties;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +27,7 @@ public class CommitRepositoryAdapter implements CommitRepository {
 
     private final JpaCommitRepository jpaCommitRepository;
     private final JPAQueryFactory queryFactory;
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final Clock clock;
     private final BatchInsertProperties batchInsertProperties;
 
@@ -92,17 +94,38 @@ public class CommitRepositoryAdapter implements CommitRepository {
                     commit_sha,
                     committed_at,
                     created_at
-                ) VALUES (?, ?, ?, ?, ?)
+                ) VALUES (
+                    :githubPullRequestId,
+                    :pullRequestId,
+                    :commitSha,
+                    :committedAt,
+                    :createdAt
+                )
                 """;
 
         Timestamp now = Timestamp.valueOf(LocalDateTime.now(clock));
+        List<SqlParameterSource> parameterSources = commits.stream()
+                .map(commit -> toParameterSource(commit, now))
+                .toList();
 
-        jdbcTemplate.batchUpdate(sql, commits, batchInsertProperties.chunkSize(), (ps, commit) -> {
-            ps.setLong(1, commit.getGithubPullRequestId());
-            ps.setObject(2, commit.getPullRequestId(), Types.BIGINT);
-            ps.setString(3, commit.getCommitSha());
-            ps.setTimestamp(4, Timestamp.valueOf(commit.getCommittedAt()));
-            ps.setTimestamp(5, now);
-        });
+        batchUpdateInChunks(sql, parameterSources);
+    }
+
+    private SqlParameterSource toParameterSource(Commit commit, Timestamp now) {
+        return new MapSqlParameterSource()
+                .addValue("githubPullRequestId", commit.getGithubPullRequestId())
+                .addValue("pullRequestId", commit.getPullRequestId(), Types.BIGINT)
+                .addValue("commitSha", commit.getCommitSha())
+                .addValue("committedAt", Timestamp.valueOf(commit.getCommittedAt()))
+                .addValue("createdAt", now);
+    }
+
+    private void batchUpdateInChunks(String sql, List<SqlParameterSource> parameterSources) {
+        int chunkSize = batchInsertProperties.chunkSize();
+        for (int start = 0; start < parameterSources.size(); start += chunkSize) {
+            int end = Math.min(start + chunkSize, parameterSources.size());
+            SqlParameterSource[] chunk = parameterSources.subList(start, end).toArray(SqlParameterSource[]::new);
+            namedParameterJdbcTemplate.batchUpdate(sql, chunk);
+        }
     }
 }

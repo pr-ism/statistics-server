@@ -7,7 +7,9 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.Pull
 import com.prism.statistics.global.config.properties.BatchInsertProperties;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +25,7 @@ public class PullRequestFileHistoryRepositoryAdapter implements PullRequestFileH
 
     private final JpaPullRequestFileHistoryRepository jpaPullRequestFileHistoryRepository;
     private final JPAQueryFactory queryFactory;
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final Clock clock;
     private final BatchInsertProperties batchInsertProperties;
 
@@ -71,22 +73,48 @@ public class PullRequestFileHistoryRepositoryAdapter implements PullRequestFileH
                     deletions,
                     github_changed_at,
                     created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (
+                    :githubPullRequestId,
+                    :pullRequestId,
+                    :headCommitSha,
+                    :fileName,
+                    :previousFileName,
+                    :changeType,
+                    :additions,
+                    :deletions,
+                    :githubChangedAt,
+                    :createdAt
+                )
                 """;
 
         Timestamp now = Timestamp.valueOf(LocalDateTime.now(clock));
+        List<SqlParameterSource> parameterSources = pullRequestFileHistories.stream()
+                .map(history -> toParameterSource(history, now))
+                .toList();
 
-        jdbcTemplate.batchUpdate(sql, pullRequestFileHistories, batchInsertProperties.chunkSize(), (ps, history) -> {
-            ps.setLong(1, history.getGithubPullRequestId());
-            ps.setObject(2, history.getPullRequestId(), Types.BIGINT);
-            ps.setString(3, history.getHeadCommitSha());
-            ps.setString(4, history.getFileName());
-            ps.setObject(5, history.getPreviousFileName().getValue(), Types.VARCHAR);
-            ps.setString(6, history.getChangeType().name());
-            ps.setInt(7, history.getFileChanges().getAdditions());
-            ps.setInt(8, history.getFileChanges().getDeletions());
-            ps.setTimestamp(9, Timestamp.valueOf(history.getGithubChangedAt()));
-            ps.setTimestamp(10, now);
-        });
+        batchUpdateInChunks(sql, parameterSources);
+    }
+
+    private SqlParameterSource toParameterSource(PullRequestFileHistory history, Timestamp now) {
+        return new MapSqlParameterSource()
+                .addValue("githubPullRequestId", history.getGithubPullRequestId())
+                .addValue("pullRequestId", history.getPullRequestId(), Types.BIGINT)
+                .addValue("headCommitSha", history.getHeadCommitSha())
+                .addValue("fileName", history.getFileName())
+                .addValue("previousFileName", history.getPreviousFileName().getValue(), Types.VARCHAR)
+                .addValue("changeType", history.getChangeType().name())
+                .addValue("additions", history.getFileChanges().getAdditions())
+                .addValue("deletions", history.getFileChanges().getDeletions())
+                .addValue("githubChangedAt", Timestamp.valueOf(history.getGithubChangedAt()))
+                .addValue("createdAt", now);
+    }
+
+    private void batchUpdateInChunks(String sql, List<SqlParameterSource> parameterSources) {
+        int chunkSize = batchInsertProperties.chunkSize();
+        for (int start = 0; start < parameterSources.size(); start += chunkSize) {
+            int end = Math.min(start + chunkSize, parameterSources.size());
+            SqlParameterSource[] chunk = parameterSources.subList(start, end).toArray(SqlParameterSource[]::new);
+            namedParameterJdbcTemplate.batchUpdate(sql, chunk);
+        }
     }
 }

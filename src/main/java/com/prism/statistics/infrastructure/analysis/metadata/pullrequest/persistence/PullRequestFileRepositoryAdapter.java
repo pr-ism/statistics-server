@@ -7,7 +7,9 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.Pull
 import com.prism.statistics.global.config.properties.BatchInsertProperties;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +25,7 @@ public class PullRequestFileRepositoryAdapter implements PullRequestFileReposito
 
     private final JpaPullRequestFileRepository jpaPullRequestFileRepository;
     private final JPAQueryFactory queryFactory;
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final Clock clock;
     private final BatchInsertProperties batchInsertProperties;
 
@@ -96,19 +98,42 @@ public class PullRequestFileRepositoryAdapter implements PullRequestFileReposito
                     additions,
                     deletions,
                     created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (
+                    :githubPullRequestId,
+                    :pullRequestId,
+                    :fileName,
+                    :changeType,
+                    :additions,
+                    :deletions,
+                    :createdAt
+                )
                 """;
 
         Timestamp now = Timestamp.valueOf(LocalDateTime.now(clock));
+        List<SqlParameterSource> parameterSources = pullRequestFiles.stream()
+                .map(file -> toParameterSource(file, now))
+                .toList();
 
-        jdbcTemplate.batchUpdate(sql, pullRequestFiles, batchInsertProperties.chunkSize(), (ps, file) -> {
-            ps.setLong(1, file.getGithubPullRequestId());
-            ps.setObject(2, file.getPullRequestId(), Types.BIGINT);
-            ps.setString(3, file.getFileName());
-            ps.setString(4, file.getChangeType().name());
-            ps.setInt(5, file.getFileChanges().getAdditions());
-            ps.setInt(6, file.getFileChanges().getDeletions());
-            ps.setTimestamp(7, now);
-        });
+        batchUpdateInChunks(sql, parameterSources);
+    }
+
+    private SqlParameterSource toParameterSource(PullRequestFile file, Timestamp now) {
+        return new MapSqlParameterSource()
+                .addValue("githubPullRequestId", file.getGithubPullRequestId())
+                .addValue("pullRequestId", file.getPullRequestId(), Types.BIGINT)
+                .addValue("fileName", file.getFileName())
+                .addValue("changeType", file.getChangeType().name())
+                .addValue("additions", file.getFileChanges().getAdditions())
+                .addValue("deletions", file.getFileChanges().getDeletions())
+                .addValue("createdAt", now);
+    }
+
+    private void batchUpdateInChunks(String sql, List<SqlParameterSource> parameterSources) {
+        int chunkSize = batchInsertProperties.chunkSize();
+        for (int start = 0; start < parameterSources.size(); start += chunkSize) {
+            int end = Math.min(start + chunkSize, parameterSources.size());
+            SqlParameterSource[] chunk = parameterSources.subList(start, end).toArray(SqlParameterSource[]::new);
+            namedParameterJdbcTemplate.batchUpdate(sql, chunk);
+        }
     }
 }
