@@ -5,7 +5,6 @@ import com.prism.statistics.domain.statistics.repository.PullRequestSizeStatisti
 import com.prism.statistics.domain.statistics.repository.dto.PullRequestSizeStatisticsDto;
 import com.prism.statistics.domain.statistics.repository.dto.PullRequestSizeStatisticsDto.PullRequestSizeCorrelationDataDto;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -98,12 +97,12 @@ public class PullRequestSizeStatisticsRepositoryAdapter implements PullRequestSi
             LocalDate endDate
     ) {
         return queryFactory
-                .select(Projections.constructor(
-                        PullRequestSizeCorrelationDataDto.class,
+                .select(
+                        pullRequestSize.pullRequestId,
                         pullRequestSize.sizeScore,
                         pullRequestBottleneck.reviewWait.minutes,
                         reviewActivity.reviewRoundTrips
-                ))
+                )
                 .from(pullRequestSize)
                 .join(pullRequest).on(pullRequest.id.eq(pullRequestSize.pullRequestId))
                 .leftJoin(pullRequestBottleneck).on(pullRequestBottleneck.pullRequestId.eq(pullRequestSize.pullRequestId))
@@ -112,7 +111,15 @@ public class PullRequestSizeStatisticsRepositoryAdapter implements PullRequestSi
                         pullRequest.projectId.eq(projectId),
                         dateRangeCondition(startDate, endDate)
                 )
-                .fetch();
+                .fetch()
+                .stream()
+                .map(tuple -> new PullRequestSizeCorrelationDataDto(
+                        tuple.get(pullRequestSize.pullRequestId),
+                        tuple.get(pullRequestSize.sizeScore),
+                        tuple.get(pullRequestBottleneck.reviewWait.minutes),
+                        tuple.get(reviewActivity.reviewRoundTrips)
+                ))
+                .toList();
     }
 
     private Map<SizeGrade, Long> createSizeGradeDistribution(
