@@ -1,7 +1,5 @@
 package com.prism.statistics.infrastructure.statistics.persistence;
 
-import com.prism.statistics.domain.analysis.insight.bottleneck.PullRequestBottleneck;
-import com.prism.statistics.domain.analysis.insight.size.PullRequestSize;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.statistics.repository.WeeklyTrendStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.WeeklyTrendStatisticsDto;
@@ -9,21 +7,24 @@ import com.prism.statistics.domain.statistics.repository.dto.WeeklyTrendStatisti
 import com.prism.statistics.domain.statistics.repository.dto.WeeklyTrendStatisticsDto.WeeklyPrSizeDto;
 import com.prism.statistics.domain.statistics.repository.dto.WeeklyTrendStatisticsDto.WeeklyReviewWaitTimeDto;
 import com.prism.statistics.domain.statistics.repository.dto.WeeklyTrendStatisticsDto.WeeklyThroughputDto;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.DateExpression;
+import com.querydsl.core.types.dsl.DateTimeExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.Ops;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
-import java.time.temporal.TemporalAdjusters;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.prism.statistics.domain.analysis.insight.bottleneck.QPullRequestBottleneck.pullRequestBottleneck;
 import static com.prism.statistics.domain.analysis.insight.size.QPullRequestSize.pullRequestSize;
@@ -34,7 +35,6 @@ import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullReq
 public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatisticsRepository {
 
     private static final long END_DATE_INCLUSIVE_DAYS = 1L;
-    private static final double ZERO_DOUBLE = 0.0;
 
     private final JPAQueryFactory queryFactory;
 
@@ -45,23 +45,41 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
             LocalDate startDate,
             LocalDate endDate
     ) {
-        List<CreatedPullRequest> createdPullRequests = queryFactory
-                .select(pullRequest.id, pullRequest.timing.githubCreatedAt)
-                .from(pullRequest)
-                .where(
-                        pullRequest.projectId.eq(projectId),
-                        dateRangeCondition(startDate, endDate)
-                )
-                .fetch()
-                .stream()
-                .map(tuple -> new CreatedPullRequest(
-                        tuple.get(pullRequest.id),
-                        tuple.get(pullRequest.timing.githubCreatedAt)
-                ))
-                .toList();
+        List<WeeklyThroughputDto> weeklyThroughputs = fetchWeeklyThroughput(projectId, startDate, endDate);
+        List<MonthlyThroughputDto> monthlyThroughputs = fetchMonthlyThroughput(projectId, startDate, endDate);
+        CreatedSideMetrics createdSideMetrics = fetchCreatedSideMetrics(projectId, startDate, endDate);
 
-        List<ClosedPullRequest> closedPullRequests = queryFactory
-                .select(pullRequest.state, pullRequest.timing.githubClosedAt)
+        if (weeklyThroughputs.isEmpty() && monthlyThroughputs.isEmpty()
+                && createdSideMetrics.weeklyReviewWaitTimes().isEmpty()
+                && createdSideMetrics.weeklyPrSizes().isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new WeeklyTrendStatisticsDto(
+                weeklyThroughputs,
+                monthlyThroughputs,
+                createdSideMetrics.weeklyReviewWaitTimes(),
+                createdSideMetrics.weeklyPrSizes()
+        ));
+    }
+
+    private List<WeeklyThroughputDto> fetchWeeklyThroughput(
+            Long projectId, LocalDate startDate, LocalDate endDate
+    ) {
+        DateExpression<LocalDate> weekStartDate = weekStartDateOf(pullRequest.timing.githubClosedAt);
+
+        NumberExpression<Long> mergedCount = new CaseBuilder()
+                .when(pullRequest.state.eq(PullRequestState.MERGED)).then(1L)
+                .otherwise(0L)
+                .sumLong();
+
+        NumberExpression<Long> closedCount = new CaseBuilder()
+                .when(pullRequest.state.eq(PullRequestState.CLOSED)).then(1L)
+                .otherwise(0L)
+                .sumLong();
+
+        return queryFactory
+                .select(weekStartDate, mergedCount, closedCount)
                 .from(pullRequest)
                 .where(
                         pullRequest.projectId.eq(projectId),
@@ -69,190 +87,119 @@ public class WeeklyTrendStatisticsRepositoryAdapter implements WeeklyTrendStatis
                         pullRequest.timing.githubClosedAt.isNotNull(),
                         closedAtDateRangeCondition(startDate, endDate)
                 )
+                .groupBy(weekStartDate)
+                .orderBy(weekStartDate.asc())
                 .fetch()
                 .stream()
-                .map(tuple -> new ClosedPullRequest(
-                        tuple.get(pullRequest.state),
-                        tuple.get(pullRequest.timing.githubClosedAt)
+                .map(tuple -> new WeeklyThroughputDto(
+                        tuple.get(weekStartDate),
+                        tuple.get(mergedCount),
+                        tuple.get(closedCount)
+                ))
+                .toList();
+    }
+
+    private List<MonthlyThroughputDto> fetchMonthlyThroughput(
+            Long projectId, LocalDate startDate, LocalDate endDate
+    ) {
+        NumberExpression<Integer> yearExpr = pullRequest.timing.githubClosedAt.year();
+        NumberExpression<Integer> monthExpr = pullRequest.timing.githubClosedAt.month();
+
+        NumberExpression<Long> mergedCount = new CaseBuilder()
+                .when(pullRequest.state.eq(PullRequestState.MERGED)).then(1L)
+                .otherwise(0L)
+                .sumLong();
+
+        NumberExpression<Long> closedCount = new CaseBuilder()
+                .when(pullRequest.state.eq(PullRequestState.CLOSED)).then(1L)
+                .otherwise(0L)
+                .sumLong();
+
+        return queryFactory
+                .select(yearExpr, monthExpr, mergedCount, closedCount)
+                .from(pullRequest)
+                .where(
+                        pullRequest.projectId.eq(projectId),
+                        pullRequest.state.in(PullRequestState.MERGED, PullRequestState.CLOSED),
+                        pullRequest.timing.githubClosedAt.isNotNull(),
+                        closedAtDateRangeCondition(startDate, endDate)
+                )
+                .groupBy(yearExpr, monthExpr)
+                .orderBy(yearExpr.asc(), monthExpr.asc())
+                .fetch()
+                .stream()
+                .map(tuple -> new MonthlyThroughputDto(
+                        tuple.get(yearExpr),
+                        tuple.get(monthExpr),
+                        tuple.get(mergedCount),
+                        tuple.get(closedCount)
+                ))
+                .toList();
+    }
+
+    private CreatedSideMetrics fetchCreatedSideMetrics(
+            Long projectId, LocalDate startDate, LocalDate endDate
+    ) {
+        DateExpression<LocalDate> weekStartDate = weekStartDateOf(pullRequest.timing.githubCreatedAt);
+        NumberExpression<Double> avgReviewWait = pullRequestBottleneck.reviewWait.minutes.avg();
+        NumberExpression<Double> avgSizeScore = pullRequestSize.sizeScore.avg();
+
+        List<Tuple> tuples = queryFactory
+                .select(weekStartDate, avgReviewWait, avgSizeScore)
+                .from(pullRequest)
+                .leftJoin(pullRequestBottleneck)
+                .on(pullRequestBottleneck.pullRequestId.eq(pullRequest.id)
+                        .and(pullRequestBottleneck.firstReviewAt.isNotNull())
+                        .and(pullRequestBottleneck.reviewWait.minutes.isNotNull()))
+                .leftJoin(pullRequestSize)
+                .on(pullRequestSize.pullRequestId.eq(pullRequest.id))
+                .where(
+                        pullRequest.projectId.eq(projectId),
+                        dateRangeCondition(startDate, endDate)
+                )
+                .groupBy(weekStartDate)
+                .orderBy(weekStartDate.asc())
+                .fetch();
+
+        List<WeeklyReviewWaitTimeDto> reviewWaitTimes = tuples.stream()
+                .filter(tuple -> tuple.get(avgReviewWait) != null)
+                .map(tuple -> new WeeklyReviewWaitTimeDto(
+                        tuple.get(weekStartDate),
+                        tuple.get(avgReviewWait)
                 ))
                 .toList();
 
-        if (createdPullRequests.isEmpty() && closedPullRequests.isEmpty()) {
-            return Optional.empty();
-        }
-
-        List<Long> pullRequestIds = createdPullRequests.stream()
-                .map(pr -> pr.pullRequestId())
+        List<WeeklyPrSizeDto> prSizes = tuples.stream()
+                .filter(tuple -> tuple.get(avgSizeScore) != null)
+                .map(tuple -> new WeeklyPrSizeDto(
+                        tuple.get(weekStartDate),
+                        tuple.get(avgSizeScore)
+                ))
                 .toList();
 
-        Map<Long, PullRequestBottleneck> bottleneckMap = fetchBottleneckMap(pullRequestIds);
-        Map<Long, PullRequestSize> sizeMap = fetchSizeMap(pullRequestIds);
-
-        List<WeeklyThroughputDto> weeklyThroughputs = aggregateWeeklyThroughput(closedPullRequests);
-        List<MonthlyThroughputDto> monthlyThroughputs = aggregateMonthlyThroughput(closedPullRequests);
-        List<WeeklyReviewWaitTimeDto> weeklyReviewWaitTimes = aggregateWeeklyReviewWaitTime(createdPullRequests, bottleneckMap);
-        List<WeeklyPrSizeDto> weeklyPrSizes = aggregateWeeklyPrSize(createdPullRequests, sizeMap);
-
-        return Optional.of(new WeeklyTrendStatisticsDto(
-                weeklyThroughputs,
-                monthlyThroughputs,
-                weeklyReviewWaitTimes,
-                weeklyPrSizes
-        ));
+        return new CreatedSideMetrics(reviewWaitTimes, prSizes);
     }
 
-    private List<WeeklyThroughputDto> aggregateWeeklyThroughput(List<ClosedPullRequest> pullRequests) {
-        Map<LocalDate, List<ClosedPullRequest>> prsByWeek = pullRequests.stream()
-                .collect(Collectors.groupingBy(
-                        pr -> getWeekStartDate(pr.closedAt().toLocalDate())
-                ));
-
-        return prsByWeek.entrySet().stream()
-                .map(entry -> {
-                    LocalDate weekStart = entry.getKey();
-                    List<ClosedPullRequest> weekPrs = entry.getValue();
-
-                    long mergedCount = weekPrs.stream()
-                            .filter(pr -> pr.state() == PullRequestState.MERGED)
-                            .count();
-
-                    long closedCount = weekPrs.stream()
-                            .filter(pr -> pr.state() == PullRequestState.CLOSED)
-                            .count();
-
-                    return new WeeklyThroughputDto(weekStart, mergedCount, closedCount);
-                })
-                .sorted((a, b) -> a.weekStartDate().compareTo(b.weekStartDate()))
-                .toList();
-    }
-
-    private List<MonthlyThroughputDto> aggregateMonthlyThroughput(List<ClosedPullRequest> pullRequests) {
-        Map<YearMonth, List<ClosedPullRequest>> prsByMonth = pullRequests.stream()
-                .collect(Collectors.groupingBy(
-                        pr -> YearMonth.from(pr.closedAt().toLocalDate())
-                ));
-
-        return prsByMonth.entrySet().stream()
-                .map(entry -> {
-                    YearMonth yearMonth = entry.getKey();
-                    List<ClosedPullRequest> monthPrs = entry.getValue();
-
-                    long mergedCount = monthPrs.stream()
-                            .filter(pr -> pr.state() == PullRequestState.MERGED)
-                            .count();
-
-                    long closedCount = monthPrs.stream()
-                            .filter(pr -> pr.state() == PullRequestState.CLOSED)
-                            .count();
-
-                    return new MonthlyThroughputDto(yearMonth.getYear(), yearMonth.getMonthValue(), mergedCount, closedCount);
-                })
-                .sorted((a, b) -> compareMonthlyThroughput(a, b))
-                .toList();
-    }
-
-    private int compareMonthlyThroughput(MonthlyThroughputDto first, MonthlyThroughputDto second) {
-        int yearCompare = Integer.compare(first.year(), second.year());
-        if (yearCompare != 0) {
-            return yearCompare;
-        }
-        return Integer.compare(first.month(), second.month());
-    }
-
-    private record CreatedPullRequest(Long pullRequestId, LocalDateTime githubCreatedAt) {
-    }
-
-    private record ClosedPullRequest(PullRequestState state, LocalDateTime closedAt) {
-    }
-
-    private List<WeeklyReviewWaitTimeDto> aggregateWeeklyReviewWaitTime(
-            List<CreatedPullRequest> pullRequests,
-            Map<Long, PullRequestBottleneck> bottleneckMap
+    private record CreatedSideMetrics(
+            List<WeeklyReviewWaitTimeDto> weeklyReviewWaitTimes,
+            List<WeeklyPrSizeDto> weeklyPrSizes
     ) {
-        Map<LocalDate, List<Long>> reviewWaitTimesByWeek = pullRequests.stream()
-                .filter(pr -> bottleneckMap.containsKey(pr.pullRequestId()))
-                .filter(pr -> bottleneckMap.get(pr.pullRequestId()).hasReview())
-                .filter(pr -> bottleneckMap.get(pr.pullRequestId()).getReviewWait() != null)
-                .collect(Collectors.groupingBy(
-                        pr -> getWeekStartDate(pr.githubCreatedAt().toLocalDate()),
-                        Collectors.mapping(
-                                pr -> bottleneckMap.get(pr.pullRequestId()).getReviewWait().getMinutes(),
-                                Collectors.toList()
-                        )
-                ));
-
-        return reviewWaitTimesByWeek.entrySet().stream()
-                .map(entry -> {
-                    LocalDate weekStart = entry.getKey();
-                    List<Long> waitTimes = entry.getValue();
-
-                    double avgWaitTime = waitTimes.stream()
-                            .mapToLong(value -> value)
-                            .average()
-                            .orElse(ZERO_DOUBLE);
-
-                    return new WeeklyReviewWaitTimeDto(weekStart, avgWaitTime);
-                })
-                .sorted((a, b) -> a.weekStartDate().compareTo(b.weekStartDate()))
-                .toList();
     }
 
-    private List<WeeklyPrSizeDto> aggregateWeeklyPrSize(
-            List<CreatedPullRequest> pullRequests,
-            Map<Long, PullRequestSize> sizeMap
-    ) {
-        Map<LocalDate, List<Double>> sizeScoresByWeek = pullRequests.stream()
-                .filter(pr -> sizeMap.containsKey(pr.pullRequestId()))
-                .collect(Collectors.groupingBy(
-                        pr -> getWeekStartDate(pr.githubCreatedAt().toLocalDate()),
-                        Collectors.mapping(
-                                pr -> sizeMap.get(pr.pullRequestId()).getSizeScore().doubleValue(),
-                                Collectors.toList()
-                        )
-                ));
+    private DateExpression<LocalDate> weekStartDateOf(DateTimePath<LocalDateTime> dateTimePath) {
+        NumberExpression<Integer> mondayOffset = dateTimePath.dayOfWeek().add(5).mod(7);
+        DateTimeExpression<LocalDateTime> mondayDateTime = Expressions.dateTimeOperation(
+                LocalDateTime.class,
+                Ops.DateTimeOps.ADD_DAYS,
+                dateTimePath,
+                mondayOffset.negate()
+        );
 
-        return sizeScoresByWeek.entrySet().stream()
-                .map(entry -> {
-                    LocalDate weekStart = entry.getKey();
-                    List<Double> sizeScores = entry.getValue();
-
-                    double avgSizeScore = sizeScores.stream()
-                            .mapToDouble(value -> value)
-                            .average()
-                            .orElse(ZERO_DOUBLE);
-
-                    return new WeeklyPrSizeDto(weekStart, avgSizeScore);
-                })
-                .sorted((a, b) -> a.weekStartDate().compareTo(b.weekStartDate()))
-                .toList();
-    }
-
-    private LocalDate getWeekStartDate(LocalDate date) {
-        return date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-    }
-
-    private Map<Long, PullRequestBottleneck> fetchBottleneckMap(List<Long> pullRequestIds) {
-        if (pullRequestIds.isEmpty()) {
-            return Map.of();
-        }
-        return queryFactory
-                .selectFrom(pullRequestBottleneck)
-                .where(pullRequestBottleneck.pullRequestId.in(pullRequestIds))
-                .fetch()
-                .stream()
-                .collect(Collectors.toMap(bottleneck -> bottleneck.getPullRequestId(), bottleneck -> bottleneck));
-    }
-
-    private Map<Long, PullRequestSize> fetchSizeMap(List<Long> pullRequestIds) {
-        if (pullRequestIds.isEmpty()) {
-            return Map.of();
-        }
-        return queryFactory
-                .selectFrom(pullRequestSize)
-                .where(pullRequestSize.pullRequestId.in(pullRequestIds))
-                .fetch()
-                .stream()
-                .collect(Collectors.toMap(size -> size.getPullRequestId(), size -> size));
+        return Expressions.dateOperation(
+                LocalDate.class,
+                Ops.DateTimeOps.DATE,
+                mondayDateTime
+        );
     }
 
     private BooleanExpression dateRangeCondition(LocalDate startDate, LocalDate endDate) {
