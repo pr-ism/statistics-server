@@ -1,13 +1,14 @@
 package com.prism.statistics.infrastructure.statistics.persistence;
 
-import com.prism.statistics.domain.analysis.insight.activity.ReviewActivity;
-import com.prism.statistics.domain.analysis.insight.bottleneck.PullRequestBottleneck;
-import com.prism.statistics.domain.analysis.insight.size.PullRequestSize;
 import com.prism.statistics.domain.analysis.insight.size.enums.SizeGrade;
 import com.prism.statistics.domain.statistics.repository.PullRequestSizeStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.PullRequestSizeStatisticsDto;
 import com.prism.statistics.domain.statistics.repository.dto.PullRequestSizeStatisticsDto.PullRequestSizeCorrelationDataDto;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -19,8 +20,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 import static com.prism.statistics.domain.analysis.insight.activity.QReviewActivity.reviewActivity;
 import static com.prism.statistics.domain.analysis.insight.bottleneck.QPullRequestBottleneck.pullRequestBottleneck;
@@ -33,6 +32,7 @@ public class PullRequestSizeStatisticsRepositoryAdapter implements PullRequestSi
 
     private static final long ZERO_COUNT = 0L;
     private static final long DATE_RANGE_INCLUSIVE_DAYS = 1L;
+    private static final List<SizeGrade> LARGE_OR_ABOVE_GRADES = List.of(SizeGrade.L, SizeGrade.XL);
 
     private final JPAQueryFactory queryFactory;
 
@@ -43,87 +43,93 @@ public class PullRequestSizeStatisticsRepositoryAdapter implements PullRequestSi
             LocalDate startDate,
             LocalDate endDate
     ) {
-        List<PullRequestSize> sizes = queryFactory
-                .selectFrom(pullRequestSize)
+        NumberExpression<Long> totalCountExpression = pullRequestSize.id.count();
+        NumberExpression<Long> xsCountExpression = countSizeGrade(SizeGrade.XS);
+        NumberExpression<Long> sCountExpression = countSizeGrade(SizeGrade.S);
+        NumberExpression<Long> mCountExpression = countSizeGrade(SizeGrade.M);
+        NumberExpression<Long> lCountExpression = countSizeGrade(SizeGrade.L);
+        NumberExpression<Long> xlCountExpression = countSizeGrade(SizeGrade.XL);
+        NumberExpression<Long> largePullRequestCountExpression = countSizeGrades(LARGE_OR_ABOVE_GRADES);
+        NumberExpression<BigDecimal> totalSizeScoreExpression = pullRequestSize.sizeScore.sumBigDecimal();
+
+        Tuple aggregate = queryFactory
+                .select(
+                        totalCountExpression,
+                        totalSizeScoreExpression,
+                        xsCountExpression,
+                        sCountExpression,
+                        mCountExpression,
+                        lCountExpression,
+                        xlCountExpression,
+                        largePullRequestCountExpression
+                )
+                .from(pullRequestSize)
                 .join(pullRequest).on(pullRequest.id.eq(pullRequestSize.pullRequestId))
                 .where(
                         pullRequest.projectId.eq(projectId),
                         dateRangeCondition(startDate, endDate)
                 )
-                .fetch();
+                .fetchOne();
 
-        if (sizes.isEmpty()) {
+        long totalCount = aggregate == null ? ZERO_COUNT : getLongValue(aggregate.get(totalCountExpression));
+        if (totalCount == ZERO_COUNT) {
             return Optional.empty();
         }
 
-        List<Long> pullRequestIds = sizes.stream()
-                .map(size -> size.getPullRequestId())
-                .toList();
-
-        List<PullRequestBottleneck> bottlenecks = queryFactory
-                .selectFrom(pullRequestBottleneck)
-                .where(pullRequestBottleneck.pullRequestId.in(pullRequestIds))
-                .fetch();
-
-        List<ReviewActivity> activities = queryFactory
-                .selectFrom(reviewActivity)
-                .where(reviewActivity.pullRequestId.in(pullRequestIds))
-                .fetch();
-
-        Map<Long, PullRequestBottleneck> bottleneckMap = bottlenecks.stream()
-                .collect(Collectors.toMap(bottleneck -> bottleneck.getPullRequestId(), b -> b));
-
-        Map<Long, ReviewActivity> activityMap = activities.stream()
-                .collect(Collectors.toMap(activity -> activity.getPullRequestId(), a -> a));
-
-        return Optional.of(aggregateStatistics(sizes, bottleneckMap, activityMap));
+        return Optional.of(new PullRequestSizeStatisticsDto(
+                totalCount,
+                aggregate.get(totalSizeScoreExpression),
+                createSizeGradeDistribution(
+                        aggregate,
+                        xsCountExpression,
+                        sCountExpression,
+                        mCountExpression,
+                        lCountExpression,
+                        xlCountExpression
+                ),
+                getLongValue(aggregate.get(largePullRequestCountExpression)),
+                fetchCorrelationData(projectId, startDate, endDate)
+        ));
     }
 
-    private PullRequestSizeStatisticsDto aggregateStatistics(
-            List<PullRequestSize> sizes,
-            Map<Long, PullRequestBottleneck> bottleneckMap,
-            Map<Long, ReviewActivity> activityMap
+    private List<PullRequestSizeCorrelationDataDto> fetchCorrelationData(
+            Long projectId,
+            LocalDate startDate,
+            LocalDate endDate
     ) {
-        long totalCount = sizes.size();
+        return queryFactory
+                .select(Projections.constructor(
+                        PullRequestSizeCorrelationDataDto.class,
+                        pullRequestSize.sizeScore,
+                        pullRequestBottleneck.reviewWait.minutes,
+                        reviewActivity.reviewRoundTrips
+                ))
+                .from(pullRequestSize)
+                .join(pullRequest).on(pullRequest.id.eq(pullRequestSize.pullRequestId))
+                .leftJoin(pullRequestBottleneck).on(pullRequestBottleneck.pullRequestId.eq(pullRequestSize.pullRequestId))
+                .leftJoin(reviewActivity).on(reviewActivity.pullRequestId.eq(pullRequestSize.pullRequestId))
+                .where(
+                        pullRequest.projectId.eq(projectId),
+                        dateRangeCondition(startDate, endDate)
+                )
+                .fetch();
+    }
 
-        BigDecimal totalSizeScore = sizes.stream()
-                .map(size -> size.getSizeScore())
-                .reduce(BigDecimal.ZERO, (left, right) -> left.add(right));
-
-        Map<SizeGrade, Long> sizeGradeDistribution = new EnumMap<>(SizeGrade.class);
-        initializeSizeGradeDistribution(sizeGradeDistribution);
-        sizes.stream()
-                .collect(Collectors.groupingBy(size -> size.getSizeGrade(), Collectors.counting()))
-                .forEach((grade, count) -> sizeGradeDistribution.put(grade, count));
-
-        long largePullRequestCount = sizes.stream()
-                .filter(size -> size.isLargeOrAbove())
-                .count();
-
-        List<PullRequestSizeCorrelationDataDto> correlationData = new ArrayList<>();
-        for (PullRequestSize size : sizes) {
-            Long prId = size.getPullRequestId();
-            PullRequestBottleneck bottleneck = bottleneckMap.get(prId);
-            ReviewActivity activity = activityMap.get(prId);
-
-            Long reviewWaitMinutes = extractReviewWaitMinutes(bottleneck);
-            Integer reviewRoundTrips = extractReviewRoundTrips(activity);
-
-            correlationData.add(new PullRequestSizeCorrelationDataDto(
-                    prId,
-                    size.getSizeScore(),
-                    reviewWaitMinutes,
-                    reviewRoundTrips
-            ));
-        }
-
-        return new PullRequestSizeStatisticsDto(
-                totalCount,
-                totalSizeScore,
-                sizeGradeDistribution,
-                largePullRequestCount,
-                correlationData
-        );
+    private Map<SizeGrade, Long> createSizeGradeDistribution(
+            Tuple aggregate,
+            NumberExpression<Long> xsCountExpression,
+            NumberExpression<Long> sCountExpression,
+            NumberExpression<Long> mCountExpression,
+            NumberExpression<Long> lCountExpression,
+            NumberExpression<Long> xlCountExpression
+    ) {
+        Map<SizeGrade, Long> distribution = new EnumMap<>(SizeGrade.class);
+        distribution.put(SizeGrade.XS, getLongValue(aggregate.get(xsCountExpression)));
+        distribution.put(SizeGrade.S, getLongValue(aggregate.get(sCountExpression)));
+        distribution.put(SizeGrade.M, getLongValue(aggregate.get(mCountExpression)));
+        distribution.put(SizeGrade.L, getLongValue(aggregate.get(lCountExpression)));
+        distribution.put(SizeGrade.XL, getLongValue(aggregate.get(xlCountExpression)));
+        return distribution;
     }
 
     private BooleanExpression dateRangeCondition(LocalDate startDate, LocalDate endDate) {
@@ -143,23 +149,26 @@ public class PullRequestSizeStatisticsRepositoryAdapter implements PullRequestSi
         return pullRequestSize.createdAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay());
     }
 
-    private void initializeSizeGradeDistribution(Map<SizeGrade, Long> sizeGradeDistribution) {
-        for (SizeGrade grade : SizeGrade.values()) {
-            sizeGradeDistribution.put(grade, ZERO_COUNT);
-        }
+    private NumberExpression<Long> countSizeGrade(SizeGrade sizeGrade) {
+        return new CaseBuilder()
+                .when(pullRequestSize.sizeGrade.eq(sizeGrade))
+                .then(1)
+                .otherwise(0)
+                .sumLong();
     }
 
-    private Long extractReviewWaitMinutes(PullRequestBottleneck bottleneck) {
-        if (bottleneck == null || bottleneck.getReviewWait() == null) {
-            return null;
-        }
-        return bottleneck.getReviewWait().getMinutes();
+    private NumberExpression<Long> countSizeGrades(List<SizeGrade> sizeGrades) {
+        return new CaseBuilder()
+                .when(pullRequestSize.sizeGrade.in(sizeGrades))
+                .then(1)
+                .otherwise(0)
+                .sumLong();
     }
 
-    private Integer extractReviewRoundTrips(ReviewActivity activity) {
-        if (activity == null) {
-            return null;
+    private long getLongValue(Number number) {
+        if (number == null) {
+            return ZERO_COUNT;
         }
-        return activity.getReviewRoundTrips();
+        return number.longValue();
     }
 }
