@@ -3,6 +3,7 @@ package com.prism.statistics.application;
 import com.prism.statistics.application.analysis.insight.PullRequestMetricsService;
 import com.prism.statistics.context.CleanupExecutionListener;
 import com.prism.statistics.context.TestDuplicateKeyConfiguration;
+import com.prism.statistics.domain.statistics.repository.PullRequestSizeStatisticsRepository;
 import com.prism.statistics.infrastructure.auth.persistence.UserSocialRegistrar;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,7 +19,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest
 @Import(TestDuplicateKeyConfiguration.class)
-@MockitoSpyBean(types = {UserSocialRegistrar.class, PullRequestMetricsService.class})
+@MockitoSpyBean(types = {
+        UserSocialRegistrar.class,
+        PullRequestMetricsService.class,
+        PullRequestSizeStatisticsRepository.class
+})
 @ActiveProfiles({"local", "social"})
 @TestExecutionListeners(listeners = CleanupExecutionListener.class, mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
 public @interface IntegrationTest {
