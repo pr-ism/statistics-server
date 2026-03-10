@@ -3,7 +3,6 @@ package com.prism.statistics.application.statistics;
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.statistics.dto.request.ReviewSpeedStatisticsRequest;
 import com.prism.statistics.application.statistics.dto.response.ReviewSpeedStatisticsResponse;
-import com.prism.statistics.context.H2ReviewSpeedStatisticsRepositoryTestConfiguration;
 import com.prism.statistics.domain.analysis.insight.bottleneck.PullRequestBottleneck;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
@@ -25,7 +24,6 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -37,7 +35,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @IntegrationTest
-@Import(H2ReviewSpeedStatisticsRepositoryTestConfiguration.class)
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class ReviewSpeedStatisticsQueryServiceTest {
