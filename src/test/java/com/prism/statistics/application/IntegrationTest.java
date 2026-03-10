@@ -19,7 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest
-@Import(TestDuplicateKeyConfiguration.class)
+@Import({TestDuplicateKeyConfiguration.class, H2ReviewSpeedStatisticsRepositoryTestConfiguration.class})
 @MockitoSpyBean(types = {
         UserSocialRegistrar.class,
         PullRequestMetricsService.class,
