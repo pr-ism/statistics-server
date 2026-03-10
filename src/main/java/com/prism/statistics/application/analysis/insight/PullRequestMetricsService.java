@@ -44,12 +44,11 @@ public class PullRequestMetricsService {
         PullRequestOpenedChangeSummary changeSummary = createChangeSummary(pullRequest);
         PullRequestOpenedCommitDensity commitDensity = createCommitDensity(pullRequest);
         List<PullRequestOpenedFileChange> fileChanges = createFileChanges(pullRequestId, fileTypeCounts);
-        PullRequestSize pullRequestSize = createPullRequestSize(pullRequest, fileTypeCounts);
 
         changeSummaryRepository.save(changeSummary);
         commitDensityRepository.save(commitDensity);
         fileChangeRepository.saveAll(fileChanges);
-        pullRequestSizeRepository.save(pullRequestSize);
+        saveOrUpdatePullRequestSize(pullRequest, fileTypeCounts);
     }
 
     private PullRequestOpenedChangeSummary createChangeSummary(PullRequest pullRequest) {
@@ -99,7 +98,7 @@ public class PullRequestMetricsService {
                          .toList();
     }
 
-    private PullRequestSize createPullRequestSize(
+    private void saveOrUpdatePullRequestSize(
             PullRequest pullRequest,
             Map<FileChangeType, Integer> fileTypeCounts
     ) {
@@ -111,13 +110,46 @@ public class PullRequestMetricsService {
                 fileTypeCounts.getOrDefault(FileChangeType.RENAMED, 0)
         );
 
-        return PullRequestSize.create(
+        pullRequestSizeRepository.findByPullRequestId(pullRequest.getId())
+                .ifPresentOrElse(
+                        size -> updateExistingPullRequestSize(
+                                size,
+                                stats,
+                                fileChangeDiversity
+                        ),
+                        () -> saveNewPullRequestSize(
+                                pullRequest,
+                                fileChangeDiversity
+                        )
+                );
+    }
+
+    private void updateExistingPullRequestSize(
+            PullRequestSize size,
+            PullRequestChangeStats stats,
+            BigDecimal fileChangeDiversity
+    ) {
+        size.updateMetrics(
+                stats.getAdditionCount(),
+                stats.getDeletionCount(),
+                stats.getChangedFileCount(),
+                fileChangeDiversity
+        );
+    }
+
+    private void saveNewPullRequestSize(
+            PullRequest pullRequest,
+            BigDecimal fileChangeDiversity
+    ) {
+        PullRequestChangeStats stats = pullRequest.getChangeStats();
+        PullRequestSize pullRequestSize = PullRequestSize.create(
                 pullRequest.getId(),
                 stats.getAdditionCount(),
                 stats.getDeletionCount(),
                 stats.getChangedFileCount(),
                 fileChangeDiversity
         );
+        pullRequestSizeRepository.save(pullRequestSize);
     }
 
     private Map<FileChangeType, Integer> countFileChangeTypes(List<PullRequestFile> files) {

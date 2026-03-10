@@ -170,6 +170,24 @@ public class PullRequestSize extends BaseTimeEntity {
         this.sizeGrade = SizeGrade.fromScore(this.sizeScore);
     }
 
+    public void updateMetrics(
+            int additionCount,
+            int deletionCount,
+            int changedFileCount,
+            BigDecimal fileChangeDiversity
+    ) {
+        validateCounts(additionCount, deletionCount, changedFileCount);
+        validateFileChangeDiversity(fileChangeDiversity);
+        validateWeight(weight);
+
+        this.additionCount = additionCount;
+        this.deletionCount = deletionCount;
+        this.changedFileCount = changedFileCount;
+        this.fileChangeDiversity = fileChangeDiversity;
+        this.sizeScore = weight.calculateScore(additionCount, deletionCount, changedFileCount);
+        this.sizeGrade = SizeGrade.fromScore(this.sizeScore);
+    }
+
     public int calculateTotalChanges() {
         return additionCount + deletionCount;
     }

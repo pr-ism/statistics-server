@@ -125,6 +125,38 @@ class PullRequestMetricsServiceTest {
         );
     }
 
+    @Test
+    void 기존_PR_크기_메트릭이_있으면_최신값으로_업데이트한다() {
+        // given
+        PullRequest savedPullRequest = createAndSavePullRequest();
+        createAndSavePullRequestFiles(savedPullRequest.getId());
+        metricsService.deriveMetrics(savedPullRequest.getId());
+
+        savedPullRequest.synchronize(
+                "def456",
+                PullRequestChangeStats.create(4, 20, 8),
+                6
+        );
+        pullRequestRepository.save(savedPullRequest);
+
+        // when
+        metricsService.deriveMetrics(savedPullRequest.getId());
+
+        // then
+        List<PullRequestSize> pullRequestSizes = pullRequestSizeRepository.findAll();
+
+        assertThat(pullRequestSizes)
+                .singleElement()
+                .satisfies(size -> assertAll(
+                        () -> assertThat(size.getPullRequestId()).isEqualTo(savedPullRequest.getId()),
+                        () -> assertThat(size.getAdditionCount()).isEqualTo(20),
+                        () -> assertThat(size.getDeletionCount()).isEqualTo(8),
+                        () -> assertThat(size.getChangedFileCount()).isEqualTo(4),
+                        () -> assertThat(size.getSizeScore()).isEqualByComparingTo(new BigDecimal("32")),
+                        () -> assertThat(size.getFileChangeDiversity()).isEqualByComparingTo(new BigDecimal("0.5"))
+                ));
+    }
+
     private PullRequest createAndSavePullRequest() {
         PullRequest pullRequest = PullRequest.builder()
                 .githubPullRequestId(12345L)
