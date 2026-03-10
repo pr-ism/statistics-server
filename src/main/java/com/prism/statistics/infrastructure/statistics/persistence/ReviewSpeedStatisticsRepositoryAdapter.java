@@ -1,22 +1,25 @@
 package com.prism.statistics.infrastructure.statistics.persistence;
 
-import com.prism.statistics.domain.analysis.insight.bottleneck.PullRequestBottleneck;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.statistics.repository.ReviewSpeedStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.ReviewSpeedStatisticsDto;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.DateExpression;
+import com.querydsl.core.types.dsl.DateTimeExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.prism.statistics.domain.analysis.insight.bottleneck.QPullRequestBottleneck.pullRequestBottleneck;
 import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
@@ -25,8 +28,8 @@ import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullReq
 @RequiredArgsConstructor
 public class ReviewSpeedStatisticsRepositoryAdapter implements ReviewSpeedStatisticsRepository {
 
-    private static final long ZERO_COUNT = 0L;
     private static final long DATE_RANGE_INCLUSIVE_DAYS = 1L;
+    private static final int MINUTES_PER_HOUR = 60;
 
     private final JPAQueryFactory queryFactory;
 
@@ -39,103 +42,122 @@ public class ReviewSpeedStatisticsRepositoryAdapter implements ReviewSpeedStatis
             LocalTime coreTimeStart,
             LocalTime coreTimeEnd
     ) {
-        List<PullRequest> pullRequests = queryFactory
-                .selectFrom(pullRequest)
+        Tuple result = queryFactory
+                .select(
+                        pullRequest.id.count(),
+                        pullRequestBottleneck.firstReviewAt.count(),
+                        pullRequestBottleneck.reviewWait.minutes.sumLong(),
+                        mergedWithApprovalCountExpression(),
+                        totalMergeWaitMinutesExpression(),
+                        coreTimeReviewCountExpression(coreTimeStart, coreTimeEnd),
+                        sameDayReviewCountExpression()
+                )
+                .from(pullRequest)
+                .leftJoin(pullRequestBottleneck)
+                .on(pullRequestBottleneck.pullRequestId.eq(pullRequest.id))
                 .where(
                         pullRequest.projectId.eq(projectId),
                         dateRangeCondition(startDate, endDate)
                 )
-                .fetch();
+                .fetchOne();
 
-        if (pullRequests.isEmpty()) {
+        long totalCount = result.get(0, Long.class);
+        if (totalCount == 0L) {
             return Optional.empty();
         }
 
-        List<Long> pullRequestIds = pullRequests.stream()
-                .map(pr -> pr.getId())
-                .toList();
+        List<Long> reviewWaitMinutesList = fetchReviewWaitMinutesList(projectId, startDate, endDate);
 
-        List<PullRequestBottleneck> bottlenecks = queryFactory
-                .selectFrom(pullRequestBottleneck)
-                .where(pullRequestBottleneck.pullRequestId.in(pullRequestIds))
-                .fetch();
-
-        Map<Long, PullRequestBottleneck> bottleneckMap = bottlenecks.stream()
-                .collect(Collectors.toMap(
-                        bottleneck -> bottleneck.getPullRequestId(),
-                        b -> b
-                ));
-
-        return Optional.of(aggregateStatistics(pullRequests, bottleneckMap, coreTimeStart, coreTimeEnd));
-    }
-
-    private ReviewSpeedStatisticsDto aggregateStatistics(
-            List<PullRequest> pullRequests,
-            Map<Long, PullRequestBottleneck> bottleneckMap,
-            LocalTime coreTimeStart,
-            LocalTime coreTimeEnd
-    ) {
-        long totalCount = pullRequests.size();
-
-        List<Long> reviewWaitMinutesList = new ArrayList<>();
-        long totalReviewWaitMinutes = ZERO_COUNT;
-        long reviewedCount = ZERO_COUNT;
-        long totalMergeWaitMinutes = ZERO_COUNT;
-        long mergedWithApprovalCount = ZERO_COUNT;
-        long coreTimeReviewCount = ZERO_COUNT;
-        long sameDayReviewCount = ZERO_COUNT;
-
-        for (PullRequest pr : pullRequests) {
-            PullRequestBottleneck bottleneck = bottleneckMap.get(pr.getId());
-
-            if (bottleneck == null || !bottleneck.hasReview()) {
-                continue;
-            }
-
-            reviewedCount++;
-
-            if (bottleneck.hasReviewWait()) {
-                long reviewWaitMinutes = bottleneck.getReviewWait().getMinutes();
-                reviewWaitMinutesList.add(reviewWaitMinutes);
-                totalReviewWaitMinutes += reviewWaitMinutes;
-            }
-
-            if (bottleneck.hasMergeWaitWithApproval()) {
-                totalMergeWaitMinutes += bottleneck.getMergeWait().getMinutes();
-                mergedWithApprovalCount++;
-            }
-
-            if (isWithinCoreTime(bottleneck.getFirstReviewAt().toLocalTime(), coreTimeStart, coreTimeEnd)) {
-                coreTimeReviewCount++;
-            }
-
-            if (isSameDay(pr.getTiming().getGithubCreatedAt().toLocalDate(),
-                    bottleneck.getFirstReviewAt().toLocalDate())) {
-                sameDayReviewCount++;
-            }
-        }
-
-        return new ReviewSpeedStatisticsDto(
+        return Optional.of(new ReviewSpeedStatisticsDto(
                 totalCount,
-                reviewedCount,
-                totalReviewWaitMinutes,
+                result.get(1, Long.class),
+                nullToZero(result.get(2, Long.class)),
                 reviewWaitMinutesList,
-                mergedWithApprovalCount,
-                totalMergeWaitMinutes,
-                coreTimeReviewCount,
-                sameDayReviewCount
-        );
+                nullToZero(result.get(3, Long.class)),
+                nullToZero(result.get(4, Long.class)),
+                nullToZero(result.get(5, Long.class)),
+                nullToZero(result.get(6, Long.class))
+        ));
     }
 
-    private boolean isWithinCoreTime(LocalTime time, LocalTime start, LocalTime end) {
+    private List<Long> fetchReviewWaitMinutesList(
+            Long projectId,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        return queryFactory
+                .select(pullRequestBottleneck.reviewWait.minutes)
+                .from(pullRequest)
+                .join(pullRequestBottleneck)
+                .on(pullRequestBottleneck.pullRequestId.eq(pullRequest.id))
+                .where(
+                        pullRequest.projectId.eq(projectId),
+                        dateRangeCondition(startDate, endDate),
+                        pullRequestBottleneck.firstReviewAt.isNotNull(),
+                        pullRequestBottleneck.reviewWait.minutes.isNotNull()
+                )
+                .fetch();
+    }
+
+    private NumberExpression<Long> mergedWithApprovalCountExpression() {
+        return new CaseBuilder()
+                .when(pullRequestBottleneck.mergeWait.minutes.isNotNull()
+                        .and(pullRequestBottleneck.lastApproveAt.isNotNull()))
+                .then(1L)
+                .otherwise(0L)
+                .sumLong();
+    }
+
+    private NumberExpression<Long> totalMergeWaitMinutesExpression() {
+        return new CaseBuilder()
+                .when(pullRequestBottleneck.mergeWait.minutes.isNotNull()
+                        .and(pullRequestBottleneck.lastApproveAt.isNotNull()))
+                .then(pullRequestBottleneck.mergeWait.minutes)
+                .otherwise(0L)
+                .sumLong();
+    }
+
+    private NumberExpression<Long> coreTimeReviewCountExpression(LocalTime start, LocalTime end) {
         if (start == null || end == null) {
-            return false;
+            return Expressions.asNumber(0L);
         }
-        return !time.isBefore(start) && !time.isAfter(end);
+
+        NumberExpression<Integer> minuteOfDay = pullRequestBottleneck.firstReviewAt.hour()
+                .multiply(MINUTES_PER_HOUR)
+                .add(pullRequestBottleneck.firstReviewAt.minute());
+
+        int startMinutes = start.getHour() * MINUTES_PER_HOUR + start.getMinute();
+        int endMinutes = end.getHour() * MINUTES_PER_HOUR + end.getMinute();
+
+        return new CaseBuilder()
+                .when(pullRequestBottleneck.firstReviewAt.isNotNull()
+                        .and(minuteOfDay.goe(startMinutes))
+                        .and(minuteOfDay.loe(endMinutes)))
+                .then(1L)
+                .otherwise(0L)
+                .sumLong();
     }
 
-    private boolean isSameDay(LocalDate date1, LocalDate date2) {
-        return date1.equals(date2);
+    private NumberExpression<Long> sameDayReviewCountExpression() {
+        return new CaseBuilder()
+                .when(pullRequestBottleneck.firstReviewAt.isNotNull()
+                        .and(pullRequest.timing.githubCreatedAt.isNotNull())
+                        .and(toDate(pullRequest.timing.githubCreatedAt)
+                                .eq(toDate(pullRequestBottleneck.firstReviewAt))))
+                .then(1L)
+                .otherwise(0L)
+                .sumLong();
+    }
+
+    private DateExpression<LocalDate> toDate(DateTimeExpression<LocalDateTime> dateTime) {
+        return Expressions.dateOperation(LocalDate.class, Ops.DateTimeOps.DATE, dateTime);
+    }
+
+    private long nullToZero(Long value) {
+        if (value == null) {
+            return 0L;
+        }
+        return value;
     }
 
     private BooleanExpression dateRangeCondition(LocalDate startDate, LocalDate endDate) {
