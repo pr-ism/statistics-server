@@ -188,6 +188,37 @@ class PullRequestSizeTest {
     }
 
     @Test
+    void 기존_가중치를_유지한_채_메트릭을_업데이트한다() {
+        // given
+        SizeScoreWeight customWeight = SizeScoreWeight.of(
+                new BigDecimal("2.0"),
+                new BigDecimal("1.0"),
+                new BigDecimal("10.0")
+        );
+        PullRequestSize size = PullRequestSize.createWithWeight(
+                1L,
+                100,
+                50,
+                5,
+                new BigDecimal("0.5000"),
+                customWeight
+        );
+
+        // when
+        size.updateMetrics(30, 10, 4, new BigDecimal("0.7500"));
+
+        // then
+        assertAll(
+                () -> assertThat(size.getAdditionCount()).isEqualTo(30),
+                () -> assertThat(size.getDeletionCount()).isEqualTo(10),
+                () -> assertThat(size.getChangedFileCount()).isEqualTo(4),
+                () -> assertThat(size.getFileChangeDiversity()).isEqualByComparingTo(new BigDecimal("0.7500")),
+                () -> assertThat(size.getSizeScore()).isEqualByComparingTo(new BigDecimal("110.0")),
+                () -> assertThat(size.getWeight()).isEqualTo(customWeight)
+        );
+    }
+
+    @Test
     void 총_변경량을_계산한다() {
         // given
         PullRequestSize size = PullRequestSize.create(1L, 100, 50, 5, BigDecimal.ZERO);
