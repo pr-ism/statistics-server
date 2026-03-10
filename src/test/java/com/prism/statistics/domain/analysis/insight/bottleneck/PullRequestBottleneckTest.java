@@ -121,6 +121,22 @@ class PullRequestBottleneckTest {
     }
 
     @Test
+    void 승인_후_병합되면_승인_기반_머지_대기_여부는_true다() {
+        // given
+        LocalDateTime reviewReadyAt = LocalDateTime.of(2024, 1, 1, 10, 0);
+        LocalDateTime approvedAt = LocalDateTime.of(2024, 1, 1, 11, 0);
+        PullRequestBottleneck bottleneck = PullRequestBottleneck.createOnFirstReview(
+                1L, reviewReadyAt, approvedAt, true
+        );
+
+        // when
+        bottleneck.updateOnMerge(LocalDateTime.of(2024, 1, 1, 12, 0));
+
+        // then
+        assertThat(bottleneck.hasMergeWaitWithApproval()).isTrue();
+    }
+
+    @Test
     void PR_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> PullRequestBottleneck.createWithoutReview(null))
