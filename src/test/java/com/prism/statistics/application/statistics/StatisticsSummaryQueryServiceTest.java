@@ -191,6 +191,8 @@ class StatisticsSummaryQueryServiceTest {
         // given
         Long userId = 1L;
         Project project = createAndSaveProject(userId);
+        PullRequest pr = createAndSavePullRequest(project.getId(), PullRequestState.MERGED);
+        createAndSaveSize(pr.getId(), BigDecimal.valueOf(100));
         StatisticsSummaryRequest request = new StatisticsSummaryRequest(null, null);
 
         // when
@@ -199,6 +201,7 @@ class StatisticsSummaryQueryServiceTest {
 
         // then
         assertAll(
+                () -> assertThat(actual.overview().totalPrCount()).isEqualTo(1),
                 () -> assertThat(actual.teamActivity().totalReviewerCount()).isZero(),
                 () -> assertThat(actual.teamActivity().avgReviewersPerPr()).isZero(),
                 () -> assertThat(actual.teamActivity().avgReviewRoundTrips()).isZero(),
@@ -211,6 +214,8 @@ class StatisticsSummaryQueryServiceTest {
         // given
         Long userId = 1L;
         Project project = createAndSaveProject(userId);
+        PullRequest pr = createAndSavePullRequest(project.getId(), PullRequestState.MERGED);
+        createAndSaveSize(pr.getId(), BigDecimal.valueOf(100));
         StatisticsSummaryRequest request = new StatisticsSummaryRequest(null, null);
 
         // when
@@ -219,6 +224,7 @@ class StatisticsSummaryQueryServiceTest {
 
         // then
         assertAll(
+                () -> assertThat(actual.overview().totalPrCount()).isEqualTo(1),
                 () -> assertThat(actual.bottleneck().avgReviewWaitMinutes()).isZero(),
                 () -> assertThat(actual.bottleneck().avgReviewProgressMinutes()).isZero(),
                 () -> assertThat(actual.bottleneck().avgMergeWaitMinutes()).isZero(),
