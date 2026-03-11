@@ -90,19 +90,19 @@ class StatisticsSummaryQueryServiceTest {
         StatisticsSummaryRequest request = new StatisticsSummaryRequest(null, null);
 
         // when
-        StatisticsSummaryResponse response = statisticsSummaryQueryService
+        StatisticsSummaryResponse actual = statisticsSummaryQueryService
                 .findStatisticsSummary(userId, project.getId(), request);
 
         // then
         assertAll(
-                () -> assertThat(response.overview().totalPrCount()).isEqualTo(2),
-                () -> assertThat(response.overview().mergedPrCount()).isEqualTo(1),
-                () -> assertThat(response.overview().closedPrCount()).isEqualTo(1),
-                () -> assertThat(response.overview().mergeSuccessRate()).isEqualTo(50.0),
-                () -> assertThat(response.overview().avgSizeScore()).isCloseTo(100.0, within(0.01)),
-                () -> assertThat(response.reviewHealth().reviewRate()).isGreaterThan(0),
-                () -> assertThat(response.teamActivity().totalReviewerCount()).isEqualTo(2),
-                () -> assertThat(response.bottleneck().avgReviewWaitMinutes()).isCloseTo(75.0, within(0.01))
+                () -> assertThat(actual.overview().totalPrCount()).isEqualTo(2),
+                () -> assertThat(actual.overview().mergedPrCount()).isEqualTo(1),
+                () -> assertThat(actual.overview().closedPrCount()).isEqualTo(1),
+                () -> assertThat(actual.overview().mergeSuccessRate()).isEqualTo(50.0),
+                () -> assertThat(actual.overview().avgSizeScore()).isCloseTo(100.0, within(0.01)),
+                () -> assertThat(actual.reviewHealth().reviewRate()).isGreaterThan(0),
+                () -> assertThat(actual.teamActivity().totalReviewerCount()).isEqualTo(2),
+                () -> assertThat(actual.bottleneck().avgReviewWaitMinutes()).isCloseTo(75.0, within(0.01))
         );
     }
 
@@ -114,17 +114,17 @@ class StatisticsSummaryQueryServiceTest {
         StatisticsSummaryRequest request = new StatisticsSummaryRequest(null, null);
 
         // when
-        StatisticsSummaryResponse response = statisticsSummaryQueryService
+        StatisticsSummaryResponse actual = statisticsSummaryQueryService
                 .findStatisticsSummary(userId, project.getId(), request);
 
         // then
         assertAll(
-                () -> assertThat(response.overview().totalPrCount()).isZero(),
-                () -> assertThat(response.overview().mergedPrCount()).isZero(),
-                () -> assertThat(response.overview().mergeSuccessRate()).isZero(),
-                () -> assertThat(response.reviewHealth().reviewRate()).isZero(),
-                () -> assertThat(response.teamActivity().totalReviewerCount()).isZero(),
-                () -> assertThat(response.bottleneck().avgReviewWaitMinutes()).isZero()
+                () -> assertThat(actual.overview().totalPrCount()).isZero(),
+                () -> assertThat(actual.overview().mergedPrCount()).isZero(),
+                () -> assertThat(actual.overview().mergeSuccessRate()).isZero(),
+                () -> assertThat(actual.reviewHealth().reviewRate()).isZero(),
+                () -> assertThat(actual.teamActivity().totalReviewerCount()).isZero(),
+                () -> assertThat(actual.bottleneck().avgReviewWaitMinutes()).isZero()
         );
     }
 
@@ -141,11 +141,11 @@ class StatisticsSummaryQueryServiceTest {
         StatisticsSummaryRequest request = new StatisticsSummaryRequest(startDate, endDate);
 
         // when
-        StatisticsSummaryResponse response = statisticsSummaryQueryService
+        StatisticsSummaryResponse actual = statisticsSummaryQueryService
                 .findStatisticsSummary(userId, project.getId(), request);
 
         // then
-        assertThat(response.overview().totalPrCount()).isEqualTo(1);
+        assertThat(actual.overview().totalPrCount()).isEqualTo(1);
     }
 
     @Test
@@ -173,16 +173,16 @@ class StatisticsSummaryQueryServiceTest {
         StatisticsSummaryRequest request = new StatisticsSummaryRequest(null, null);
 
         // when
-        StatisticsSummaryResponse response = statisticsSummaryQueryService
+        StatisticsSummaryResponse actual = statisticsSummaryQueryService
                 .findStatisticsSummary(userId, project.getId(), request);
 
         // then
         assertAll(
-                () -> assertThat(response.overview().mergedPrCount()).isZero(),
-                () -> assertThat(response.overview().closedPrCount()).isEqualTo(1),
-                () -> assertThat(response.overview().mergeSuccessRate()).isZero(),
-                () -> assertThat(response.overview().avgMergeTimeMinutes()).isZero(),
-                () -> assertThat(response.overview().avgSizeScore()).isCloseTo(100.0, within(0.01))
+                () -> assertThat(actual.overview().mergedPrCount()).isZero(),
+                () -> assertThat(actual.overview().closedPrCount()).isEqualTo(1),
+                () -> assertThat(actual.overview().mergeSuccessRate()).isZero(),
+                () -> assertThat(actual.overview().avgMergeTimeMinutes()).isZero(),
+                () -> assertThat(actual.overview().avgSizeScore()).isCloseTo(100.0, within(0.01))
         );
     }
 
@@ -191,20 +191,18 @@ class StatisticsSummaryQueryServiceTest {
         // given
         Long userId = 1L;
         Project project = createAndSaveProject(userId);
-        PullRequest pr = createAndSavePullRequest(project.getId(), PullRequestState.MERGED);
-
         StatisticsSummaryRequest request = new StatisticsSummaryRequest(null, null);
 
         // when
-        StatisticsSummaryResponse response = statisticsSummaryQueryService
+        StatisticsSummaryResponse actual = statisticsSummaryQueryService
                 .findStatisticsSummary(userId, project.getId(), request);
 
         // then
         assertAll(
-                () -> assertThat(response.teamActivity().totalReviewerCount()).isZero(),
-                () -> assertThat(response.teamActivity().avgReviewersPerPr()).isZero(),
-                () -> assertThat(response.teamActivity().avgReviewRoundTrips()).isZero(),
-                () -> assertThat(response.teamActivity().avgCommentCount()).isZero()
+                () -> assertThat(actual.teamActivity().totalReviewerCount()).isZero(),
+                () -> assertThat(actual.teamActivity().avgReviewersPerPr()).isZero(),
+                () -> assertThat(actual.teamActivity().avgReviewRoundTrips()).isZero(),
+                () -> assertThat(actual.teamActivity().avgCommentCount()).isZero()
         );
     }
 
@@ -213,20 +211,18 @@ class StatisticsSummaryQueryServiceTest {
         // given
         Long userId = 1L;
         Project project = createAndSaveProject(userId);
-        PullRequest pr = createAndSavePullRequest(project.getId(), PullRequestState.MERGED);
-
         StatisticsSummaryRequest request = new StatisticsSummaryRequest(null, null);
 
         // when
-        StatisticsSummaryResponse response = statisticsSummaryQueryService
+        StatisticsSummaryResponse actual = statisticsSummaryQueryService
                 .findStatisticsSummary(userId, project.getId(), request);
 
         // then
         assertAll(
-                () -> assertThat(response.bottleneck().avgReviewWaitMinutes()).isZero(),
-                () -> assertThat(response.bottleneck().avgReviewProgressMinutes()).isZero(),
-                () -> assertThat(response.bottleneck().avgMergeWaitMinutes()).isZero(),
-                () -> assertThat(response.bottleneck().totalCycleTimeMinutes()).isZero()
+                () -> assertThat(actual.bottleneck().avgReviewWaitMinutes()).isZero(),
+                () -> assertThat(actual.bottleneck().avgReviewProgressMinutes()).isZero(),
+                () -> assertThat(actual.bottleneck().avgMergeWaitMinutes()).isZero(),
+                () -> assertThat(actual.bottleneck().totalCycleTimeMinutes()).isZero()
         );
     }
 
@@ -244,15 +240,16 @@ class StatisticsSummaryQueryServiceTest {
         StatisticsSummaryRequest request = new StatisticsSummaryRequest(null, null);
 
         // when
-        StatisticsSummaryResponse response = statisticsSummaryQueryService
+        StatisticsSummaryResponse actual = statisticsSummaryQueryService
                 .findStatisticsSummary(userId, project.getId(), request);
 
         // then
-        assertThat(response.reviewHealth().closedWithoutReviewRate()).isCloseTo(50.0, within(0.01));
+        assertThat(actual.reviewHealth().closedWithoutReviewRate()).isCloseTo(50.0, within(0.01));
     }
 
     private Project createAndSaveProject(Long userId) {
         Project project = Project.create("Test Project", "test-api-key-" + System.nanoTime(), userId);
+
         return projectRepository.save(project);
     }
 
@@ -260,7 +257,6 @@ class StatisticsSummaryQueryServiceTest {
         LocalDateTime createdAt = LocalDateTime.now().minusDays(1);
         LocalDateTime closedAt = resolveClosedAt(state);
         PullRequestTiming timing = resolveTiming(state, createdAt, closedAt);
-
         PullRequest pullRequest = PullRequest.builder()
                 .githubPullRequestId(System.nanoTime())
                 .projectId(projectId)
@@ -287,6 +283,7 @@ class StatisticsSummaryQueryServiceTest {
                 0,
                 BigDecimal.valueOf(0.3)
         );
+
         sizeRepository.save(size);
     }
 
@@ -301,6 +298,7 @@ class StatisticsSummaryQueryServiceTest {
                 .totalAdditions(100)
                 .totalDeletions(50)
                 .build();
+
         reviewActivityRepository.save(activity);
     }
 
@@ -310,6 +308,7 @@ class StatisticsSummaryQueryServiceTest {
                 GithubUser.create(reviewerName, reviewerId),
                 LocalDateTime.now().minusHours(1)
         );
+
         reviewSessionRepository.save(session);
     }
 
@@ -324,6 +323,7 @@ class StatisticsSummaryQueryServiceTest {
                 .reopened(false)
                 .closedWithoutReview(closedWithoutReview)
                 .build();
+
         lifecycleRepository.save(lifecycle);
     }
 
@@ -331,6 +331,7 @@ class StatisticsSummaryQueryServiceTest {
         if (state.isClosureState()) {
             return LocalDateTime.now();
         }
+
         return null;
     }
 
@@ -352,7 +353,7 @@ class StatisticsSummaryQueryServiceTest {
         if (closedWithoutReview) {
             return null;
         }
-        return DurationMinutes.of(1440L);
+        return DurationMinutes.of(1_440L);
     }
 
     private void createAndSaveBottleneck(Long pullRequestId, Long reviewWait, Long reviewProgress, Long mergeWait) {
