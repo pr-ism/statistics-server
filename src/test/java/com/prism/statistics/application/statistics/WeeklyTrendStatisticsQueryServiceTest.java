@@ -151,7 +151,7 @@ class WeeklyTrendStatisticsQueryServiceTest {
                 .githubPullRequestId(System.nanoTime())
                 .projectId(projectId)
                 .author(GithubUser.create(TEST_USER_NAME, AUTHOR_USER_ID))
-                .pullRequestNumber((int) (Math.abs(System.nanoTime() % PULL_REQUEST_NUMBER_MODULUS)))
+                .pullRequestNumber((int) (Math.abs(System.nanoTime() % PULL_REQUEST_NUMBER_MODULUS)) + 1)
                 .headCommitSha(TEST_HEAD_SHA)
                 .title(TEST_PULL_REQUEST_TITLE)
                 .state(state)
