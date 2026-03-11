@@ -2,6 +2,7 @@ package com.prism.statistics.application;
 
 import com.prism.statistics.application.analysis.insight.PullRequestMetricsService;
 import com.prism.statistics.context.CleanupExecutionListener;
+import com.prism.statistics.context.H2ReviewSpeedStatisticsRepositoryTestConfiguration;
 import com.prism.statistics.context.TestDuplicateKeyConfiguration;
 import com.prism.statistics.domain.statistics.repository.PullRequestSizeStatisticsRepository;
 import com.prism.statistics.infrastructure.auth.persistence.UserSocialRegistrar;
@@ -18,7 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest
-@Import(TestDuplicateKeyConfiguration.class)
+@Import({TestDuplicateKeyConfiguration.class, H2ReviewSpeedStatisticsRepositoryTestConfiguration.class})
 @MockitoSpyBean(types = {
         UserSocialRegistrar.class,
         PullRequestMetricsService.class,

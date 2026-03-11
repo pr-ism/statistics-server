@@ -3,20 +3,14 @@ package com.prism.statistics.infrastructure.statistics.persistence;
 import com.prism.statistics.domain.statistics.repository.ReviewSpeedStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.ReviewSpeedStatisticsDto;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.DateExpression;
-import com.querydsl.core.types.dsl.DateTimeExpression;
+import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
+import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -24,17 +18,18 @@ import java.util.Optional;
 import static com.prism.statistics.domain.analysis.insight.bottleneck.QPullRequestBottleneck.pullRequestBottleneck;
 import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
 
-@Repository
-@RequiredArgsConstructor
-public class ReviewSpeedStatisticsRepositoryAdapter implements ReviewSpeedStatisticsRepository {
+public class H2ReviewSpeedStatisticsRepositoryAdapter implements ReviewSpeedStatisticsRepository {
 
     private static final long DATE_RANGE_INCLUSIVE_DAYS = 1L;
     private static final int MINUTES_PER_HOUR = 60;
 
     private final JPAQueryFactory queryFactory;
 
+    public H2ReviewSpeedStatisticsRepositoryAdapter(JPAQueryFactory queryFactory) {
+        this.queryFactory = queryFactory;
+    }
+
     @Override
-    @Transactional(readOnly = true)
     public Optional<ReviewSpeedStatisticsDto> findReviewSpeedStatisticsByProjectId(
             Long projectId,
             LocalDate startDate,
@@ -139,18 +134,20 @@ public class ReviewSpeedStatisticsRepositoryAdapter implements ReviewSpeedStatis
     }
 
     private NumberExpression<Long> sameDayReviewCountExpression() {
+        DateTemplate<Date> createdAtDate = toDate(pullRequest.timing.githubCreatedAt);
+        DateTemplate<Date> firstReviewDate = toDate(pullRequestBottleneck.firstReviewAt);
+
         return new CaseBuilder()
                 .when(pullRequestBottleneck.firstReviewAt.isNotNull()
                         .and(pullRequest.timing.githubCreatedAt.isNotNull())
-                        .and(toDate(pullRequest.timing.githubCreatedAt)
-                                .eq(toDate(pullRequestBottleneck.firstReviewAt))))
+                        .and(createdAtDate.eq(firstReviewDate)))
                 .then(1L)
                 .otherwise(0L)
                 .sumLong();
     }
 
-    private DateExpression<LocalDate> toDate(DateTimeExpression<LocalDateTime> dateTime) {
-        return Expressions.dateOperation(LocalDate.class, Ops.DateTimeOps.DATE, dateTime);
+    private DateTemplate<Date> toDate(com.querydsl.core.types.dsl.DateTimeExpression<?> dateTime) {
+        return Expressions.dateTemplate(Date.class, "cast({0} as date)", dateTime);
     }
 
     private long nullToZero(Long value) {
