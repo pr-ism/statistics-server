@@ -154,10 +154,6 @@ public class ReviewActivity extends BaseTimeEntity {
         return calculateTotalCodeChangesAfterReview() >= 10;
     }
 
-    public boolean isFirstReviewApproved() {
-        return reviewRoundTrips == 1 && !hasAdditionalReviewers;
-    }
-
     public boolean hasCodeChangesAfterReview() {
         return codeAdditionsAfterReview > 0 || codeDeletionsAfterReview > 0;
     }
