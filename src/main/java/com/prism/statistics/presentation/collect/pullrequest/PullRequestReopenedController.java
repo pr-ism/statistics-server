@@ -2,6 +2,8 @@ package com.prism.statistics.presentation.collect.pullrequest;
 
 import com.prism.statistics.application.collect.ProjectIdResolvingFacade;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestReopenedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,7 @@ public class PullRequestReopenedController {
 
     private final ProjectIdResolvingFacade projectIdResolvingFacade;
 
+    @InboxEnqueue(CollectInboxType.PULL_REQUEST_REOPENED)
     @PostMapping("/reopened")
     public ResponseEntity<Void> handlePullRequestReopened(
             @RequestHeader("X-API-Key") String apiKey,

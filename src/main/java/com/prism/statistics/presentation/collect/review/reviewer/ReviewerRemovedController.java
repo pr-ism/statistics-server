@@ -2,6 +2,8 @@ package com.prism.statistics.presentation.collect.review.reviewer;
 
 import com.prism.statistics.application.analysis.metadata.review.ReviewerRemovedService;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerRemovedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,7 @@ public class ReviewerRemovedController {
 
     private final ReviewerRemovedService reviewerRemovedService;
 
+    @InboxEnqueue(CollectInboxType.REVIEWER_REMOVED)
     @PostMapping("/reviewer/removed")
     public ResponseEntity<Void> handleReviewerRemoved(
             @RequestHeader("X-API-Key") String apiKey,
