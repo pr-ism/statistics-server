@@ -73,13 +73,3 @@ flowchart LR
 - MySQL, H2 (local)
 - Spring REST Docs
 
-## 개발 환경
-
-```bash
-# 테스트
-./gradlew test
-
-# 빌드 (REST Docs 생성 포함)
-./gradlew build
-```
-
