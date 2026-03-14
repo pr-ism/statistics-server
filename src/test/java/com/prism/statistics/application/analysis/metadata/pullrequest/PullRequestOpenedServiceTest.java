@@ -1,7 +1,6 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
@@ -21,7 +20,6 @@ import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persist
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestFileRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestStateHistoryRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -39,7 +37,7 @@ import java.util.List;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class PullRequestOpenedServiceTest {
 
-    private static final String TEST_API_KEY = "test-api-key";
+    private static final Long TEST_PROJECT_ID = 1L;
 
     @Autowired
     private PullRequestOpenedService pullRequestOpenedService;
@@ -72,7 +70,7 @@ class PullRequestOpenedServiceTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(false);
 
         // when
-        pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
+        pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request);
 
         // then
         assertAll(
@@ -92,7 +90,7 @@ class PullRequestOpenedServiceTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(false);
 
         // when
-        pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
+        pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request);
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -106,7 +104,7 @@ class PullRequestOpenedServiceTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(true);
 
         // when
-        pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
+        pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request);
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -120,7 +118,7 @@ class PullRequestOpenedServiceTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(false);
 
         // when
-        pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
+        pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request);
 
         // then
         long eventCount = applicationEvents.stream(PullRequestOpenCreatedEvent.class).count();
@@ -134,7 +132,7 @@ class PullRequestOpenedServiceTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(true);
 
         // when
-        pullRequestOpenedService.createPullRequest(TEST_API_KEY, request);
+        pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request);
 
         // then
         long eventCount = applicationEvents.stream(PullRequestOpenCreatedEvent.class).count();
@@ -147,18 +145,6 @@ class PullRequestOpenedServiceTest {
                 () -> assertThat(jpaPullRequestContentHistoryRepository.count()).isEqualTo(1),
                 () -> assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(2)
         );
-    }
-
-    @Test
-    void 존재하지_않는_API_Key면_예외가_발생한다() {
-        // given
-        PullRequestOpenedRequest request = createPullRequestOpenedRequest(false);
-        String invalidApiKey = "invalid-api-key";
-
-        // when & then
-        assertThatThrownBy(() -> pullRequestOpenedService.createPullRequest(invalidApiKey, request))
-                .isInstanceOf(InvalidApiKeyException.class)
-                .hasMessage("유효하지 않은 API Key입니다.");
     }
 
     private PullRequestOpenedRequest createPullRequestOpenedRequest(boolean isDraft) {

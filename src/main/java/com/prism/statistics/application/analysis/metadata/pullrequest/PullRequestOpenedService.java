@@ -7,14 +7,12 @@ import com.prism.statistics.application.analysis.metadata.pullrequest.event.Pull
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSavedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent.CommitData;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
-import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestTiming;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -28,15 +26,11 @@ import java.util.List;
 public class PullRequestOpenedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
-    private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void createPullRequest(String apiKey, PullRequestOpenedRequest request) {
-        Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new InvalidApiKeyException());
-
+    public void createPullRequest(Long projectId, PullRequestOpenedRequest request) {
         if (request.isDraft()) {
             createDraftPullRequest(projectId, request);
             return;
