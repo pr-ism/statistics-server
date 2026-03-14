@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.prism.statistics.application.analysis.metadata.pullrequest.PullRequestReadyForReviewService;
+import com.prism.statistics.application.collect.CollectFacade;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestReadyForReviewRequest;
 import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
@@ -24,7 +24,7 @@ class PullRequestReadyForReviewControllerTest extends CommonControllerSliceTestS
     private static final String TEST_API_KEY = "test-api-key";
 
     @Autowired
-    private PullRequestReadyForReviewService pullRequestReadyForReviewService;
+    private CollectFacade collectFacade;
 
     @Test
     void Pull_Request_ready_for_review_웹훅_요청을_처리한다() throws Exception {
@@ -36,7 +36,7 @@ class PullRequestReadyForReviewControllerTest extends CommonControllerSliceTestS
                 }
                 """;
 
-        willDoNothing().given(pullRequestReadyForReviewService).readyForReview(eq(TEST_API_KEY), any(PullRequestReadyForReviewRequest.class));
+        willDoNothing().given(collectFacade).readyForReview(eq(TEST_API_KEY), any(PullRequestReadyForReviewRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -47,7 +47,7 @@ class PullRequestReadyForReviewControllerTest extends CommonControllerSliceTestS
                 )
                 .andExpect(status().isOk());
 
-        verify(pullRequestReadyForReviewService).readyForReview(eq(TEST_API_KEY), any(PullRequestReadyForReviewRequest.class));
+        verify(collectFacade).readyForReview(eq(TEST_API_KEY), any(PullRequestReadyForReviewRequest.class));
     }
 
     @Test
@@ -72,7 +72,7 @@ class PullRequestReadyForReviewControllerTest extends CommonControllerSliceTestS
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(pullRequestReadyForReviewService).readyForReview(eq(TEST_API_KEY), any(PullRequestReadyForReviewRequest.class));
+                .given(collectFacade).readyForReview(eq(TEST_API_KEY), any(PullRequestReadyForReviewRequest.class));
 
         // when & then
         mockMvc.perform(

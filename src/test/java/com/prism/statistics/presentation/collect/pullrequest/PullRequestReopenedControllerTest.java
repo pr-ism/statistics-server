@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.prism.statistics.application.analysis.metadata.pullrequest.PullRequestReopenedService;
+import com.prism.statistics.application.collect.CollectFacade;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestReopenedRequest;
 import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
@@ -24,7 +24,7 @@ class PullRequestReopenedControllerTest extends CommonControllerSliceTestSupport
     private static final String TEST_API_KEY = "test-api-key";
 
     @Autowired
-    private PullRequestReopenedService pullRequestReopenedService;
+    private CollectFacade collectFacade;
 
     @Test
     void Pull_Request_reopened_웹훅_요청을_처리한다() throws Exception {
@@ -36,7 +36,7 @@ class PullRequestReopenedControllerTest extends CommonControllerSliceTestSupport
                 }
                 """;
 
-        willDoNothing().given(pullRequestReopenedService).reopenPullRequest(eq(TEST_API_KEY), any(PullRequestReopenedRequest.class));
+        willDoNothing().given(collectFacade).reopenPullRequest(eq(TEST_API_KEY), any(PullRequestReopenedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -47,7 +47,7 @@ class PullRequestReopenedControllerTest extends CommonControllerSliceTestSupport
                 )
                 .andExpect(status().isOk());
 
-        verify(pullRequestReopenedService).reopenPullRequest(eq(TEST_API_KEY), any(PullRequestReopenedRequest.class));
+        verify(collectFacade).reopenPullRequest(eq(TEST_API_KEY), any(PullRequestReopenedRequest.class));
     }
 
     @Test
@@ -72,7 +72,7 @@ class PullRequestReopenedControllerTest extends CommonControllerSliceTestSupport
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(pullRequestReopenedService).reopenPullRequest(eq(TEST_API_KEY), any(PullRequestReopenedRequest.class));
+                .given(collectFacade).reopenPullRequest(eq(TEST_API_KEY), any(PullRequestReopenedRequest.class));
 
         // when & then
         mockMvc.perform(

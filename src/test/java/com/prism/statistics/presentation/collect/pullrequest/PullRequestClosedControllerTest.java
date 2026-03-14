@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.prism.statistics.application.analysis.metadata.pullrequest.PullRequestClosedService;
+import com.prism.statistics.application.collect.CollectFacade;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestClosedRequest;
 import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
@@ -24,7 +24,7 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
     private static final String TEST_API_KEY = "test-api-key";
 
     @Autowired
-    private PullRequestClosedService pullRequestClosedService;
+    private CollectFacade collectFacade;
 
     @Test
     void Pull_Request_closed_웹훅_요청을_처리한다() throws Exception {
@@ -38,7 +38,7 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
                 }
                 """;
 
-        willDoNothing().given(pullRequestClosedService).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
+        willDoNothing().given(collectFacade).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -49,7 +49,7 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
                 )
                 .andExpect(status().isOk());
 
-        verify(pullRequestClosedService).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
+        verify(collectFacade).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
     }
 
     @Test
@@ -65,7 +65,7 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
                 }
                 """;
 
-        willDoNothing().given(pullRequestClosedService).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
+        willDoNothing().given(collectFacade).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -76,7 +76,7 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
                 )
                 .andExpect(status().isOk());
 
-        verify(pullRequestClosedService).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
+        verify(collectFacade).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
     }
 
     @Test
@@ -103,7 +103,7 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(pullRequestClosedService).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
+                .given(collectFacade).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
 
         // when & then
         mockMvc.perform(

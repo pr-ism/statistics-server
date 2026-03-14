@@ -1,6 +1,6 @@
 package com.prism.statistics.presentation.collect.pullrequest;
 
-import com.prism.statistics.application.analysis.metadata.pullrequest.PullRequestReopenedService;
+import com.prism.statistics.application.collect.CollectFacade;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestReopenedRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PullRequestReopenedController {
 
-    private final PullRequestReopenedService pullRequestReopenedService;
+    private final CollectFacade collectFacade;
 
     @PostMapping("/reopened")
     public ResponseEntity<Void> handlePullRequestReopened(
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody PullRequestReopenedRequest request
     ) {
-        pullRequestReopenedService.reopenPullRequest(apiKey, request);
+        collectFacade.reopenPullRequest(apiKey, request);
         return ResponseEntity.ok().build();
     }
 }

@@ -1,6 +1,6 @@
 package com.prism.statistics.presentation.collect.pullrequest;
 
-import com.prism.statistics.application.analysis.metadata.pullrequest.PullRequestReadyForReviewService;
+import com.prism.statistics.application.collect.CollectFacade;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestReadyForReviewRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PullRequestReadyForReviewController {
 
-    private final PullRequestReadyForReviewService pullRequestReadyForReviewService;
+    private final CollectFacade collectFacade;
 
     @PostMapping("/ready-for-review")
     public ResponseEntity<Void> handlePullRequestReadyForReview(
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody PullRequestReadyForReviewRequest request
     ) {
-        pullRequestReadyForReviewService.readyForReview(apiKey, request);
+        collectFacade.readyForReview(apiKey, request);
         return ResponseEntity.ok().build();
     }
 }
