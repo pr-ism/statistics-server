@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.prism.statistics.application.analysis.metadata.pullrequest.PullRequestOpenedService;
+import com.prism.statistics.application.collect.ProjectIdResolvingFacade;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest;
 import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
@@ -24,7 +24,7 @@ class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
     private static final String TEST_API_KEY = "test-api-key";
 
     @Autowired
-    private PullRequestOpenedService pullRequestOpenedService;
+    private ProjectIdResolvingFacade projectIdResolvingFacade;
 
     @Test
     void Pull_Request_opened_웹훅_요청을_처리한다() throws Exception {
@@ -56,7 +56,7 @@ class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
                 }
                 """;
 
-        willDoNothing().given(pullRequestOpenedService).createPullRequest(eq(TEST_API_KEY), any(PullRequestOpenedRequest.class));
+        willDoNothing().given(projectIdResolvingFacade).createPullRequest(eq(TEST_API_KEY), any(PullRequestOpenedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -67,7 +67,7 @@ class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
                 )
                 .andExpect(status().isOk());
 
-        verify(pullRequestOpenedService).createPullRequest(eq(TEST_API_KEY), any(PullRequestOpenedRequest.class));
+        verify(projectIdResolvingFacade).createPullRequest(eq(TEST_API_KEY), any(PullRequestOpenedRequest.class));
     }
 
     @Test
@@ -112,7 +112,7 @@ class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(pullRequestOpenedService).createPullRequest(eq(TEST_API_KEY), any(PullRequestOpenedRequest.class));
+                .given(projectIdResolvingFacade).createPullRequest(eq(TEST_API_KEY), any(PullRequestOpenedRequest.class));
 
         // when & then
         mockMvc.perform(

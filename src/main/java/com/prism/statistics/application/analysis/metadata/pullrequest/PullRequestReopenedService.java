@@ -6,8 +6,6 @@ import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeCon
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestState;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
-import com.prism.statistics.domain.project.repository.ProjectRepository;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -22,15 +20,11 @@ import java.time.LocalDateTime;
 public class PullRequestReopenedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
-    private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void reopenPullRequest(String apiKey, PullRequestReopenedRequest request) {
-        Long projectId = projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new InvalidApiKeyException());
-
+    public void reopenPullRequest(Long projectId, PullRequestReopenedRequest request) {
         pullRequestRepository.findPullRequest(projectId, request.pullRequestNumber())
                 .ifPresentOrElse(
                         pullRequest -> processReopened(pullRequest, request),

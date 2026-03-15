@@ -1,6 +1,6 @@
 package com.prism.statistics.presentation.collect.pullrequest;
 
-import com.prism.statistics.application.analysis.metadata.pullrequest.PullRequestConvertedToDraftService;
+import com.prism.statistics.application.collect.ProjectIdResolvingFacade;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestConvertedToDraftRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PullRequestConvertedToDraftController {
 
-    private final PullRequestConvertedToDraftService pullRequestConvertedToDraftService;
+    private final ProjectIdResolvingFacade projectIdResolvingFacade;
 
     @PostMapping("/converted-to-draft")
     public ResponseEntity<Void> handlePullRequestConvertedToDraft(
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody PullRequestConvertedToDraftRequest request
     ) {
-        pullRequestConvertedToDraftService.convertToDraft(apiKey, request);
+        projectIdResolvingFacade.convertToDraft(apiKey, request);
         return ResponseEntity.ok().build();
     }
 }

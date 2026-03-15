@@ -1,7 +1,6 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
@@ -12,7 +11,6 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullReque
 import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullRequestStateHistory;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestStateHistoryRepository;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -30,7 +28,7 @@ import java.time.LocalDateTime;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class PullRequestClosedServiceTest {
 
-    private static final String TEST_API_KEY = "test-api-key";
+    private static final Long TEST_PROJECT_ID = 1L;
     private static final int TEST_PULL_REQUEST_NUMBER = 123;
     private static final String TEST_HEAD_COMMIT_SHA = "abc123";
     private static final Instant CLOSED_AT = Instant.parse("2099-01-15T12:00:00Z");
@@ -55,7 +53,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createClosedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_API_KEY, request);
+        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -69,7 +67,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createMergedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_API_KEY, request);
+        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -83,7 +81,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createClosedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_API_KEY, request);
+        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
 
         // then
         long eventCount = applicationEvents.stream(PullRequestStateChangedEvent.class).count();
@@ -97,7 +95,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createClosedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_API_KEY, request);
+        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
 
         // then
         assertThat(jpaPullRequestStateHistoryRepository.count()).isEqualTo(1);
@@ -116,7 +114,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createMergedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_API_KEY, request);
+        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
 
         // then
         assertThat(jpaPullRequestStateHistoryRepository.count()).isEqualTo(1);
@@ -135,7 +133,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createMergedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_API_KEY, request);
+        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
 
         // then
         PullRequestStateHistory history = jpaPullRequestStateHistoryRepository.findAll().getFirst();
@@ -148,10 +146,10 @@ class PullRequestClosedServiceTest {
     void 이미_닫힌_PullRequest에_대해_closed_이벤트가_오면_상태가_변경되지_않고_이벤트가_발행되지_않는다() {
         // given
         PullRequestClosedRequest request = createClosedRequest();
-        pullRequestClosedService.closePullRequest(TEST_API_KEY, request);
+        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_API_KEY, request);
+        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
 
         // then
         long eventCount = applicationEvents.stream(PullRequestStateChangedEvent.class).count();
@@ -169,24 +167,13 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createClosedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_API_KEY, request);
+        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
 
         // then
         assertAll(
                 () -> assertThat(applicationEvents.stream(PullRequestStateChangedEvent.class).count()).isEqualTo(0),
                 () -> assertThat(jpaPullRequestStateHistoryRepository.count()).isEqualTo(0)
         );
-    }
-
-    @Test
-    void 존재하지_않는_API_Key면_예외가_발생한다() {
-        // given
-        PullRequestClosedRequest request = createClosedRequest();
-        String invalidApiKey = "invalid-api-key";
-
-        // when & then
-        assertThatThrownBy(() -> pullRequestClosedService.closePullRequest(invalidApiKey, request))
-                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     private PullRequestClosedRequest createClosedRequest() {
