@@ -1,6 +1,8 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerAddedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
@@ -22,6 +24,7 @@ public class ReviewerAddedService {
     private final PullRequestRepository pullRequestRepository;
     private final RequestedReviewerRepository requestedReviewerRepository;
 
+    @InboxEnqueue(CollectInboxType.REVIEWER_ADDED)
     public void addReviewer(String apiKey, ReviewerAddedRequest request) {
         validateApiKey(apiKey);
 

@@ -2,8 +2,6 @@ package com.prism.statistics.presentation.collect.review.comment;
 
 import com.prism.statistics.application.analysis.metadata.review.ReviewCommentDeletedService;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentDeletedRequest;
-import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
-import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +17,6 @@ public class ReviewCommentDeletedController {
 
     private final ReviewCommentDeletedService reviewCommentDeletedService;
 
-    @InboxEnqueue(CollectInboxType.REVIEW_COMMENT_DELETED)
     @PostMapping("/comment/deleted")
     public ResponseEntity<Void> handleReviewCommentDeleted(
             @RequestHeader("X-API-Key") String apiKey,

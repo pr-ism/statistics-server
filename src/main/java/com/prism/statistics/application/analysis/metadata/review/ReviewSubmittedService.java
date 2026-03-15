@@ -1,6 +1,8 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewSubmittedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
@@ -23,6 +25,7 @@ public class ReviewSubmittedService {
     private final PullRequestRepository pullRequestRepository;
     private final ReviewRepository reviewRepository;
 
+    @InboxEnqueue(CollectInboxType.REVIEW_SUBMITTED)
     public void submitReview(String apiKey, ReviewSubmittedRequest request) {
         validateApiKey(apiKey);
 

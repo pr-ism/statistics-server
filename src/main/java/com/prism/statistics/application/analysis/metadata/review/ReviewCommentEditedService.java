@@ -1,6 +1,8 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentEditedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewCommentRepository;
@@ -17,6 +19,7 @@ public class ReviewCommentEditedService {
     private final ProjectRepository projectRepository;
     private final ReviewCommentRepository reviewCommentRepository;
 
+    @InboxEnqueue(CollectInboxType.REVIEW_COMMENT_EDITED)
     public void editReviewComment(String apiKey, ReviewCommentEditedRequest request) {
         validateApiKey(apiKey);
         validateReviewCommentExists(request.githubCommentId());

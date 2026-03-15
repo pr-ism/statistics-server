@@ -1,6 +1,8 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentDeletedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewCommentRepository;
 import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
@@ -20,6 +22,7 @@ public class ReviewCommentDeletedService {
     private final ProjectRepository projectRepository;
     private final ReviewCommentRepository reviewCommentRepository;
 
+    @InboxEnqueue(CollectInboxType.REVIEW_COMMENT_DELETED)
     public void deleteReviewComment(String apiKey, ReviewCommentDeletedRequest request) {
         validateApiKey(apiKey);
         validateReviewCommentExists(request.githubCommentId());

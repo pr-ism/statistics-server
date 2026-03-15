@@ -1,6 +1,8 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelAddedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequestLabel;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestLabelRepository;
@@ -21,6 +23,7 @@ public class PullRequestLabelAddedService {
     private final PullRequestRepository pullRequestRepository;
     private final PullRequestLabelRepository pullRequestLabelRepository;
 
+    @InboxEnqueue(CollectInboxType.PULL_REQUEST_LABEL_ADDED)
     public void addPullRequestLabel(String apiKey, PullRequestLabelAddedRequest request) {
         validateApiKey(apiKey);
 

@@ -1,6 +1,8 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestConvertedToDraftRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestStateChangedEvent;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
@@ -23,6 +25,7 @@ public class PullRequestConvertedToDraftService {
     private final PullRequestRepository pullRequestRepository;
     private final ApplicationEventPublisher eventPublisher;
 
+    @InboxEnqueue(CollectInboxType.PULL_REQUEST_CONVERTED_TO_DRAFT)
     @Transactional
     public void convertToDraft(Long projectId, PullRequestConvertedToDraftRequest request) {
         pullRequestRepository.findPullRequest(projectId, request.pullRequestNumber())

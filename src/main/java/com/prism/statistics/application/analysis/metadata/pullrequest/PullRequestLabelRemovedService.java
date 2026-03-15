@@ -1,6 +1,8 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelRemovedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullRequestLabelHistory;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestLabelAction;
@@ -25,6 +27,7 @@ public class PullRequestLabelRemovedService {
     private final PullRequestLabelRepository pullRequestLabelRepository;
     private final PullRequestLabelHistoryRepository pullRequestLabelHistoryRepository;
 
+    @InboxEnqueue(CollectInboxType.PULL_REQUEST_LABEL_REMOVED)
     @Transactional
     public void removePullRequestLabel(String apiKey, PullRequestLabelRemovedRequest request) {
         validateApiKey(apiKey);

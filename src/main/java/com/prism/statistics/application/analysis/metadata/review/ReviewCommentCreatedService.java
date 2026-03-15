@@ -1,6 +1,8 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentCreatedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.project.repository.ProjectRepository;
@@ -25,6 +27,7 @@ public class ReviewCommentCreatedService {
     private final ReviewRepository reviewRepository;
     private final ReviewCommentRepository reviewCommentRepository;
 
+    @InboxEnqueue(CollectInboxType.REVIEW_COMMENT_CREATED)
     public void createReviewComment(String apiKey, ReviewCommentCreatedRequest request) {
         validateApiKey(apiKey);
 

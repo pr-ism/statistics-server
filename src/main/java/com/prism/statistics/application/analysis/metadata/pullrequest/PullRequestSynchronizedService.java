@@ -1,6 +1,8 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest.CommitNode;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestEarlySynchronizedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSynchronizedEvent;
@@ -34,6 +36,7 @@ public class PullRequestSynchronizedService {
     private final CommitRepository commitRepository;
     private final ApplicationEventPublisher eventPublisher;
 
+    @InboxEnqueue(CollectInboxType.PULL_REQUEST_SYNCHRONIZED)
     @Transactional
     public void synchronizePullRequest(String apiKey, PullRequestSynchronizedRequest request) {
         projectRepository.findIdByApiKey(apiKey)
