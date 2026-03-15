@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.prism.statistics.application.collect.CollectFacade;
+import com.prism.statistics.application.collect.ProjectIdResolvingFacade;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestConvertedToDraftRequest;
 import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
@@ -24,7 +24,7 @@ class PullRequestConvertedToDraftControllerTest extends CommonControllerSliceTes
     private static final String TEST_API_KEY = "test-api-key";
 
     @Autowired
-    private CollectFacade collectFacade;
+    private ProjectIdResolvingFacade projectIdResolvingFacade;
 
     @Test
     void Pull_Request_converted_to_draft_웹훅_요청을_처리한다() throws Exception {
@@ -36,7 +36,7 @@ class PullRequestConvertedToDraftControllerTest extends CommonControllerSliceTes
                 }
                 """;
 
-        willDoNothing().given(collectFacade).convertToDraft(eq(TEST_API_KEY), any(PullRequestConvertedToDraftRequest.class));
+        willDoNothing().given(projectIdResolvingFacade).convertToDraft(eq(TEST_API_KEY), any(PullRequestConvertedToDraftRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -47,7 +47,7 @@ class PullRequestConvertedToDraftControllerTest extends CommonControllerSliceTes
                 )
                 .andExpect(status().isOk());
 
-        verify(collectFacade).convertToDraft(eq(TEST_API_KEY), any(PullRequestConvertedToDraftRequest.class));
+        verify(projectIdResolvingFacade).convertToDraft(eq(TEST_API_KEY), any(PullRequestConvertedToDraftRequest.class));
     }
 
     @Test
@@ -72,7 +72,7 @@ class PullRequestConvertedToDraftControllerTest extends CommonControllerSliceTes
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(collectFacade).convertToDraft(eq(TEST_API_KEY), any(PullRequestConvertedToDraftRequest.class));
+                .given(projectIdResolvingFacade).convertToDraft(eq(TEST_API_KEY), any(PullRequestConvertedToDraftRequest.class));
 
         // when & then
         mockMvc.perform(

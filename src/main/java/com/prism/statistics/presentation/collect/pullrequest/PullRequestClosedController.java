@@ -1,6 +1,6 @@
 package com.prism.statistics.presentation.collect.pullrequest;
 
-import com.prism.statistics.application.collect.CollectFacade;
+import com.prism.statistics.application.collect.ProjectIdResolvingFacade;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestClosedRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PullRequestClosedController {
 
-    private final CollectFacade collectFacade;
+    private final ProjectIdResolvingFacade projectIdResolvingFacade;
 
     @PostMapping("/closed")
     public ResponseEntity<Void> handlePullRequestClosed(
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody PullRequestClosedRequest request
     ) {
-        collectFacade.closePullRequest(apiKey, request);
+        projectIdResolvingFacade.closePullRequest(apiKey, request);
         return ResponseEntity.ok().build();
     }
 }
