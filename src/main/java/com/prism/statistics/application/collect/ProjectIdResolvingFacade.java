@@ -11,11 +11,11 @@ import com.prism.statistics.application.analysis.metadata.pullrequest.dto.reques
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestReadyForReviewRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestReopenedRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 @RequiredArgsConstructor
-public class CollectFacade {
+public class ProjectIdResolvingFacade {
 
     private final ProjectApiKeyService projectApiKeyService;
     private final PullRequestOpenedService pullRequestOpenedService;

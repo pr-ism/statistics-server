@@ -29,12 +29,12 @@ import org.springframework.test.context.jdbc.Sql;
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class CollectFacadeTest {
+class ProjectIdResolvingFacadeTest {
 
     private static final String TEST_API_KEY = "test-api-key";
 
     @Autowired
-    private CollectFacade collectFacade;
+    private ProjectIdResolvingFacade projectIdResolvingFacade;
 
     @Autowired
     private JpaPullRequestRepository jpaPullRequestRepository;
@@ -46,7 +46,7 @@ class CollectFacadeTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest();
 
         // when
-        collectFacade.createPullRequest(TEST_API_KEY, request);
+        projectIdResolvingFacade.createPullRequest(TEST_API_KEY, request);
 
         // then
         assertThat(jpaPullRequestRepository.count()).isEqualTo(1);
@@ -61,7 +61,7 @@ class CollectFacadeTest {
         );
 
         // when
-        collectFacade.closePullRequest(TEST_API_KEY, request);
+        projectIdResolvingFacade.closePullRequest(TEST_API_KEY, request);
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -77,7 +77,7 @@ class CollectFacadeTest {
         );
 
         // when
-        collectFacade.readyForReview(TEST_API_KEY, request);
+        projectIdResolvingFacade.readyForReview(TEST_API_KEY, request);
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -93,7 +93,7 @@ class CollectFacadeTest {
         );
 
         // when
-        collectFacade.reopenPullRequest(TEST_API_KEY, request);
+        projectIdResolvingFacade.reopenPullRequest(TEST_API_KEY, request);
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -109,7 +109,7 @@ class CollectFacadeTest {
         );
 
         // when
-        collectFacade.convertToDraft(TEST_API_KEY, request);
+        projectIdResolvingFacade.convertToDraft(TEST_API_KEY, request);
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -124,7 +124,7 @@ class CollectFacadeTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> collectFacade.closePullRequest("invalid-api-key", request))
+        assertThatThrownBy(() -> projectIdResolvingFacade.closePullRequest("invalid-api-key", request))
                 .isInstanceOf(InvalidApiKeyException.class);
     }
 
