@@ -3,6 +3,7 @@ package com.prism.statistics.application.analysis.metadata.pullrequest.dto.reque
 import java.time.Instant;
 
 public record PullRequestConvertedToDraftRequest(
+        Long runId,
         int pullRequestNumber,
         Instant convertedToDraftAt
 ) {}

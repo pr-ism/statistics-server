@@ -170,6 +170,7 @@ class PullRequestLabelRemovedServiceTest {
 
     private PullRequestLabelRemovedRequest createLabelRemovedRequest(String labelName) {
         return new PullRequestLabelRemovedRequest(
+                null,
                 TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
                 TEST_HEAD_COMMIT_SHA,

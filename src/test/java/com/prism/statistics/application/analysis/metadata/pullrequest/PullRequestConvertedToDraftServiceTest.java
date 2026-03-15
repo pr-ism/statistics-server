@@ -126,6 +126,7 @@ class PullRequestConvertedToDraftServiceTest {
 
     private PullRequestConvertedToDraftRequest createConvertedToDraftRequest() {
         return new PullRequestConvertedToDraftRequest(
+                null,
                 TEST_PULL_REQUEST_NUMBER,
                 CONVERTED_TO_DRAFT_AT
         );

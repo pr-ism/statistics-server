@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 public record PullRequestSynchronizedRequest(
+        Long runId,
         Long githubPullRequestId,
         int pullRequestNumber,
         String headCommitSha,

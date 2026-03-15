@@ -173,6 +173,7 @@ class PullRequestOpenedServiceTest {
         );
 
         return new PullRequestOpenedRequest(
+                null,
                 isDraft,
                 pullRequestData,
                 files

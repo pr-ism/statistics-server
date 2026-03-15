@@ -178,6 +178,7 @@ class PullRequestClosedServiceTest {
 
     private PullRequestClosedRequest createClosedRequest() {
         return new PullRequestClosedRequest(
+                null,
                 TEST_PULL_REQUEST_NUMBER,
                 false,
                 CLOSED_AT,
@@ -187,6 +188,7 @@ class PullRequestClosedServiceTest {
 
     private PullRequestClosedRequest createMergedRequest() {
         return new PullRequestClosedRequest(
+                null,
                 TEST_PULL_REQUEST_NUMBER,
                 true,
                 CLOSED_AT,

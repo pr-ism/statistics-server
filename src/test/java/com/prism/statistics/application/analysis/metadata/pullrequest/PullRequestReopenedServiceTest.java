@@ -140,6 +140,7 @@ class PullRequestReopenedServiceTest {
 
     private PullRequestReopenedRequest createReopenedRequest() {
         return new PullRequestReopenedRequest(
+                null,
                 TEST_PULL_REQUEST_NUMBER,
                 REOPENED_AT
         );

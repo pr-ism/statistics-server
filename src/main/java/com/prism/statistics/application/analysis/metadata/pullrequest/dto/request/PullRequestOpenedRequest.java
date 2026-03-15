@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 public record PullRequestOpenedRequest(
+        Long runId,
         boolean isDraft,
         PullRequestData pullRequest,
         List<FileData> files

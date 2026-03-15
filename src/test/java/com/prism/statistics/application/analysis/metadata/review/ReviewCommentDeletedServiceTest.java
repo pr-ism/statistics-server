@@ -43,6 +43,7 @@ class ReviewCommentDeletedServiceTest {
         LocalDateTime expectedUpdatedAt = LocalDateTime.of(2024, 1, 15, 11, 0, 0);
 
         ReviewCommentDeletedRequest request = new ReviewCommentDeletedRequest(
+                null,
                 EXISTING_COMMENT_ID,
                 newerUpdatedAt
         );
@@ -66,6 +67,7 @@ class ReviewCommentDeletedServiceTest {
         Instant olderUpdatedAt = Instant.parse("2024-01-15T00:00:00Z"); // KST 09:00 (기존 10:00보다 과거)
 
         ReviewCommentDeletedRequest request = new ReviewCommentDeletedRequest(
+                null,
                 EXISTING_COMMENT_ID,
                 olderUpdatedAt
         );
@@ -88,6 +90,7 @@ class ReviewCommentDeletedServiceTest {
         Instant sameUpdatedAt = Instant.parse("2024-01-15T01:00:00Z"); // KST 10:00 (기존과 동일)
 
         ReviewCommentDeletedRequest request = new ReviewCommentDeletedRequest(
+                null,
                 EXISTING_COMMENT_ID,
                 sameUpdatedAt
         );
@@ -108,6 +111,7 @@ class ReviewCommentDeletedServiceTest {
         // given
         String invalidApiKey = "invalid-api-key";
         ReviewCommentDeletedRequest request = new ReviewCommentDeletedRequest(
+                null,
                 EXISTING_COMMENT_ID,
                 FIXED_UPDATED_AT
         );
@@ -123,6 +127,7 @@ class ReviewCommentDeletedServiceTest {
         // given
         Long nonExistentCommentId = 999L;
         ReviewCommentDeletedRequest request = new ReviewCommentDeletedRequest(
+                null,
                 nonExistentCommentId,
                 FIXED_UPDATED_AT
         );

@@ -122,7 +122,7 @@ class ReviewerAddedServiceTest {
     void PullRequest가_존재하면_pullRequestId가_할당된다() {
         // given
         ReviewerAddedRequest request = new ReviewerAddedRequest(
-                1001L, TEST_PULL_REQUEST_NUMBER, TEST_HEAD_COMMIT_SHA,
+                null, 1001L, TEST_PULL_REQUEST_NUMBER, TEST_HEAD_COMMIT_SHA,
                 new ReviewerData("reviewer1", 12345L), TEST_REQUESTED_AT
         );
 
@@ -212,6 +212,7 @@ class ReviewerAddedServiceTest {
 
     private ReviewerAddedRequest createReviewerAddedRequest(String login, Long id) {
         return new ReviewerAddedRequest(
+                null,
                 TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
                 TEST_HEAD_COMMIT_SHA,

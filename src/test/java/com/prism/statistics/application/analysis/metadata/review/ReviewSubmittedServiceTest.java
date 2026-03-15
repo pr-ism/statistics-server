@@ -177,6 +177,7 @@ class ReviewSubmittedServiceTest {
             int commentCount
     ) {
         return new ReviewSubmittedRequest(
+                null,
                 githubPullRequestId,
                 pullRequestNumber,
                 githubReviewId,

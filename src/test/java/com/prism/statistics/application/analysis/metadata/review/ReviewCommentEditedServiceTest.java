@@ -43,6 +43,7 @@ class ReviewCommentEditedServiceTest {
         LocalDateTime expectedUpdatedAt = LocalDateTime.of(2024, 1, 15, 11, 0, 0);
 
         ReviewCommentEditedRequest request = new ReviewCommentEditedRequest(
+                null,
                 EXISTING_COMMENT_ID,
                 newBody,
                 newerUpdatedAt
@@ -67,6 +68,7 @@ class ReviewCommentEditedServiceTest {
         Instant olderUpdatedAt = Instant.parse("2024-01-15T00:00:00Z"); // KST 09:00 (기존 10:00보다 과거)
 
         ReviewCommentEditedRequest request = new ReviewCommentEditedRequest(
+                null,
                 EXISTING_COMMENT_ID,
                 newBody,
                 olderUpdatedAt
@@ -91,6 +93,7 @@ class ReviewCommentEditedServiceTest {
         Instant sameUpdatedAt = Instant.parse("2024-01-15T01:00:00Z"); // KST 10:00 (기존과 동일)
 
         ReviewCommentEditedRequest request = new ReviewCommentEditedRequest(
+                null,
                 EXISTING_COMMENT_ID,
                 newBody,
                 sameUpdatedAt
@@ -112,6 +115,7 @@ class ReviewCommentEditedServiceTest {
         // given
         String invalidApiKey = "invalid-api-key";
         ReviewCommentEditedRequest request = new ReviewCommentEditedRequest(
+                null,
                 EXISTING_COMMENT_ID,
                 "수정된 댓글 내용",
                 Instant.now()
@@ -128,6 +132,7 @@ class ReviewCommentEditedServiceTest {
         // given
         Long nonExistentCommentId = 999L;
         ReviewCommentEditedRequest request = new ReviewCommentEditedRequest(
+                null,
                 nonExistentCommentId,
                 "수정된 댓글 내용",
                 Instant.now()

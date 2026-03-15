@@ -3,6 +3,7 @@ package com.prism.statistics.application.analysis.metadata.pullrequest.dto.reque
 import java.time.Instant;
 
 public record PullRequestReopenedRequest(
+        Long runId,
         int pullRequestNumber,
         Instant reopenedAt
 ) {}

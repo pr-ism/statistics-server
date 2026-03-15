@@ -3,6 +3,7 @@ package com.prism.statistics.application.analysis.metadata.pullrequest.dto.reque
 import java.time.Instant;
 
 public record PullRequestLabelAddedRequest(
+        Long runId,
         Long githubPullRequestId,
         int pullRequestNumber,
         String headCommitSha,

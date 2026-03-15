@@ -126,6 +126,7 @@ class PullRequestReadyForReviewServiceTest {
 
     private PullRequestReadyForReviewRequest createReadyForReviewRequest() {
         return new PullRequestReadyForReviewRequest(
+                null,
                 TEST_PULL_REQUEST_NUMBER,
                 READY_FOR_REVIEW_AT
         );
