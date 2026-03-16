@@ -22,7 +22,7 @@ public class ReviewCommentDeletedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody ReviewCommentDeletedRequest request
     ) {
-        reviewCommentDeletedService.deleteReviewComment(apiKey, request);
+        reviewCommentDeletedService.deleteReviewComment(request);
         return ResponseEntity.ok().build();
     }
 }

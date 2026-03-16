@@ -1,7 +1,6 @@
 package com.prism.statistics.presentation.collect.pullrequest;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
@@ -52,7 +51,7 @@ class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSup
                 }
                 """;
 
-        willDoNothing().given(pullRequestSynchronizedService).synchronizePullRequest(eq(TEST_API_KEY), any(PullRequestSynchronizedRequest.class));
+        willDoNothing().given(pullRequestSynchronizedService).synchronizePullRequest(any(PullRequestSynchronizedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -63,7 +62,7 @@ class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSup
                 )
                 .andExpect(status().isOk());
 
-        verify(pullRequestSynchronizedService).synchronizePullRequest(eq(TEST_API_KEY), any(PullRequestSynchronizedRequest.class));
+        verify(pullRequestSynchronizedService).synchronizePullRequest(any(PullRequestSynchronizedRequest.class));
     }
 
     @Test
@@ -99,7 +98,7 @@ class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSup
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(pullRequestSynchronizedService).synchronizePullRequest(eq(TEST_API_KEY), any(PullRequestSynchronizedRequest.class));
+                .given(pullRequestSynchronizedService).synchronizePullRequest(any(PullRequestSynchronizedRequest.class));
 
         // when & then
         mockMvc.perform(

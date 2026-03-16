@@ -22,7 +22,7 @@ public class PullRequestLabelRemovedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody PullRequestLabelRemovedRequest request
     ) {
-        pullRequestLabelRemovedService.removePullRequestLabel(apiKey, request);
+        pullRequestLabelRemovedService.removePullRequestLabel(request);
         return ResponseEntity.ok().build();
     }
 }

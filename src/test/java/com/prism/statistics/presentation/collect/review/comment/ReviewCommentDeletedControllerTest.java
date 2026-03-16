@@ -1,7 +1,6 @@
 package com.prism.statistics.presentation.collect.review.comment;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -46,7 +45,7 @@ class ReviewCommentDeletedControllerTest extends CommonControllerSliceTestSuppor
                 .andExpect(status().isOk());
 
         then(reviewCommentDeletedService).should()
-                .deleteReviewComment(eq(TEST_API_KEY), any(ReviewCommentDeletedRequest.class));
+                .deleteReviewComment(any(ReviewCommentDeletedRequest.class));
     }
 
     @Test
@@ -79,7 +78,7 @@ class ReviewCommentDeletedControllerTest extends CommonControllerSliceTestSuppor
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(reviewCommentDeletedService).deleteReviewComment(eq(TEST_API_KEY), any(ReviewCommentDeletedRequest.class));
+                .given(reviewCommentDeletedService).deleteReviewComment(any(ReviewCommentDeletedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -104,7 +103,7 @@ class ReviewCommentDeletedControllerTest extends CommonControllerSliceTestSuppor
                 """;
 
         willThrow(new ReviewCommentNotFoundException())
-                .given(reviewCommentDeletedService).deleteReviewComment(eq(TEST_API_KEY), any(ReviewCommentDeletedRequest.class));
+                .given(reviewCommentDeletedService).deleteReviewComment(any(ReviewCommentDeletedRequest.class));
 
         // when & then
         mockMvc.perform(

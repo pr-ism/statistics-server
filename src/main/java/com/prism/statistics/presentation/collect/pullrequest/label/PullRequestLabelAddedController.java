@@ -22,7 +22,7 @@ public class PullRequestLabelAddedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody PullRequestLabelAddedRequest request
     ) {
-        pullRequestLabelAddedService.addPullRequestLabel(apiKey, request);
+        pullRequestLabelAddedService.addPullRequestLabel(request);
         return ResponseEntity.ok().build();
     }
 }

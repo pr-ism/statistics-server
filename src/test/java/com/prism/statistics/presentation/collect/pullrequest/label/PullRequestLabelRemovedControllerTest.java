@@ -1,7 +1,6 @@
 package com.prism.statistics.presentation.collect.pullrequest.label;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
@@ -40,7 +39,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
                 }
                 """;
 
-        willDoNothing().given(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
+        willDoNothing().given(pullRequestLabelRemovedService).removePullRequestLabel(any(PullRequestLabelRemovedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -51,7 +50,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
                 )
                 .andExpect(status().isOk());
 
-        verify(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
+        verify(pullRequestLabelRemovedService).removePullRequestLabel(any(PullRequestLabelRemovedRequest.class));
     }
 
     @Test
@@ -90,7 +89,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
+                .given(pullRequestLabelRemovedService).removePullRequestLabel(any(PullRequestLabelRemovedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -118,7 +117,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
                 """;
 
         willThrow(new PullRequestNotFoundException())
-                .given(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
+                .given(pullRequestLabelRemovedService).removePullRequestLabel(any(PullRequestLabelRemovedRequest.class));
 
         // when & then
         mockMvc.perform(

@@ -22,7 +22,7 @@ public class PullRequestSynchronizedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody PullRequestSynchronizedRequest request
     ) {
-        pullRequestSynchronizedService.synchronizePullRequest(apiKey, request);
+        pullRequestSynchronizedService.synchronizePullRequest(request);
         return ResponseEntity.ok().build();
     }
 }

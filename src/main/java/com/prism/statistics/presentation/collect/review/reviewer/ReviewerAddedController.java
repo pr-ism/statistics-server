@@ -22,7 +22,7 @@ public class ReviewerAddedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody ReviewerAddedRequest request
     ) {
-        reviewerAddedService.addReviewer(apiKey, request);
+        reviewerAddedService.addReviewer(request);
         return ResponseEntity.ok().build();
     }
 }

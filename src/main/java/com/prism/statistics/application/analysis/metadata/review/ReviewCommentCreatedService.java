@@ -5,14 +5,12 @@ import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
-import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewRepository;
 import com.prism.statistics.domain.analysis.metadata.review.enums.CommentSide;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewCommentRepository;
 import com.prism.statistics.domain.analysis.metadata.review.vo.CommentLineRange;
 import com.prism.statistics.domain.analysis.metadata.review.vo.ParentCommentId;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,25 +21,16 @@ import java.time.LocalDateTime;
 public class ReviewCommentCreatedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
-    private final ProjectRepository projectRepository;
     private final ReviewRepository reviewRepository;
     private final ReviewCommentRepository reviewCommentRepository;
 
     @InboxEnqueue(CollectInboxType.REVIEW_COMMENT_CREATED)
-    public void createReviewComment(String apiKey, ReviewCommentCreatedRequest request) {
-        validateApiKey(apiKey);
-
-        ReviewComment reviewComment = createReviewComment(request);
+    public void createReviewComment(ReviewCommentCreatedRequest request) {
+        ReviewComment reviewComment = buildReviewComment(request);
         reviewCommentRepository.saveOrFind(reviewComment);
     }
 
-    private void validateApiKey(String apiKey) {
-        if (!projectRepository.existsByApiKey(apiKey)) {
-            throw new InvalidApiKeyException();
-        }
-    }
-
-    private ReviewComment createReviewComment(ReviewCommentCreatedRequest request) {
+    private ReviewComment buildReviewComment(ReviewCommentCreatedRequest request) {
         LocalDateTime githubCreatedAt = localDateTimeConverter.toLocalDateTime(request.createdAt());
 
         ReviewComment reviewComment = ReviewComment.builder()

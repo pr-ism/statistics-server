@@ -22,7 +22,7 @@ public class ReviewSubmittedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody ReviewSubmittedRequest request
     ) {
-        reviewSubmittedService.submitReview(apiKey, request);
+        reviewSubmittedService.submitReview(request);
         return ResponseEntity.ok().build();
     }
 }

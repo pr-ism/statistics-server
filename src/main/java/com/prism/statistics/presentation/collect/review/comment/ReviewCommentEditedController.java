@@ -22,7 +22,7 @@ public class ReviewCommentEditedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody ReviewCommentEditedRequest request
     ) {
-        reviewCommentEditedService.editReviewComment(apiKey, request);
+        reviewCommentEditedService.editReviewComment(request);
         return ResponseEntity.ok().build();
     }
 }

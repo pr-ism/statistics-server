@@ -1,7 +1,6 @@
 package com.prism.statistics.presentation.collect.review.reviewer;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -87,7 +86,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(reviewerRemovedService).removeReviewer(eq(TEST_API_KEY), any(ReviewerRemovedRequest.class));
+                .given(reviewerRemovedService).removeReviewer(any(ReviewerRemovedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -116,7 +115,7 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
                 """;
 
         willThrow(new PullRequestNotFoundException())
-                .given(reviewerRemovedService).removeReviewer(eq(TEST_API_KEY), any(ReviewerRemovedRequest.class));
+                .given(reviewerRemovedService).removeReviewer(any(ReviewerRemovedRequest.class));
 
         // when & then
         mockMvc.perform(

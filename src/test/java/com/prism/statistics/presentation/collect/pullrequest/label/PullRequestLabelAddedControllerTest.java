@@ -1,7 +1,6 @@
 package com.prism.statistics.presentation.collect.pullrequest.label;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
@@ -40,7 +39,7 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
                 }
                 """;
 
-        willDoNothing().given(pullRequestLabelAddedService).addPullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelAddedRequest.class));
+        willDoNothing().given(pullRequestLabelAddedService).addPullRequestLabel(any(PullRequestLabelAddedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -51,7 +50,7 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
                 )
                 .andExpect(status().isOk());
 
-        verify(pullRequestLabelAddedService).addPullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelAddedRequest.class));
+        verify(pullRequestLabelAddedService).addPullRequestLabel(any(PullRequestLabelAddedRequest.class));
     }
 
     @Test
@@ -90,7 +89,7 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(pullRequestLabelAddedService).addPullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelAddedRequest.class));
+                .given(pullRequestLabelAddedService).addPullRequestLabel(any(PullRequestLabelAddedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -118,7 +117,7 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
                 """;
 
         willThrow(new PullRequestNotFoundException())
-                .given(pullRequestLabelAddedService).addPullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelAddedRequest.class));
+                .given(pullRequestLabelAddedService).addPullRequestLabel(any(PullRequestLabelAddedRequest.class));
 
         // when & then
         mockMvc.perform(

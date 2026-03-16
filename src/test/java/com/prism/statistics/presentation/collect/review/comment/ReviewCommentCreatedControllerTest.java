@@ -1,7 +1,6 @@
 package com.prism.statistics.presentation.collect.review.comment;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -58,7 +57,7 @@ class ReviewCommentCreatedControllerTest extends CommonControllerSliceTestSuppor
                 .andExpect(status().isOk());
 
         then(reviewCommentCreatedService).should()
-                .createReviewComment(eq(TEST_API_KEY), any(ReviewCommentCreatedRequest.class));
+                .createReviewComment(any(ReviewCommentCreatedRequest.class));
     }
 
     @Test
@@ -115,7 +114,7 @@ class ReviewCommentCreatedControllerTest extends CommonControllerSliceTestSuppor
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(reviewCommentCreatedService).createReviewComment(eq(TEST_API_KEY), any(ReviewCommentCreatedRequest.class));
+                .given(reviewCommentCreatedService).createReviewComment(any(ReviewCommentCreatedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -152,7 +151,7 @@ class ReviewCommentCreatedControllerTest extends CommonControllerSliceTestSuppor
                 """;
 
         willThrow(new ReviewCommentNotFoundException())
-                .given(reviewCommentCreatedService).createReviewComment(eq(TEST_API_KEY), any(ReviewCommentCreatedRequest.class));
+                .given(reviewCommentCreatedService).createReviewComment(any(ReviewCommentCreatedRequest.class));
 
         // when & then
         mockMvc.perform(

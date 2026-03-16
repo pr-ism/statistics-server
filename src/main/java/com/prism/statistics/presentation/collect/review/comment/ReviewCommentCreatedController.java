@@ -22,7 +22,7 @@ public class ReviewCommentCreatedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody ReviewCommentCreatedRequest request
     ) {
-        reviewCommentCreatedService.createReviewComment(apiKey, request);
+        reviewCommentCreatedService.createReviewComment(request);
         return ResponseEntity.ok().build();
     }
 }

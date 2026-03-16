@@ -22,7 +22,7 @@ public class ReviewerRemovedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody ReviewerRemovedRequest request
     ) {
-        reviewerRemovedService.removeReviewer(apiKey, request);
+        reviewerRemovedService.removeReviewer(request);
         return ResponseEntity.ok().build();
     }
 }
