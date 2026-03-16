@@ -18,4 +18,11 @@ public class ProjectApiKeyService {
                 .orElseThrow(() -> new InvalidApiKeyException());
     }
 
+    @Transactional(readOnly = true)
+    public void validateApiKey(String apiKey) {
+        if (!projectRepository.existsByApiKey(apiKey)) {
+            throw new InvalidApiKeyException();
+        }
+    }
+
 }
