@@ -50,7 +50,6 @@ public class CollectInbox extends BaseTimeEntity {
             String payloadJson
     ) {
         validateCollectType(collectType);
-        validateProjectId(projectId);
         validateIdempotencyKey(idempotencyKey);
         validatePayloadJson(payloadJson);
 
@@ -136,12 +135,6 @@ public class CollectInbox extends BaseTimeEntity {
     private static void validateCollectType(CollectInboxType collectType) {
         if (collectType == null) {
             throw new IllegalArgumentException("collectType은 비어 있을 수 없습니다.");
-        }
-    }
-
-    private static void validateProjectId(Long projectId) {
-        if (projectId == null) {
-            throw new IllegalArgumentException("projectId는 비어 있을 수 없습니다.");
         }
     }
 

@@ -41,12 +41,6 @@ class CollectInboxTest {
     }
 
     @Test
-    void pending_생성_시_projectId가_null이면_예외가_발생한다() {
-        assertThatThrownBy(() -> CollectInbox.pending(TYPE, null, IDEMPOTENCY_KEY, PAYLOAD_JSON))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
     void pending_생성_시_idempotencyKey가_blank이면_예외가_발생한다() {
         assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, "  ", PAYLOAD_JSON))
                 .isInstanceOf(IllegalArgumentException.class);
