@@ -51,7 +51,8 @@ class CollectInboxEntryProcessorTest {
                 retryProperties,
                 collectInboxRepository,
                 collectInboxServiceRouter,
-                new CollectInboxFailureReasonTruncator()
+                new CollectInboxFailureReasonTruncator(),
+                new ProcessingSourceContext()
         );
     }
 

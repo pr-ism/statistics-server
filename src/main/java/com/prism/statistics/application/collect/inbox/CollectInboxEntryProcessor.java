@@ -24,6 +24,7 @@ public class CollectInboxEntryProcessor {
     private final CollectInboxRepository collectInboxRepository;
     private final CollectInboxEventRouter collectInboxEventRouter;
     private final CollectInboxFailureReasonTruncator failureReasonTruncator;
+    private final ProcessingSourceContext processingSourceContext;
 
     public void process(CollectInbox inbox) {
         Long inboxId = inbox.getId();
@@ -52,7 +53,9 @@ public class CollectInboxEntryProcessor {
                     claimedInbox.getProjectId(),
                     claimedInbox.getPayloadJson()
             );
-            collectInboxEventRouter.route(context, claimedInbox.getCollectType());
+            processingSourceContext.withInboxProcessing(
+                    () -> collectInboxEventRouter.route(context, claimedInbox.getCollectType())
+            );
 
             claimedInbox.markProcessed(clock.instant());
             collectInboxRepository.save(claimedInbox);
