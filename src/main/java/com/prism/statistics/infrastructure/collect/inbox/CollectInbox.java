@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "collect_inboxs")
+@Table(name = "collect_inbox")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CollectInbox extends BaseTimeEntity {
 
