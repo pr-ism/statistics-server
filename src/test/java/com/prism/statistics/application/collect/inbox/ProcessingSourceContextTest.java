@@ -41,4 +41,21 @@ class ProcessingSourceContextTest {
         // then
         assertThat(context.isInboxProcessing()).isFalse();
     }
+
+    @Test
+    void 중첩된_withInboxProcessing_호출_시_이전_상태가_복원된다() {
+        // when
+        context.withInboxProcessing(() -> {
+            assertThat(context.isInboxProcessing()).isTrue();
+
+            context.withInboxProcessing(
+                    () -> assertThat(context.isInboxProcessing()).isTrue()
+            );
+
+            assertThat(context.isInboxProcessing()).isTrue();
+        });
+
+        // then
+        assertThat(context.isInboxProcessing()).isFalse();
+    }
 }
