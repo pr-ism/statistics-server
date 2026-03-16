@@ -2,6 +2,7 @@ package com.prism.statistics.presentation.collect.pullrequest;
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.PullRequestSynchronizedService;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest;
+import com.prism.statistics.application.collect.ProjectApiKeyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PullRequestSynchronizedController {
 
+    private final ProjectApiKeyService projectApiKeyService;
     private final PullRequestSynchronizedService pullRequestSynchronizedService;
 
     @PostMapping("/synchronized")
@@ -22,6 +24,7 @@ public class PullRequestSynchronizedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody PullRequestSynchronizedRequest request
     ) {
+        projectApiKeyService.validateApiKey(apiKey);
         pullRequestSynchronizedService.synchronizePullRequest(request);
         return ResponseEntity.ok().build();
     }

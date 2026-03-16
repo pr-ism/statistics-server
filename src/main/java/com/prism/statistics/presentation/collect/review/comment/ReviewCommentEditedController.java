@@ -2,6 +2,7 @@ package com.prism.statistics.presentation.collect.review.comment;
 
 import com.prism.statistics.application.analysis.metadata.review.ReviewCommentEditedService;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentEditedRequest;
+import com.prism.statistics.application.collect.ProjectApiKeyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ReviewCommentEditedController {
 
+    private final ProjectApiKeyService projectApiKeyService;
     private final ReviewCommentEditedService reviewCommentEditedService;
 
     @PostMapping("/comment/edited")
@@ -22,6 +24,7 @@ public class ReviewCommentEditedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody ReviewCommentEditedRequest request
     ) {
+        projectApiKeyService.validateApiKey(apiKey);
         reviewCommentEditedService.editReviewComment(request);
         return ResponseEntity.ok().build();
     }
