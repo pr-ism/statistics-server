@@ -36,11 +36,10 @@ public class CollectInboxEnqueueAspect {
         return null;
     }
 
-    @Around("@annotation(inboxEnqueue) && args(apiKey, request)")
-    public Object enqueueWithApiKey(
+    @Around("@annotation(inboxEnqueue) && args(request)")
+    public Object enqueueWithRequest(
             ProceedingJoinPoint joinPoint,
             InboxEnqueue inboxEnqueue,
-            String apiKey,
             Object request
     ) throws Throwable {
         if (processingSourceContext.isInboxProcessing()) {
