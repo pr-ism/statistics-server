@@ -42,7 +42,7 @@ class ReviewCommentDeletedControllerTest extends CommonControllerSliceTestSuppor
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         then(reviewCommentDeletedService).should()
                 .deleteReviewComment(any(ReviewCommentDeletedRequest.class));

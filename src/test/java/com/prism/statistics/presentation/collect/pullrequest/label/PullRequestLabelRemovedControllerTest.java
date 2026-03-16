@@ -48,7 +48,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(pullRequestLabelRemovedService).removePullRequestLabel(any(PullRequestLabelRemovedRequest.class));
     }

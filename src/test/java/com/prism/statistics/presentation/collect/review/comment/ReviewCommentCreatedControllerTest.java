@@ -54,7 +54,7 @@ class ReviewCommentCreatedControllerTest extends CommonControllerSliceTestSuppor
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         then(reviewCommentCreatedService).should()
                 .createReviewComment(any(ReviewCommentCreatedRequest.class));

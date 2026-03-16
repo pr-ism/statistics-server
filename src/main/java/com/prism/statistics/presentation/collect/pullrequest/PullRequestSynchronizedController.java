@@ -4,6 +4,7 @@ import com.prism.statistics.application.analysis.metadata.pullrequest.PullReques
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest;
 import com.prism.statistics.application.collect.ProjectApiKeyService;
 import lombok.RequiredArgsConstructor;
+import com.prism.statistics.presentation.common.ResponseEntityConst;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +27,6 @@ public class PullRequestSynchronizedController {
     ) {
         projectApiKeyService.validateApiKey(apiKey);
         pullRequestSynchronizedService.synchronizePullRequest(request);
-        return ResponseEntity.ok().build();
+        return ResponseEntityConst.NO_CONTENT;
     }
 }

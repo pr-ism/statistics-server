@@ -43,7 +43,7 @@ class ReviewCommentEditedControllerTest extends CommonControllerSliceTestSupport
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         then(reviewCommentEditedService).should()
                 .editReviewComment(any(ReviewCommentEditedRequest.class));

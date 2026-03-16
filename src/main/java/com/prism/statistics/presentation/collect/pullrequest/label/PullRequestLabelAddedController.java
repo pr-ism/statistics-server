@@ -4,6 +4,7 @@ import com.prism.statistics.application.analysis.metadata.pullrequest.PullReques
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelAddedRequest;
 import com.prism.statistics.application.collect.ProjectApiKeyService;
 import lombok.RequiredArgsConstructor;
+import com.prism.statistics.presentation.common.ResponseEntityConst;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +27,6 @@ public class PullRequestLabelAddedController {
     ) {
         projectApiKeyService.validateApiKey(apiKey);
         pullRequestLabelAddedService.addPullRequestLabel(request);
-        return ResponseEntity.ok().build();
+        return ResponseEntityConst.NO_CONTENT;
     }
 }

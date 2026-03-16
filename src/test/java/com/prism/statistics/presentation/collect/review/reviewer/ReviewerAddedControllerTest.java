@@ -45,7 +45,7 @@ class ReviewerAddedControllerTest extends CommonControllerSliceTestSupport {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test

@@ -48,7 +48,7 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(pullRequestLabelAddedService).addPullRequestLabel(any(PullRequestLabelAddedRequest.class));
     }

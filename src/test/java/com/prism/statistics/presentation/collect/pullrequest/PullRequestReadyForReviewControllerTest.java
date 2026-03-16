@@ -45,7 +45,7 @@ class PullRequestReadyForReviewControllerTest extends CommonControllerSliceTestS
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(projectIdResolvingFacade).readyForReview(eq(TEST_API_KEY), any(PullRequestReadyForReviewRequest.class));
     }

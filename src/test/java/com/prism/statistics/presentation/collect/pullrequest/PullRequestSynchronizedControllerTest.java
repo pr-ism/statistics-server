@@ -60,7 +60,7 @@ class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSup
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(pullRequestSynchronizedService).synchronizePullRequest(any(PullRequestSynchronizedRequest.class));
     }

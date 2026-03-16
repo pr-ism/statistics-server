@@ -47,7 +47,7 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(projectIdResolvingFacade).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
     }
@@ -74,7 +74,7 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(projectIdResolvingFacade).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
     }
