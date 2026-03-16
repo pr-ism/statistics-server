@@ -1,6 +1,7 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentEditedRequest;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
 import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewCommentNotFoundException;
@@ -32,6 +33,9 @@ class ReviewCommentEditedServiceTest {
     private ReviewCommentEditedService reviewCommentEditedService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaReviewCommentRepository jpaReviewCommentRepository;
 
     @Sql("/sql/webhook/insert_project_and_review_comment.sql")
@@ -50,7 +54,7 @@ class ReviewCommentEditedServiceTest {
         );
 
         // when
-        reviewCommentEditedService.editReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentEditedService.editReviewComment(request));
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -75,7 +79,7 @@ class ReviewCommentEditedServiceTest {
         );
 
         // when
-        reviewCommentEditedService.editReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentEditedService.editReviewComment(request));
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -100,7 +104,7 @@ class ReviewCommentEditedServiceTest {
         );
 
         // when
-        reviewCommentEditedService.editReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentEditedService.editReviewComment(request));
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -123,7 +127,7 @@ class ReviewCommentEditedServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> reviewCommentEditedService.editReviewComment(request))
+        assertThatThrownBy(() -> processingSourceContext.withInboxProcessing(() -> reviewCommentEditedService.editReviewComment(request)))
                 .isInstanceOf(ReviewCommentNotFoundException.class);
     }
 }

@@ -1,6 +1,7 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerAddedRequest;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerAddedRequest.ReviewerData;
 import com.prism.statistics.domain.analysis.metadata.review.RequestedReviewer;
@@ -39,6 +40,9 @@ class ReviewerAddedServiceTest {
     private ReviewerAddedService reviewerAddedService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaRequestedReviewerRepository jpaRequestedReviewerRepository;
 
     @Autowired
@@ -51,7 +55,7 @@ class ReviewerAddedServiceTest {
         ReviewerAddedRequest request = createReviewerAddedRequest("reviewer1", 12345L);
 
         // when
-        reviewerAddedService.addReviewer(request);
+        processingSourceContext.withInboxProcessing(() -> reviewerAddedService.addReviewer(request));
 
         // then
         assertAll(
@@ -69,7 +73,7 @@ class ReviewerAddedServiceTest {
         ReviewerAddedRequest request = createReviewerAddedRequest(githubMention, githubUid);
 
         // when
-        reviewerAddedService.addReviewer(request);
+        processingSourceContext.withInboxProcessing(() -> reviewerAddedService.addReviewer(request));
 
         // then
         List<RequestedReviewer> reviewers = jpaRequestedReviewerRepository.findAll();
@@ -94,7 +98,7 @@ class ReviewerAddedServiceTest {
         ReviewerAddedRequest request = createReviewerAddedRequest(githubMention, githubUid);
 
         // when
-        reviewerAddedService.addReviewer(request);
+        processingSourceContext.withInboxProcessing(() -> reviewerAddedService.addReviewer(request));
 
         // then
         List<RequestedReviewerHistory> histories = jpaRequestedReviewerHistoryRepository.findAll();
@@ -121,7 +125,7 @@ class ReviewerAddedServiceTest {
         );
 
         // when
-        reviewerAddedService.addReviewer(request);
+        processingSourceContext.withInboxProcessing(() -> reviewerAddedService.addReviewer(request));
 
         // then
         RequestedReviewer requestedReviewer = jpaRequestedReviewerRepository.findAll().getFirst();
@@ -139,8 +143,8 @@ class ReviewerAddedServiceTest {
         ReviewerAddedRequest request = createReviewerAddedRequest("reviewer1", 12345L);
 
         // when
-        reviewerAddedService.addReviewer(request);
-        reviewerAddedService.addReviewer(request);
+        processingSourceContext.withInboxProcessing(() -> reviewerAddedService.addReviewer(request));
+        processingSourceContext.withInboxProcessing(() -> reviewerAddedService.addReviewer(request));
 
         // then
         assertAll(
@@ -173,7 +177,7 @@ class ReviewerAddedServiceTest {
                         throw new IllegalStateException("시작 대기 중 인터럽트 발생", e);
                     }
                     // when
-                    reviewerAddedService.addReviewer(request);
+                    processingSourceContext.withInboxProcessing(() -> reviewerAddedService.addReviewer(request));
                     return null;
                 }));
             }

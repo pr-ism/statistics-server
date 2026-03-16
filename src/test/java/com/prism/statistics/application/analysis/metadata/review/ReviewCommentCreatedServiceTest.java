@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentCreatedRequest;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentCreatedRequest.CommentAuthorData;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
@@ -33,6 +34,9 @@ class ReviewCommentCreatedServiceTest {
     private ReviewCommentCreatedService reviewCommentCreatedService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaReviewCommentRepository jpaReviewCommentRepository;
 
     @Sql("/sql/webhook/insert_project.sql")
@@ -42,7 +46,7 @@ class ReviewCommentCreatedServiceTest {
         ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(100L);
 
         // when
-        reviewCommentCreatedService.createReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         assertThat(jpaReviewCommentRepository.count()).isEqualTo(1);
@@ -68,7 +72,7 @@ class ReviewCommentCreatedServiceTest {
         );
 
         // when
-        reviewCommentCreatedService.createReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         List<ReviewComment> comments = jpaReviewCommentRepository.findAll();
@@ -110,7 +114,7 @@ class ReviewCommentCreatedServiceTest {
         );
 
         // when
-        reviewCommentCreatedService.createReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         ReviewComment comment = jpaReviewCommentRepository.findAll().get(0);
@@ -138,7 +142,7 @@ class ReviewCommentCreatedServiceTest {
         );
 
         // when
-        reviewCommentCreatedService.createReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         ReviewComment comment = jpaReviewCommentRepository.findAll().get(0);
@@ -164,7 +168,7 @@ class ReviewCommentCreatedServiceTest {
         );
 
         // when
-        reviewCommentCreatedService.createReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         ReviewComment comment = jpaReviewCommentRepository.findAll().get(0);
@@ -178,7 +182,7 @@ class ReviewCommentCreatedServiceTest {
         ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(100L);
 
         // when
-        reviewCommentCreatedService.createReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         ReviewComment comment = jpaReviewCommentRepository.findAll().getFirst();
@@ -192,7 +196,7 @@ class ReviewCommentCreatedServiceTest {
         ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(100L);
 
         // when
-        reviewCommentCreatedService.createReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         ReviewComment comment = jpaReviewCommentRepository.findAll().getFirst();
@@ -207,8 +211,8 @@ class ReviewCommentCreatedServiceTest {
         ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(sameGithubCommentId);
 
         // when
-        reviewCommentCreatedService.createReviewComment(request);
-        reviewCommentCreatedService.createReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         assertThat(jpaReviewCommentRepository.count()).isEqualTo(1);

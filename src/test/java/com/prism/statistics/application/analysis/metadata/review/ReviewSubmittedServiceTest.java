@@ -1,6 +1,7 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewSubmittedRequest;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewSubmittedRequest.ReviewerData;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
@@ -32,6 +33,9 @@ class ReviewSubmittedServiceTest {
     private ReviewSubmittedService reviewSubmittedService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaReviewRepository jpaReviewRepository;
 
     @Sql("/sql/webhook/insert_project.sql")
@@ -41,7 +45,7 @@ class ReviewSubmittedServiceTest {
         ReviewSubmittedRequest request = createReviewSubmittedRequest(100L, "approved");
 
         // when
-        reviewSubmittedService.submitReview(request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         assertThat(jpaReviewRepository.count()).isEqualTo(1);
@@ -60,7 +64,7 @@ class ReviewSubmittedServiceTest {
         );
 
         // when
-        reviewSubmittedService.submitReview(request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         List<Review> reviews = jpaReviewRepository.findAll();
@@ -87,7 +91,7 @@ class ReviewSubmittedServiceTest {
         ReviewSubmittedRequest request = createReviewSubmittedRequest(100L, "changes_requested");
 
         // when
-        reviewSubmittedService.submitReview(request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         Review review = jpaReviewRepository.findAll().get(0);
@@ -104,7 +108,7 @@ class ReviewSubmittedServiceTest {
         );
 
         // when
-        reviewSubmittedService.submitReview(request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         Review review = jpaReviewRepository.findAll().get(0);
@@ -124,7 +128,7 @@ class ReviewSubmittedServiceTest {
         );
 
         // when
-        reviewSubmittedService.submitReview(request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         Review review = jpaReviewRepository.findAll().getFirst();
@@ -139,8 +143,8 @@ class ReviewSubmittedServiceTest {
         ReviewSubmittedRequest request = createReviewSubmittedRequest(sameGithubReviewId, "approved");
 
         // when
-        reviewSubmittedService.submitReview(request);
-        reviewSubmittedService.submitReview(request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         assertThat(jpaReviewRepository.count()).isEqualTo(1);

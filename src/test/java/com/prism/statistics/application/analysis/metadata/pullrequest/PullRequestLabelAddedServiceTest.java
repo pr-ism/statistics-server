@@ -1,6 +1,7 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelAddedRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelAddedRequest.LabelData;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequestLabel;
@@ -36,6 +37,9 @@ class PullRequestLabelAddedServiceTest {
     private PullRequestLabelAddedService pullRequestLabelAddedService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaPullRequestLabelRepository jpaPullRequestLabelRepository;
 
     @Autowired
@@ -48,7 +52,7 @@ class PullRequestLabelAddedServiceTest {
         PullRequestLabelAddedRequest request = createLabelAddedRequest("bug");
 
         // when
-        pullRequestLabelAddedService.addPullRequestLabel(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestLabelAddedService.addPullRequestLabel(request));
 
         // then
         assertAll(
@@ -65,7 +69,7 @@ class PullRequestLabelAddedServiceTest {
         PullRequestLabelAddedRequest request = createLabelAddedRequest(labelName);
 
         // when
-        pullRequestLabelAddedService.addPullRequestLabel(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestLabelAddedService.addPullRequestLabel(request));
 
         // then
         PullRequestLabel pullRequestLabel = jpaPullRequestLabelRepository.findAll().getFirst();
@@ -85,7 +89,7 @@ class PullRequestLabelAddedServiceTest {
         PullRequestLabelAddedRequest request = createLabelAddedRequest(labelName);
 
         // when
-        pullRequestLabelAddedService.addPullRequestLabel(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestLabelAddedService.addPullRequestLabel(request));
 
         // then
         PullRequestLabelHistory pullRequestLabelHistory = jpaPullRequestLabelHistoryRepository.findAll().getFirst();
@@ -104,8 +108,8 @@ class PullRequestLabelAddedServiceTest {
         PullRequestLabelAddedRequest request = createLabelAddedRequest(labelName);
 
         // when
-        pullRequestLabelAddedService.addPullRequestLabel(request);
-        pullRequestLabelAddedService.addPullRequestLabel(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestLabelAddedService.addPullRequestLabel(request));
+        processingSourceContext.withInboxProcessing(() -> pullRequestLabelAddedService.addPullRequestLabel(request));
 
         // then
         assertAll(
@@ -121,7 +125,7 @@ class PullRequestLabelAddedServiceTest {
         PullRequestLabelAddedRequest request = createLabelAddedRequest("bug");
 
         // when
-        pullRequestLabelAddedService.addPullRequestLabel(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestLabelAddedService.addPullRequestLabel(request));
 
         // then
         PullRequestLabel pullRequestLabel = jpaPullRequestLabelRepository.findAll().getFirst();
@@ -155,7 +159,7 @@ class PullRequestLabelAddedServiceTest {
                         throw new IllegalStateException("시작 대기 중 인터럽트 발생", e);
                     }
                     // when
-                    pullRequestLabelAddedService.addPullRequestLabel(request);
+                    processingSourceContext.withInboxProcessing(() -> pullRequestLabelAddedService.addPullRequestLabel(request));
                     return null;
                 }));
             }

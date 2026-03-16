@@ -1,6 +1,7 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest.CommitNode;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest.CommitsData;
@@ -39,6 +40,9 @@ class PullRequestSynchronizedServiceTest {
     private PullRequestSynchronizedService pullRequestSynchronizedService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaPullRequestRepository jpaPullRequestRepository;
 
     @Autowired
@@ -63,7 +67,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(request));
 
         // then
         long eventCount = applicationEvents.stream(PullRequestSynchronizedEvent.class).count();
@@ -77,7 +81,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(request));
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -95,12 +99,12 @@ class PullRequestSynchronizedServiceTest {
     void 오래된_데이터면_PR_엔티티가_업데이트되지_않는다() {
         // given
         PullRequestSynchronizedRequest newerRequest = createNewerRequest();
-        pullRequestSynchronizedService.synchronizePullRequest(newerRequest);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(newerRequest));
 
         PullRequestSynchronizedRequest olderRequest = createOlderRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(olderRequest);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(olderRequest));
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -114,7 +118,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(request));
 
         // then
         assertThat(jpaCommitRepository.count()).isEqualTo(3);
@@ -127,7 +131,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(request));
 
         // then
         assertAll(
@@ -144,12 +148,12 @@ class PullRequestSynchronizedServiceTest {
     void 오래된_데이터면_PullRequestFile이_유지된다() {
         // given
         PullRequestSynchronizedRequest newerRequest = createNewerRequest();
-        pullRequestSynchronizedService.synchronizePullRequest(newerRequest);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(newerRequest));
 
         PullRequestSynchronizedRequest olderRequest = createOlderRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(olderRequest);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(olderRequest));
 
         // then
         assertAll(
@@ -166,12 +170,12 @@ class PullRequestSynchronizedServiceTest {
     void ContentHistory는_항상_저장된다() {
         // given
         PullRequestSynchronizedRequest newerRequest = createNewerRequest();
-        pullRequestSynchronizedService.synchronizePullRequest(newerRequest);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(newerRequest));
 
         PullRequestSynchronizedRequest olderRequest = createOlderRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(olderRequest);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(olderRequest));
 
         // then
         assertThat(jpaPullRequestContentHistoryRepository.count()).isEqualTo(2);
@@ -182,12 +186,12 @@ class PullRequestSynchronizedServiceTest {
     void FileHistory는_항상_저장된다() {
         // given
         PullRequestSynchronizedRequest newerRequest = createNewerRequest();
-        pullRequestSynchronizedService.synchronizePullRequest(newerRequest);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(newerRequest));
 
         PullRequestSynchronizedRequest olderRequest = createOlderRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(olderRequest);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(olderRequest));
 
         // then
         assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(6);
@@ -200,7 +204,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(request));
 
         // then
         long eventCount = applicationEvents.stream(PullRequestEarlySynchronizedEvent.class).count();
@@ -214,7 +218,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(request));
 
         // then
         assertAll(
@@ -232,7 +236,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(request));
 
         // then
         assertAll(
@@ -267,7 +271,7 @@ class PullRequestSynchronizedServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> pullRequestSynchronizedService.synchronizePullRequest(request))
+        assertThatThrownBy(() -> processingSourceContext.withInboxProcessing(() -> pullRequestSynchronizedService.synchronizePullRequest(request)))
                 .isInstanceOf(HeadCommitNotFoundException.class);
     }
 

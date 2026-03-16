@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestClosedRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestStateChangedEvent;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
@@ -38,6 +39,9 @@ class PullRequestClosedServiceTest {
     private PullRequestClosedService pullRequestClosedService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaPullRequestRepository jpaPullRequestRepository;
 
     @Autowired
@@ -53,7 +57,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createClosedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request));
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -67,7 +71,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createMergedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request));
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -81,7 +85,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createClosedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request));
 
         // then
         long eventCount = applicationEvents.stream(PullRequestStateChangedEvent.class).count();
@@ -95,7 +99,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createClosedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request));
 
         // then
         assertThat(jpaPullRequestStateHistoryRepository.count()).isEqualTo(1);
@@ -114,7 +118,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createMergedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request));
 
         // then
         assertThat(jpaPullRequestStateHistoryRepository.count()).isEqualTo(1);
@@ -133,7 +137,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createMergedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request));
 
         // then
         PullRequestStateHistory history = jpaPullRequestStateHistoryRepository.findAll().getFirst();
@@ -146,10 +150,10 @@ class PullRequestClosedServiceTest {
     void 이미_닫힌_PullRequest에_대해_closed_이벤트가_오면_상태가_변경되지_않고_이벤트가_발행되지_않는다() {
         // given
         PullRequestClosedRequest request = createClosedRequest();
-        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request));
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request));
 
         // then
         long eventCount = applicationEvents.stream(PullRequestStateChangedEvent.class).count();
@@ -167,7 +171,7 @@ class PullRequestClosedServiceTest {
         PullRequestClosedRequest request = createClosedRequest();
 
         // when
-        pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestClosedService.closePullRequest(TEST_PROJECT_ID, request));
 
         // then
         assertAll(

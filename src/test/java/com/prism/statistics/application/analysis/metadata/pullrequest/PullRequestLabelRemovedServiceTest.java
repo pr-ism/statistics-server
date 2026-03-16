@@ -1,6 +1,7 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelRemovedRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelRemovedRequest.LabelData;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestLabelAction;
@@ -35,6 +36,9 @@ class PullRequestLabelRemovedServiceTest {
     private PullRequestLabelRemovedService pullRequestLabelRemovedService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaPullRequestLabelRepository jpaPullRequestLabelRepository;
 
     @Autowired
@@ -47,7 +51,7 @@ class PullRequestLabelRemovedServiceTest {
         PullRequestLabelRemovedRequest request = createLabelRemovedRequest("bug");
 
         // when
-        pullRequestLabelRemovedService.removePullRequestLabel(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestLabelRemovedService.removePullRequestLabel(request));
 
         // then
         assertAll(
@@ -64,7 +68,7 @@ class PullRequestLabelRemovedServiceTest {
         PullRequestLabelRemovedRequest request = createLabelRemovedRequest(labelName);
 
         // when
-        pullRequestLabelRemovedService.removePullRequestLabel(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestLabelRemovedService.removePullRequestLabel(request));
 
         // then
         PullRequestLabelHistory pullRequestLabelHistory = jpaPullRequestLabelHistoryRepository.findAll().getFirst();
@@ -82,7 +86,7 @@ class PullRequestLabelRemovedServiceTest {
         PullRequestLabelRemovedRequest request = createLabelRemovedRequest("non-existent-label");
 
         // when
-        pullRequestLabelRemovedService.removePullRequestLabel(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestLabelRemovedService.removePullRequestLabel(request));
 
         // then
         assertAll(
@@ -98,8 +102,8 @@ class PullRequestLabelRemovedServiceTest {
         PullRequestLabelRemovedRequest request = createLabelRemovedRequest("bug");
 
         // when
-        pullRequestLabelRemovedService.removePullRequestLabel(request);
-        pullRequestLabelRemovedService.removePullRequestLabel(request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestLabelRemovedService.removePullRequestLabel(request));
+        processingSourceContext.withInboxProcessing(() -> pullRequestLabelRemovedService.removePullRequestLabel(request));
 
         // then
         assertAll(
@@ -131,7 +135,7 @@ class PullRequestLabelRemovedServiceTest {
                         throw new IllegalStateException("시작 대기 중 인터럽트 발생", e);
                     }
                     // when
-                    pullRequestLabelRemovedService.removePullRequestLabel(request);
+                    processingSourceContext.withInboxProcessing(() -> pullRequestLabelRemovedService.removePullRequestLabel(request));
                     return null;
                 }));
             }

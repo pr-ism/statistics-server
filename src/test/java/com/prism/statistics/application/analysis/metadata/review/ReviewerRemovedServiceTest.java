@@ -1,6 +1,7 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerRemovedRequest;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerRemovedRequest.ReviewerData;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewerAction;
@@ -38,6 +39,9 @@ class ReviewerRemovedServiceTest {
     private ReviewerRemovedService reviewerRemovedService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaRequestedReviewerRepository jpaRequestedReviewerRepository;
 
     @Autowired
@@ -50,7 +54,7 @@ class ReviewerRemovedServiceTest {
         ReviewerRemovedRequest request = createReviewerRemovedRequest("reviewer1", 12345L);
 
         // when
-        reviewerRemovedService.removeReviewer(request);
+        processingSourceContext.withInboxProcessing(() -> reviewerRemovedService.removeReviewer(request));
 
         // then
         assertAll(
@@ -68,7 +72,7 @@ class ReviewerRemovedServiceTest {
         ReviewerRemovedRequest request = createReviewerRemovedRequest(githubMention, githubUid);
 
         // when
-        reviewerRemovedService.removeReviewer(request);
+        processingSourceContext.withInboxProcessing(() -> reviewerRemovedService.removeReviewer(request));
 
         // then
         List<RequestedReviewerHistory> histories = jpaRequestedReviewerHistoryRepository.findAll();
@@ -93,7 +97,7 @@ class ReviewerRemovedServiceTest {
         ReviewerRemovedRequest request = createReviewerRemovedRequest("non-existent", 99999L);
 
         // when
-        reviewerRemovedService.removeReviewer(request);
+        processingSourceContext.withInboxProcessing(() -> reviewerRemovedService.removeReviewer(request));
 
         // then
         assertAll(
@@ -109,8 +113,8 @@ class ReviewerRemovedServiceTest {
         ReviewerRemovedRequest request = createReviewerRemovedRequest("reviewer1", 12345L);
 
         // when
-        reviewerRemovedService.removeReviewer(request);
-        reviewerRemovedService.removeReviewer(request);
+        processingSourceContext.withInboxProcessing(() -> reviewerRemovedService.removeReviewer(request));
+        processingSourceContext.withInboxProcessing(() -> reviewerRemovedService.removeReviewer(request));
 
         // then
         assertAll(
@@ -143,7 +147,7 @@ class ReviewerRemovedServiceTest {
                         throw new IllegalStateException("시작 대기 중 인터럽트 발생", e);
                     }
                     // when
-                    reviewerRemovedService.removeReviewer(request);
+                    processingSourceContext.withInboxProcessing(() -> reviewerRemovedService.removeReviewer(request));
                     return null;
                 }));
             }

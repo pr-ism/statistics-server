@@ -23,6 +23,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -37,6 +38,9 @@ class ProjectIdResolvingFacadeTest {
     private ProjectIdResolvingFacade projectIdResolvingFacade;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaPullRequestRepository jpaPullRequestRepository;
 
     @Sql("/sql/webhook/insert_project.sql")
@@ -46,7 +50,7 @@ class ProjectIdResolvingFacadeTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest();
 
         // when
-        projectIdResolvingFacade.createPullRequest(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.createPullRequest(TEST_API_KEY, request));
 
         // then
         assertThat(jpaPullRequestRepository.count()).isEqualTo(1);
@@ -61,7 +65,7 @@ class ProjectIdResolvingFacadeTest {
         );
 
         // when
-        projectIdResolvingFacade.closePullRequest(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.closePullRequest(TEST_API_KEY, request));
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -77,7 +81,7 @@ class ProjectIdResolvingFacadeTest {
         );
 
         // when
-        projectIdResolvingFacade.readyForReview(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.readyForReview(TEST_API_KEY, request));
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -93,7 +97,7 @@ class ProjectIdResolvingFacadeTest {
         );
 
         // when
-        projectIdResolvingFacade.reopenPullRequest(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.reopenPullRequest(TEST_API_KEY, request));
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -109,7 +113,7 @@ class ProjectIdResolvingFacadeTest {
         );
 
         // when
-        projectIdResolvingFacade.convertToDraft(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.convertToDraft(TEST_API_KEY, request));
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -124,7 +128,7 @@ class ProjectIdResolvingFacadeTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> projectIdResolvingFacade.closePullRequest("invalid-api-key", request))
+        assertThatThrownBy(() -> processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.closePullRequest("invalid-api-key", request)))
                 .isInstanceOf(InvalidApiKeyException.class);
     }
 

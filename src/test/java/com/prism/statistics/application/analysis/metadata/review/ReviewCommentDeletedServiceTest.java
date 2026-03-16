@@ -1,6 +1,7 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentDeletedRequest;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
 import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewCommentNotFoundException;
@@ -33,6 +34,9 @@ class ReviewCommentDeletedServiceTest {
     private ReviewCommentDeletedService reviewCommentDeletedService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaReviewCommentRepository jpaReviewCommentRepository;
 
     @Sql("/sql/webhook/insert_project_and_review_comment.sql")
@@ -49,7 +53,7 @@ class ReviewCommentDeletedServiceTest {
         );
 
         // when
-        reviewCommentDeletedService.deleteReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentDeletedService.deleteReviewComment(request));
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -73,7 +77,7 @@ class ReviewCommentDeletedServiceTest {
         );
 
         // when
-        reviewCommentDeletedService.deleteReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentDeletedService.deleteReviewComment(request));
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -96,7 +100,7 @@ class ReviewCommentDeletedServiceTest {
         );
 
         // when
-        reviewCommentDeletedService.deleteReviewComment(request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentDeletedService.deleteReviewComment(request));
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -118,7 +122,7 @@ class ReviewCommentDeletedServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> reviewCommentDeletedService.deleteReviewComment(request))
+        assertThatThrownBy(() -> processingSourceContext.withInboxProcessing(() -> reviewCommentDeletedService.deleteReviewComment(request)))
                 .isInstanceOf(ReviewCommentNotFoundException.class);
     }
 }
