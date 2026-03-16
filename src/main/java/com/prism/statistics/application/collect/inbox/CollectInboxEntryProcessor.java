@@ -25,6 +25,7 @@ public class CollectInboxEntryProcessor {
     private final CollectInboxEventRouter collectInboxEventRouter;
     private final CollectInboxFailureReasonTruncator failureReasonTruncator;
     private final ProcessingSourceContext processingSourceContext;
+    private final CollectRetryExceptionClassifier retryExceptionClassifier;
 
     public void process(CollectInbox inbox) {
         Long inboxId = inbox.getId();
@@ -74,6 +75,11 @@ public class CollectInboxEntryProcessor {
 
     private void markFailureStatus(CollectInbox inbox, Exception exception) {
         String reason = resolveFailureReason(exception);
+
+        if (!retryExceptionClassifier.isRetryable(exception)) {
+            inbox.markFailed(clock.instant(), reason, CollectInboxFailureType.BUSINESS_INVARIANT);
+            return;
+        }
 
         if (inbox.getProcessingAttempt() < collectRetryProperties.maxAttempts()) {
             inbox.markRetryPending(clock.instant(), reason);

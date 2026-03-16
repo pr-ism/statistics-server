@@ -22,6 +22,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.dao.QueryTimeoutException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,8 @@ class CollectInboxEntryProcessorTest {
                 collectInboxRepository,
                 collectInboxServiceRouter,
                 new CollectInboxFailureReasonTruncator(),
-                new ProcessingSourceContext()
+                new ProcessingSourceContext(),
+                new CollectRetryExceptionClassifier()
         );
     }
 
@@ -121,7 +123,7 @@ class CollectInboxEntryProcessorTest {
     }
 
     @Test
-    void 예외_발생시_첫_시도면_RETRY_PENDING으로_마킹된다() {
+    void 재시도_가능한_예외_발생시_첫_시도면_RETRY_PENDING으로_마킹된다() {
         // given
         CollectInbox pending = org.mockito.Mockito.mock(CollectInbox.class);
         given(pending.getId()).willReturn(10L);
@@ -136,7 +138,7 @@ class CollectInboxEntryProcessorTest {
 
         given(collectInboxRepository.markProcessingIfClaimable(eq(10L), any())).willReturn(true);
         given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
-        willThrow(new RuntimeException("일시적 오류"))
+        willThrow(new QueryTimeoutException("DB 타임아웃"))
                 .given(collectInboxServiceRouter)
                 .route(any(), any());
 
@@ -148,6 +150,38 @@ class CollectInboxEntryProcessorTest {
                 () -> assertThat(actual.getStatus()).isEqualTo(CollectInboxStatus.RETRY_PENDING),
                 () -> assertThat(actual.getProcessingAttempt()).isEqualTo(1),
                 () -> assertThat(actual.getFailureType()).isNull()
+        );
+        verify(collectInboxRepository).save(actual);
+    }
+
+    @Test
+    void 재시도_불가능한_예외_발생시_즉시_FAILED와_BUSINESS_INVARIANT로_마킹된다() {
+        // given
+        CollectInbox pending = org.mockito.Mockito.mock(CollectInbox.class);
+        given(pending.getId()).willReturn(10L);
+
+        CollectInbox actual = CollectInbox.pending(
+                CollectInboxType.PULL_REQUEST_OPENED,
+                1L,
+                20L,
+                "{}"
+        );
+        actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));
+
+        given(collectInboxRepository.markProcessingIfClaimable(eq(10L), any())).willReturn(true);
+        given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
+        willThrow(new IllegalArgumentException("비즈니스 로직 위반"))
+                .given(collectInboxServiceRouter)
+                .route(any(), any());
+
+        // when
+        collectInboxEntryProcessor.process(pending);
+
+        // then
+        assertAll(
+                () -> assertThat(actual.getStatus()).isEqualTo(CollectInboxStatus.FAILED),
+                () -> assertThat(actual.getProcessingAttempt()).isEqualTo(1),
+                () -> assertThat(actual.getFailureType()).isEqualTo(CollectInboxFailureType.BUSINESS_INVARIANT)
         );
         verify(collectInboxRepository).save(actual);
     }
@@ -172,7 +206,7 @@ class CollectInboxEntryProcessorTest {
 
         given(collectInboxRepository.markProcessingIfClaimable(eq(10L), any())).willReturn(true);
         given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
-        willThrow(new RuntimeException("3차 실패"))
+        willThrow(new QueryTimeoutException("3차 실패"))
                 .given(collectInboxServiceRouter)
                 .route(any(), any());
 
