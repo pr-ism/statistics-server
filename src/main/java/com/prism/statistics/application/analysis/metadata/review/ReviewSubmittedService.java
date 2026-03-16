@@ -6,11 +6,9 @@ import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
-import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.analysis.metadata.review.repository.ReviewRepository;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,26 +19,17 @@ import java.time.LocalDateTime;
 public class ReviewSubmittedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
-    private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final ReviewRepository reviewRepository;
 
     @InboxEnqueue(CollectInboxType.REVIEW_SUBMITTED)
-    public void submitReview(String apiKey, ReviewSubmittedRequest request) {
-        validateApiKey(apiKey);
-
+    public void submitReview(ReviewSubmittedRequest request) {
         Review review = createReview(request);
 
         pullRequestRepository.findIdByGithubId(request.githubPullRequestId())
                 .ifPresent(id -> review.assignPullRequestId(id));
 
         reviewRepository.saveOrFind(review);
-    }
-
-    private void validateApiKey(String apiKey) {
-        if (!projectRepository.existsByApiKey(apiKey)) {
-            throw new InvalidApiKeyException();
-        }
     }
 
     private Review createReview(ReviewSubmittedRequest request) {

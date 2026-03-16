@@ -1,29 +1,29 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentDeletedRequest;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewCommentRepository;
 import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewCommentNotFoundException;
-import java.time.Instant;
-import java.time.LocalDateTime;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewCommentRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class ReviewCommentDeletedServiceTest {
 
-    private static final String TEST_API_KEY = "test-api-key";
+
     private static final Long EXISTING_COMMENT_ID = 100L;
     private static final String ORIGINAL_BODY = "원본 댓글 내용";
     private static final LocalDateTime ORIGINAL_UPDATED_AT = LocalDateTime.of(2024, 1, 15, 10, 0, 0);
@@ -49,7 +49,7 @@ class ReviewCommentDeletedServiceTest {
         );
 
         // when
-        reviewCommentDeletedService.deleteReviewComment(TEST_API_KEY, request);
+        reviewCommentDeletedService.deleteReviewComment(request);
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -73,7 +73,7 @@ class ReviewCommentDeletedServiceTest {
         );
 
         // when
-        reviewCommentDeletedService.deleteReviewComment(TEST_API_KEY, request);
+        reviewCommentDeletedService.deleteReviewComment(request);
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -96,7 +96,7 @@ class ReviewCommentDeletedServiceTest {
         );
 
         // when
-        reviewCommentDeletedService.deleteReviewComment(TEST_API_KEY, request);
+        reviewCommentDeletedService.deleteReviewComment(request);
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -104,21 +104,6 @@ class ReviewCommentDeletedServiceTest {
                 () -> assertThat(result.isDeleted()).isFalse(),
                 () -> assertThat(result.getGithubUpdatedAt()).isEqualTo(ORIGINAL_UPDATED_AT)
         );
-    }
-
-    @Test
-    void 존재하지_않는_API_Key면_예외가_발생한다() {
-        // given
-        String invalidApiKey = "invalid-api-key";
-        ReviewCommentDeletedRequest request = new ReviewCommentDeletedRequest(
-                null,
-                EXISTING_COMMENT_ID,
-                FIXED_UPDATED_AT
-        );
-
-        // when & then
-        assertThatThrownBy(() -> reviewCommentDeletedService.deleteReviewComment(invalidApiKey, request))
-                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     @Sql("/sql/webhook/insert_project.sql")
@@ -133,7 +118,7 @@ class ReviewCommentDeletedServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> reviewCommentDeletedService.deleteReviewComment(TEST_API_KEY, request))
+        assertThatThrownBy(() -> reviewCommentDeletedService.deleteReviewComment(request))
                 .isInstanceOf(ReviewCommentNotFoundException.class);
     }
 }

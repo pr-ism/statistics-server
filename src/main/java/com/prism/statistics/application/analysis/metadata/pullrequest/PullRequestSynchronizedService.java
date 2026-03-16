@@ -13,8 +13,6 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.Comm
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.vo.PullRequestChangeStats;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.HeadCommitNotFoundException;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
-import com.prism.statistics.domain.project.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -31,17 +29,13 @@ import java.util.Set;
 public class PullRequestSynchronizedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
-    private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final CommitRepository commitRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @InboxEnqueue(CollectInboxType.PULL_REQUEST_SYNCHRONIZED)
     @Transactional
-    public void synchronizePullRequest(String apiKey, PullRequestSynchronizedRequest request) {
-        projectRepository.findIdByApiKey(apiKey)
-                .orElseThrow(() -> new InvalidApiKeyException());
-
+    public void synchronizePullRequest(PullRequestSynchronizedRequest request) {
         pullRequestRepository.findWithLock(request.githubPullRequestId())
                 .ifPresentOrElse(
                         pullRequest -> processSynchronize(pullRequest, request),

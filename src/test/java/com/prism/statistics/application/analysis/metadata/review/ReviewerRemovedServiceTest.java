@@ -1,15 +1,10 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerRemovedRequest;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerRemovedRequest.ReviewerData;
-import com.prism.statistics.domain.analysis.metadata.review.history.RequestedReviewerHistory;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewerAction;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
+import com.prism.statistics.domain.analysis.metadata.review.history.RequestedReviewerHistory;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaRequestedReviewerHistoryRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaRequestedReviewerRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -22,18 +17,17 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class ReviewerRemovedServiceTest {
 
-    private static final String TEST_API_KEY = "test-api-key";
+
     private static final Long TEST_GITHUB_PULL_REQUEST_ID = 999L;
     private static final int TEST_PULL_REQUEST_NUMBER = 123;
     private static final String TEST_HEAD_COMMIT_SHA = "abc123def456";
@@ -56,7 +50,7 @@ class ReviewerRemovedServiceTest {
         ReviewerRemovedRequest request = createReviewerRemovedRequest("reviewer1", 12345L);
 
         // when
-        reviewerRemovedService.removeReviewer(TEST_API_KEY, request);
+        reviewerRemovedService.removeReviewer(request);
 
         // then
         assertAll(
@@ -74,7 +68,7 @@ class ReviewerRemovedServiceTest {
         ReviewerRemovedRequest request = createReviewerRemovedRequest(githubMention, githubUid);
 
         // when
-        reviewerRemovedService.removeReviewer(TEST_API_KEY, request);
+        reviewerRemovedService.removeReviewer(request);
 
         // then
         List<RequestedReviewerHistory> histories = jpaRequestedReviewerHistoryRepository.findAll();
@@ -99,7 +93,7 @@ class ReviewerRemovedServiceTest {
         ReviewerRemovedRequest request = createReviewerRemovedRequest("non-existent", 99999L);
 
         // when
-        reviewerRemovedService.removeReviewer(TEST_API_KEY, request);
+        reviewerRemovedService.removeReviewer(request);
 
         // then
         assertAll(
@@ -115,25 +109,14 @@ class ReviewerRemovedServiceTest {
         ReviewerRemovedRequest request = createReviewerRemovedRequest("reviewer1", 12345L);
 
         // when
-        reviewerRemovedService.removeReviewer(TEST_API_KEY, request);
-        reviewerRemovedService.removeReviewer(TEST_API_KEY, request);
+        reviewerRemovedService.removeReviewer(request);
+        reviewerRemovedService.removeReviewer(request);
 
         // then
         assertAll(
                 () -> assertThat(jpaRequestedReviewerRepository.count()).isEqualTo(0),
                 () -> assertThat(jpaRequestedReviewerHistoryRepository.count()).isEqualTo(1)
         );
-    }
-
-    @Test
-    void 존재하지_않는_API_Key면_예외가_발생한다() {
-        // given
-        ReviewerRemovedRequest request = createReviewerRemovedRequest("reviewer1", 12345L);
-        String invalidApiKey = "invalid-api-key";
-
-        // when & then
-        assertThatThrownBy(() -> reviewerRemovedService.removeReviewer(invalidApiKey, request))
-                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     @Sql("/sql/webhook/insert_project_pr_and_reviewer.sql")
@@ -160,7 +143,7 @@ class ReviewerRemovedServiceTest {
                         throw new IllegalStateException("시작 대기 중 인터럽트 발생", e);
                     }
                     // when
-                    reviewerRemovedService.removeReviewer(TEST_API_KEY, request);
+                    reviewerRemovedService.removeReviewer(request);
                     return null;
                 }));
             }

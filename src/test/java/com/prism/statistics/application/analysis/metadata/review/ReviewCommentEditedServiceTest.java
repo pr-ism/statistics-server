@@ -1,29 +1,29 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentEditedRequest;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewCommentRepository;
 import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewCommentNotFoundException;
-import java.time.Instant;
-import java.time.LocalDateTime;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewCommentRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class ReviewCommentEditedServiceTest {
 
-    private static final String TEST_API_KEY = "test-api-key";
+
     private static final Long EXISTING_COMMENT_ID = 100L;
     private static final String ORIGINAL_BODY = "원본 댓글 내용";
     private static final LocalDateTime ORIGINAL_UPDATED_AT = LocalDateTime.of(2024, 1, 15, 10, 0, 0);
@@ -50,7 +50,7 @@ class ReviewCommentEditedServiceTest {
         );
 
         // when
-        reviewCommentEditedService.editReviewComment(TEST_API_KEY, request);
+        reviewCommentEditedService.editReviewComment(request);
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -75,7 +75,7 @@ class ReviewCommentEditedServiceTest {
         );
 
         // when
-        reviewCommentEditedService.editReviewComment(TEST_API_KEY, request);
+        reviewCommentEditedService.editReviewComment(request);
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -100,7 +100,7 @@ class ReviewCommentEditedServiceTest {
         );
 
         // when
-        reviewCommentEditedService.editReviewComment(TEST_API_KEY, request);
+        reviewCommentEditedService.editReviewComment(request);
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -108,22 +108,6 @@ class ReviewCommentEditedServiceTest {
                 () -> assertThat(result.getBody()).isEqualTo(ORIGINAL_BODY),
                 () -> assertThat(result.getGithubUpdatedAt()).isEqualTo(ORIGINAL_UPDATED_AT)
         );
-    }
-
-    @Test
-    void 존재하지_않는_API_Key면_예외가_발생한다() {
-        // given
-        String invalidApiKey = "invalid-api-key";
-        ReviewCommentEditedRequest request = new ReviewCommentEditedRequest(
-                null,
-                EXISTING_COMMENT_ID,
-                "수정된 댓글 내용",
-                Instant.now()
-        );
-
-        // when & then
-        assertThatThrownBy(() -> reviewCommentEditedService.editReviewComment(invalidApiKey, request))
-                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     @Sql("/sql/webhook/insert_project.sql")
@@ -139,7 +123,7 @@ class ReviewCommentEditedServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> reviewCommentEditedService.editReviewComment(TEST_API_KEY, request))
+        assertThatThrownBy(() -> reviewCommentEditedService.editReviewComment(request))
                 .isInstanceOf(ReviewCommentNotFoundException.class);
     }
 }

@@ -1,9 +1,5 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestSynchronizedRequest.CommitNode;
@@ -13,12 +9,7 @@ import com.prism.statistics.application.analysis.metadata.pullrequest.event.Pull
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestSynchronizedEvent;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.HeadCommitNotFoundException;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaCommitRepository;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestContentHistoryRepository;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestFileHistoryRepository;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestFileRepository;
-import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestRepository;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
+import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.*;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -30,13 +21,17 @@ import org.springframework.test.context.jdbc.Sql;
 import java.time.Instant;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 @IntegrationTest
 @RecordApplicationEvents
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class PullRequestSynchronizedServiceTest {
 
-    private static final String TEST_API_KEY = "test-api-key";
+
     private static final int TEST_PULL_REQUEST_NUMBER = 123;
     private static final Long TEST_GITHUB_PULL_REQUEST_ID = 1001L;
 
@@ -68,7 +63,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, request);
+        pullRequestSynchronizedService.synchronizePullRequest(request);
 
         // then
         long eventCount = applicationEvents.stream(PullRequestSynchronizedEvent.class).count();
@@ -82,7 +77,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, request);
+        pullRequestSynchronizedService.synchronizePullRequest(request);
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -100,12 +95,12 @@ class PullRequestSynchronizedServiceTest {
     void 오래된_데이터면_PR_엔티티가_업데이트되지_않는다() {
         // given
         PullRequestSynchronizedRequest newerRequest = createNewerRequest();
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, newerRequest);
+        pullRequestSynchronizedService.synchronizePullRequest(newerRequest);
 
         PullRequestSynchronizedRequest olderRequest = createOlderRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, olderRequest);
+        pullRequestSynchronizedService.synchronizePullRequest(olderRequest);
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -119,7 +114,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, request);
+        pullRequestSynchronizedService.synchronizePullRequest(request);
 
         // then
         assertThat(jpaCommitRepository.count()).isEqualTo(3);
@@ -132,7 +127,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, request);
+        pullRequestSynchronizedService.synchronizePullRequest(request);
 
         // then
         assertAll(
@@ -149,12 +144,12 @@ class PullRequestSynchronizedServiceTest {
     void 오래된_데이터면_PullRequestFile이_유지된다() {
         // given
         PullRequestSynchronizedRequest newerRequest = createNewerRequest();
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, newerRequest);
+        pullRequestSynchronizedService.synchronizePullRequest(newerRequest);
 
         PullRequestSynchronizedRequest olderRequest = createOlderRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, olderRequest);
+        pullRequestSynchronizedService.synchronizePullRequest(olderRequest);
 
         // then
         assertAll(
@@ -171,12 +166,12 @@ class PullRequestSynchronizedServiceTest {
     void ContentHistory는_항상_저장된다() {
         // given
         PullRequestSynchronizedRequest newerRequest = createNewerRequest();
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, newerRequest);
+        pullRequestSynchronizedService.synchronizePullRequest(newerRequest);
 
         PullRequestSynchronizedRequest olderRequest = createOlderRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, olderRequest);
+        pullRequestSynchronizedService.synchronizePullRequest(olderRequest);
 
         // then
         assertThat(jpaPullRequestContentHistoryRepository.count()).isEqualTo(2);
@@ -187,12 +182,12 @@ class PullRequestSynchronizedServiceTest {
     void FileHistory는_항상_저장된다() {
         // given
         PullRequestSynchronizedRequest newerRequest = createNewerRequest();
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, newerRequest);
+        pullRequestSynchronizedService.synchronizePullRequest(newerRequest);
 
         PullRequestSynchronizedRequest olderRequest = createOlderRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, olderRequest);
+        pullRequestSynchronizedService.synchronizePullRequest(olderRequest);
 
         // then
         assertThat(jpaPullRequestFileHistoryRepository.count()).isEqualTo(6);
@@ -205,7 +200,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, request);
+        pullRequestSynchronizedService.synchronizePullRequest(request);
 
         // then
         long eventCount = applicationEvents.stream(PullRequestEarlySynchronizedEvent.class).count();
@@ -219,7 +214,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, request);
+        pullRequestSynchronizedService.synchronizePullRequest(request);
 
         // then
         assertAll(
@@ -237,7 +232,7 @@ class PullRequestSynchronizedServiceTest {
         PullRequestSynchronizedRequest request = createNewerRequest();
 
         // when
-        pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, request);
+        pullRequestSynchronizedService.synchronizePullRequest(request);
 
         // then
         assertAll(
@@ -272,19 +267,8 @@ class PullRequestSynchronizedServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> pullRequestSynchronizedService.synchronizePullRequest(TEST_API_KEY, request))
+        assertThatThrownBy(() -> pullRequestSynchronizedService.synchronizePullRequest(request))
                 .isInstanceOf(HeadCommitNotFoundException.class);
-    }
-
-    @Test
-    void 존재하지_않는_API_Key면_예외가_발생한다() {
-        // given
-        PullRequestSynchronizedRequest request = createNewerRequest();
-        String invalidApiKey = "invalid-api-key";
-
-        // when & then
-        assertThatThrownBy(() -> pullRequestSynchronizedService.synchronizePullRequest(invalidApiKey, request))
-                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     /**

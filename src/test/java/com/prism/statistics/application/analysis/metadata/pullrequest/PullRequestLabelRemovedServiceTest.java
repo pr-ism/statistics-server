@@ -1,17 +1,12 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
 import com.prism.statistics.application.IntegrationTest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelRemovedRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelRemovedRequest.LabelData;
-import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullRequestLabelHistory;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullRequestLabelAction;
+import com.prism.statistics.domain.analysis.metadata.pullrequest.history.PullRequestLabelHistory;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestLabelHistoryRepository;
 import com.prism.statistics.infrastructure.analysis.metadata.pullrequest.persistence.JpaPullRequestLabelRepository;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -21,18 +16,17 @@ import org.springframework.test.context.jdbc.Sql;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class PullRequestLabelRemovedServiceTest {
 
-    private static final String TEST_API_KEY = "test-api-key";
+
     private static final Long TEST_GITHUB_PULL_REQUEST_ID = 1001L;
     private static final int TEST_PULL_REQUEST_NUMBER = 123;
     private static final String TEST_HEAD_COMMIT_SHA = "abc123";
@@ -53,7 +47,7 @@ class PullRequestLabelRemovedServiceTest {
         PullRequestLabelRemovedRequest request = createLabelRemovedRequest("bug");
 
         // when
-        pullRequestLabelRemovedService.removePullRequestLabel(TEST_API_KEY, request);
+        pullRequestLabelRemovedService.removePullRequestLabel(request);
 
         // then
         assertAll(
@@ -70,7 +64,7 @@ class PullRequestLabelRemovedServiceTest {
         PullRequestLabelRemovedRequest request = createLabelRemovedRequest(labelName);
 
         // when
-        pullRequestLabelRemovedService.removePullRequestLabel(TEST_API_KEY, request);
+        pullRequestLabelRemovedService.removePullRequestLabel(request);
 
         // then
         PullRequestLabelHistory pullRequestLabelHistory = jpaPullRequestLabelHistoryRepository.findAll().getFirst();
@@ -88,7 +82,7 @@ class PullRequestLabelRemovedServiceTest {
         PullRequestLabelRemovedRequest request = createLabelRemovedRequest("non-existent-label");
 
         // when
-        pullRequestLabelRemovedService.removePullRequestLabel(TEST_API_KEY, request);
+        pullRequestLabelRemovedService.removePullRequestLabel(request);
 
         // then
         assertAll(
@@ -104,25 +98,14 @@ class PullRequestLabelRemovedServiceTest {
         PullRequestLabelRemovedRequest request = createLabelRemovedRequest("bug");
 
         // when
-        pullRequestLabelRemovedService.removePullRequestLabel(TEST_API_KEY, request);
-        pullRequestLabelRemovedService.removePullRequestLabel(TEST_API_KEY, request);
+        pullRequestLabelRemovedService.removePullRequestLabel(request);
+        pullRequestLabelRemovedService.removePullRequestLabel(request);
 
         // then
         assertAll(
                 () -> assertThat(jpaPullRequestLabelRepository.count()).isEqualTo(0),
                 () -> assertThat(jpaPullRequestLabelHistoryRepository.count()).isEqualTo(1)
         );
-    }
-
-    @Test
-    void 존재하지_않는_API_Key면_예외가_발생한다() {
-        // given
-        PullRequestLabelRemovedRequest request = createLabelRemovedRequest("bug");
-        String invalidApiKey = "invalid-api-key";
-
-        // when & then
-        assertThatThrownBy(() -> pullRequestLabelRemovedService.removePullRequestLabel(invalidApiKey, request))
-                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     @Sql("/sql/webhook/insert_project_pr_and_label.sql")
@@ -148,7 +131,7 @@ class PullRequestLabelRemovedServiceTest {
                         throw new IllegalStateException("시작 대기 중 인터럽트 발생", e);
                     }
                     // when
-                    pullRequestLabelRemovedService.removePullRequestLabel(TEST_API_KEY, request);
+                    pullRequestLabelRemovedService.removePullRequestLabel(request);
                     return null;
                 }));
             }
