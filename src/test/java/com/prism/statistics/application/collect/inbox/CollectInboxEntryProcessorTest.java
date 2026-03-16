@@ -10,6 +10,8 @@ import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.prism.statistics.application.collect.inbox.routing.CollectInboxContext;
+import com.prism.statistics.application.collect.inbox.routing.CollectInboxEventRouter;
 import com.prism.statistics.global.config.properties.CollectRetryProperties;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInbox;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxFailureType;
@@ -36,7 +38,7 @@ class CollectInboxEntryProcessorTest {
     CollectInboxRepository collectInboxRepository;
 
     @Mock
-    CollectInboxServiceRouter collectInboxServiceRouter;
+    CollectInboxEventRouter collectInboxServiceRouter;
 
     CollectInboxEntryProcessor collectInboxEntryProcessor;
 
@@ -66,7 +68,7 @@ class CollectInboxEntryProcessorTest {
         // then
         verify(collectInboxRepository, never()).findById(anyLong());
         verify(collectInboxRepository, never()).save(any());
-        verify(collectInboxServiceRouter, never()).route(any(), anyLong(), any());
+        verify(collectInboxServiceRouter, never()).route(any(), any());
     }
 
     @Test
@@ -82,7 +84,7 @@ class CollectInboxEntryProcessorTest {
 
         // then
         verify(collectInboxRepository, never()).save(any());
-        verify(collectInboxServiceRouter, never()).route(any(), anyLong(), any());
+        verify(collectInboxServiceRouter, never()).route(any(), any());
     }
 
     @Test
@@ -110,7 +112,10 @@ class CollectInboxEntryProcessorTest {
                 () -> assertThat(actual.getStatus()).isEqualTo(CollectInboxStatus.PROCESSED),
                 () -> assertThat(actual.getProcessingAttempt()).isEqualTo(1)
         );
-        verify(collectInboxServiceRouter).route(CollectInboxType.PULL_REQUEST_OPENED, 1L, "{}");
+        verify(collectInboxServiceRouter).route(
+                eq(new CollectInboxContext(1L, "{}")),
+                eq(CollectInboxType.PULL_REQUEST_OPENED)
+        );
         verify(collectInboxRepository).save(actual);
     }
 
@@ -132,7 +137,7 @@ class CollectInboxEntryProcessorTest {
         given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
         willThrow(new RuntimeException("일시적 오류"))
                 .given(collectInboxServiceRouter)
-                .route(any(), anyLong(), any());
+                .route(any(), any());
 
         // when
         collectInboxEntryProcessor.process(pending);
@@ -168,7 +173,7 @@ class CollectInboxEntryProcessorTest {
         given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
         willThrow(new RuntimeException("3차 실패"))
                 .given(collectInboxServiceRouter)
-                .route(any(), anyLong(), any());
+                .route(any(), any());
 
         // when
         collectInboxEntryProcessor.process(pending);
@@ -200,7 +205,7 @@ class CollectInboxEntryProcessorTest {
         given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
         willThrow(new RuntimeException("x".repeat(600)))
                 .given(collectInboxServiceRouter)
-                .route(any(), anyLong(), any());
+                .route(any(), any());
 
         // when
         collectInboxEntryProcessor.process(pending);
@@ -228,7 +233,7 @@ class CollectInboxEntryProcessorTest {
         given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
         willThrow(new RuntimeException())
                 .given(collectInboxServiceRouter)
-                .route(any(), anyLong(), any());
+                .route(any(), any());
 
         // when
         collectInboxEntryProcessor.process(pending);
