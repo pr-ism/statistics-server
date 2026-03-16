@@ -53,8 +53,8 @@ public class CollectInboxEnqueueAspect {
     private void enqueue(CollectInboxType collectType, Long projectId, Object request) {
         try {
             String payloadJson = objectMapper.writeValueAsString(request);
-            String idempotencyKey = extractRunId(request);
-            boolean enqueued = collectInboxProcessor.enqueue(collectType, projectId, idempotencyKey, payloadJson);
+            Long runId = extractRunId(request);
+            boolean enqueued = collectInboxProcessor.enqueue(collectType, projectId, runId, payloadJson);
 
             if (!enqueued) {
                 log.info("collect inbox enqueue가 중복 요청으로 스킵되었습니다. collectType={}", collectType);
@@ -65,9 +65,9 @@ public class CollectInboxEnqueueAspect {
         }
     }
 
-    private String extractRunId(Object request) {
+    private Long extractRunId(Object request) {
         try {
-            return String.valueOf(request.getClass().getMethod("runId").invoke(request));
+            return (Long) request.getClass().getMethod("runId").invoke(request);
         } catch (Exception e) {
             throw new IllegalArgumentException("request에서 runId를 추출할 수 없습니다.", e);
         }

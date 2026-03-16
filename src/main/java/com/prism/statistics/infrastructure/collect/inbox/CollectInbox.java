@@ -22,7 +22,7 @@ public class CollectInbox extends BaseTimeEntity {
 
     private Long projectId;
 
-    private String idempotencyKey;
+    private Long runId;
 
     @Lob
     private String payloadJson;
@@ -46,17 +46,17 @@ public class CollectInbox extends BaseTimeEntity {
     public static CollectInbox pending(
             CollectInboxType collectType,
             Long projectId,
-            String idempotencyKey,
+            Long runId,
             String payloadJson
     ) {
         validateCollectType(collectType);
-        validateIdempotencyKey(idempotencyKey);
+        validateRunId(runId);
         validatePayloadJson(payloadJson);
 
         return new CollectInbox(
                 collectType,
                 projectId,
-                idempotencyKey,
+                runId,
                 payloadJson,
                 CollectInboxStatus.PENDING,
                 0
@@ -66,14 +66,14 @@ public class CollectInbox extends BaseTimeEntity {
     private CollectInbox(
             CollectInboxType collectType,
             Long projectId,
-            String idempotencyKey,
+            Long runId,
             String payloadJson,
             CollectInboxStatus status,
             int processingAttempt
     ) {
         this.collectType = collectType;
         this.projectId = projectId;
-        this.idempotencyKey = idempotencyKey;
+        this.runId = runId;
         this.payloadJson = payloadJson;
         this.status = status;
         this.processingAttempt = processingAttempt;
@@ -138,9 +138,9 @@ public class CollectInbox extends BaseTimeEntity {
         }
     }
 
-    private static void validateIdempotencyKey(String idempotencyKey) {
-        if (idempotencyKey == null || idempotencyKey.isBlank()) {
-            throw new IllegalArgumentException("idempotencyKey는 비어 있을 수 없습니다.");
+    private static void validateRunId(Long runId) {
+        if (runId == null) {
+            throw new IllegalArgumentException("runId는 비어 있을 수 없습니다.");
         }
     }
 

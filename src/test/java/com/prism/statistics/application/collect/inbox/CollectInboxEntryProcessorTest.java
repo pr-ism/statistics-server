@@ -96,7 +96,7 @@ class CollectInboxEntryProcessorTest {
         CollectInbox actual = CollectInbox.pending(
                 CollectInboxType.PULL_REQUEST_OPENED,
                 1L,
-                "run-id-success",
+                1L,
                 "{}"
         );
         actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));
@@ -128,7 +128,7 @@ class CollectInboxEntryProcessorTest {
         CollectInbox actual = CollectInbox.pending(
                 CollectInboxType.PULL_REQUEST_OPENED,
                 1L,
-                "run-id-retry",
+                2L,
                 "{}"
         );
         actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));
@@ -160,7 +160,7 @@ class CollectInboxEntryProcessorTest {
         CollectInbox actual = CollectInbox.pending(
                 CollectInboxType.PULL_REQUEST_OPENED,
                 1L,
-                "run-id-exhausted",
+                3L,
                 "{}"
         );
         actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));
@@ -196,7 +196,7 @@ class CollectInboxEntryProcessorTest {
         CollectInbox actual = CollectInbox.pending(
                 CollectInboxType.PULL_REQUEST_OPENED,
                 1L,
-                "run-id-long-reason",
+                4L,
                 "{}"
         );
         actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));
@@ -224,7 +224,7 @@ class CollectInboxEntryProcessorTest {
         CollectInbox actual = CollectInbox.pending(
                 CollectInboxType.PULL_REQUEST_OPENED,
                 1L,
-                "run-id-empty-reason",
+                5L,
                 "{}"
         );
         actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));

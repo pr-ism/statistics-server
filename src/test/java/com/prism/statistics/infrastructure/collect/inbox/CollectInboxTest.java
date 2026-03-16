@@ -15,19 +15,19 @@ class CollectInboxTest {
 
     private static final CollectInboxType TYPE = CollectInboxType.PULL_REQUEST_OPENED;
     private static final Long PROJECT_ID = 1L;
-    private static final String IDEMPOTENCY_KEY = "12345678";
+    private static final Long RUN_ID = 12345678L;
     private static final String PAYLOAD_JSON = "{\"pullRequest\":{\"number\":1}}";
 
     @Test
     void PENDING_상태의_inbox를_생성한다() {
         // when
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
 
         // then
         assertAll(
                 () -> assertThat(inbox.getCollectType()).isEqualTo(TYPE),
                 () -> assertThat(inbox.getProjectId()).isEqualTo(PROJECT_ID),
-                () -> assertThat(inbox.getIdempotencyKey()).isEqualTo(IDEMPOTENCY_KEY),
+                () -> assertThat(inbox.getRunId()).isEqualTo(RUN_ID),
                 () -> assertThat(inbox.getPayloadJson()).isEqualTo(PAYLOAD_JSON),
                 () -> assertThat(inbox.getStatus()).isEqualTo(CollectInboxStatus.PENDING),
                 () -> assertThat(inbox.getProcessingAttempt()).isZero()
@@ -36,26 +36,26 @@ class CollectInboxTest {
 
     @Test
     void pending_생성_시_collectType이_null이면_예외가_발생한다() {
-        assertThatThrownBy(() -> CollectInbox.pending(null, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON))
+        assertThatThrownBy(() -> CollectInbox.pending(null, PROJECT_ID, RUN_ID, PAYLOAD_JSON))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void pending_생성_시_idempotencyKey가_blank이면_예외가_발생한다() {
-        assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, "  ", PAYLOAD_JSON))
+    void pending_생성_시_runId가_null이면_예외가_발생한다() {
+        assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, null, PAYLOAD_JSON))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void pending_생성_시_payloadJson이_null이면_예외가_발생한다() {
-        assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, null))
+        assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void PENDING_상태에서_PROCESSING으로_전이한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
         Instant now = Instant.now();
 
         // when
@@ -75,7 +75,7 @@ class CollectInboxTest {
     @Test
     void RETRY_PENDING_상태에서_PROCESSING으로_전이한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
         Instant now = Instant.now();
         inbox.markProcessing(now);
         inbox.markRetryPending(now, "일시적 오류");
@@ -93,7 +93,7 @@ class CollectInboxTest {
     @Test
     void PROCESSED_상태에서_PROCESSING으로_전이하면_예외가_발생한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
         Instant now = Instant.now();
         inbox.markProcessing(now);
         inbox.markProcessed(now);
@@ -106,7 +106,7 @@ class CollectInboxTest {
     @Test
     void markProcessing_시_processingStartedAt이_null이면_예외가_발생한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
 
         // when & then
         assertThatThrownBy(() -> inbox.markProcessing(null))
@@ -116,7 +116,7 @@ class CollectInboxTest {
     @Test
     void PROCESSING_상태에서_PROCESSED로_전이한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
         Instant now = Instant.now();
         inbox.markProcessing(now);
 
@@ -136,7 +136,7 @@ class CollectInboxTest {
     @Test
     void PENDING_상태에서_PROCESSED로_전이하면_예외가_발생한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
 
         // when & then
         assertThatThrownBy(() -> inbox.markProcessed(Instant.now()))
@@ -146,7 +146,7 @@ class CollectInboxTest {
     @Test
     void PROCESSING_상태에서_RETRY_PENDING으로_전이한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
         Instant now = Instant.now();
         inbox.markProcessing(now);
 
@@ -166,7 +166,7 @@ class CollectInboxTest {
     @Test
     void markRetryPending_시_failureReason이_blank이면_예외가_발생한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
         Instant now = Instant.now();
         inbox.markProcessing(now);
 
@@ -178,7 +178,7 @@ class CollectInboxTest {
     @Test
     void PROCESSING_상태에서_BUSINESS_INVARIANT로_FAILED_전이한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
         Instant now = Instant.now();
         inbox.markProcessing(now);
 
@@ -198,7 +198,7 @@ class CollectInboxTest {
     @Test
     void PROCESSING_상태에서_RETRY_EXHAUSTED로_FAILED_전이한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
         Instant now = Instant.now();
         inbox.markProcessing(now);
 
@@ -212,7 +212,7 @@ class CollectInboxTest {
     @Test
     void PENDING_상태에서_FAILED로_전이하면_예외가_발생한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
 
         // when & then
         assertThatThrownBy(() -> inbox.markFailed(
@@ -223,7 +223,7 @@ class CollectInboxTest {
     @Test
     void markFailed_시_failureType이_null이면_예외가_발생한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, IDEMPOTENCY_KEY, PAYLOAD_JSON);
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
         Instant now = Instant.now();
         inbox.markProcessing(now);
 

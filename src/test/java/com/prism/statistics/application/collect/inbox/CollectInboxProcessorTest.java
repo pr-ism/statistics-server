@@ -61,17 +61,17 @@ class CollectInboxProcessorTest {
     @Test
     void enqueue는_레포지토리에_위임한다() {
         // given
-        given(collectInboxRepository.enqueue(any(), any(), anyString(), anyString())).willReturn(true);
+        given(collectInboxRepository.enqueue(any(), any(), anyLong(), anyString())).willReturn(true);
 
         // when
         boolean result = collectInboxProcessor.enqueue(
-                CollectInboxType.PULL_REQUEST_OPENED, 1L, "run-123", "{}"
+                CollectInboxType.PULL_REQUEST_OPENED, 1L, 123L, "{}"
         );
 
         // then
         assertThat(result).isTrue();
         verify(collectInboxRepository).enqueue(
-                CollectInboxType.PULL_REQUEST_OPENED, 1L, "run-123", "{}"
+                CollectInboxType.PULL_REQUEST_OPENED, 1L, 123L, "{}"
         );
     }
 

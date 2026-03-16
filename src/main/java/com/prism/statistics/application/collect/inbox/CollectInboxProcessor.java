@@ -29,10 +29,10 @@ public class CollectInboxProcessor {
     public boolean enqueue(
             CollectInboxType collectType,
             Long projectId,
-            String idempotencyKey,
+            Long runId,
             String payloadJson
     ) {
-        return collectInboxRepository.enqueue(collectType, projectId, idempotencyKey, payloadJson);
+        return collectInboxRepository.enqueue(collectType, projectId, runId, payloadJson);
     }
 
     public void processPending(int limit) {
