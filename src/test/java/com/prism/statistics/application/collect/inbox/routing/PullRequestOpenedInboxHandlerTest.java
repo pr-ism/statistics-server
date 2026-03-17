@@ -35,7 +35,8 @@ class PullRequestOpenedInboxHandlerTest {
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        handler = new PullRequestOpenedInboxHandler(objectMapper, pullRequestOpenedService);
+        CollectInboxPayloadDeserializer deserializer = new CollectInboxPayloadDeserializer(objectMapper);
+        handler = new PullRequestOpenedInboxHandler(deserializer, pullRequestOpenedService);
     }
 
     @Test
@@ -81,17 +82,17 @@ class PullRequestOpenedInboxHandlerTest {
     }
 
     @Test
-    void 역직렬화_실패시_RuntimeException으로_감싸서_던진다() {
+    void 역직렬화_실패시_IllegalArgumentException을_던진다() {
         // given
         CollectInboxContext context = new CollectInboxContext(1L, "{invalid-json}");
 
         // when & then
         assertThatThrownBy(() -> handler.handle(context))
-                .isInstanceOf(RuntimeException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void 서비스_호출_실패시_RuntimeException으로_감싸서_던진다() {
+    void 서비스_호출_실패시_예외가_원형_그대로_전파된다() {
         // given
         String payloadJson = """
                 {
@@ -119,6 +120,6 @@ class PullRequestOpenedInboxHandlerTest {
 
         // when & then
         assertThatThrownBy(() -> handler.handle(context))
-                .isInstanceOf(RuntimeException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

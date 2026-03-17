@@ -32,7 +32,8 @@ class ReviewerAddedInboxHandlerTest {
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        handler = new ReviewerAddedInboxHandler(objectMapper, reviewerAddedService);
+        CollectInboxPayloadDeserializer deserializer = new CollectInboxPayloadDeserializer(objectMapper);
+        handler = new ReviewerAddedInboxHandler(deserializer, reviewerAddedService);
     }
 
     @Test
@@ -65,12 +66,12 @@ class ReviewerAddedInboxHandlerTest {
     }
 
     @Test
-    void 역직렬화_실패시_RuntimeException으로_감싸서_던진다() {
+    void 역직렬화_실패시_IllegalArgumentException을_던진다() {
         // given
         CollectInboxContext context = new CollectInboxContext(null, "{invalid-json}");
 
         // when & then
         assertThatThrownBy(() -> handler.handle(context))
-                .isInstanceOf(RuntimeException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

@@ -1,6 +1,5 @@
 package com.prism.statistics.application.collect.inbox.routing;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prism.statistics.application.analysis.metadata.pullrequest.PullRequestReopenedService;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestReopenedRequest;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PullRequestReopenedInboxHandler implements CollectInboxEventHandler {
 
-    private final ObjectMapper objectMapper;
+    private final CollectInboxPayloadDeserializer deserializer;
     private final PullRequestReopenedService pullRequestReopenedService;
 
     @Override
@@ -21,11 +20,7 @@ public class PullRequestReopenedInboxHandler implements CollectInboxEventHandler
 
     @Override
     public void handle(CollectInboxContext context) {
-        try {
-            PullRequestReopenedRequest request = objectMapper.readValue(context.payloadJson(), PullRequestReopenedRequest.class);
-            pullRequestReopenedService.reopenPullRequest(context.projectId(), request);
-        } catch (Exception e) {
-            throw new RuntimeException(supportType() + " 핸들러 처리 중 예외가 발생했습니다.", e);
-        }
+        PullRequestReopenedRequest request = deserializer.deserialize(context, supportType(), PullRequestReopenedRequest.class);
+        pullRequestReopenedService.reopenPullRequest(context.projectId(), request);
     }
 }

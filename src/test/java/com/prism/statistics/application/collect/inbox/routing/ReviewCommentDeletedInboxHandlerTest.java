@@ -32,7 +32,8 @@ class ReviewCommentDeletedInboxHandlerTest {
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        handler = new ReviewCommentDeletedInboxHandler(objectMapper, reviewCommentDeletedService);
+        CollectInboxPayloadDeserializer deserializer = new CollectInboxPayloadDeserializer(objectMapper);
+        handler = new ReviewCommentDeletedInboxHandler(deserializer, reviewCommentDeletedService);
     }
 
     @Test
@@ -62,12 +63,12 @@ class ReviewCommentDeletedInboxHandlerTest {
     }
 
     @Test
-    void 역직렬화_실패시_RuntimeException으로_감싸서_던진다() {
+    void 역직렬화_실패시_IllegalArgumentException을_던진다() {
         // given
         CollectInboxContext context = new CollectInboxContext(null, "{invalid-json}");
 
         // when & then
         assertThatThrownBy(() -> handler.handle(context))
-                .isInstanceOf(RuntimeException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

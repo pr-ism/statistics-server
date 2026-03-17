@@ -33,7 +33,8 @@ class PullRequestConvertedToDraftInboxHandlerTest {
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        handler = new PullRequestConvertedToDraftInboxHandler(objectMapper, pullRequestConvertedToDraftService);
+        CollectInboxPayloadDeserializer deserializer = new CollectInboxPayloadDeserializer(objectMapper);
+        handler = new PullRequestConvertedToDraftInboxHandler(deserializer, pullRequestConvertedToDraftService);
     }
 
     @Test
@@ -63,12 +64,12 @@ class PullRequestConvertedToDraftInboxHandlerTest {
     }
 
     @Test
-    void 역직렬화_실패시_RuntimeException으로_감싸서_던진다() {
+    void 역직렬화_실패시_IllegalArgumentException을_던진다() {
         // given
         CollectInboxContext context = new CollectInboxContext(1L, "{invalid-json}");
 
         // when & then
         assertThatThrownBy(() -> handler.handle(context))
-                .isInstanceOf(RuntimeException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

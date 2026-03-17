@@ -1,6 +1,5 @@
 package com.prism.statistics.application.collect.inbox.routing;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prism.statistics.application.analysis.metadata.review.ReviewCommentCreatedService;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentCreatedRequest;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ReviewCommentCreatedInboxHandler implements CollectInboxEventHandler {
 
-    private final ObjectMapper objectMapper;
+    private final CollectInboxPayloadDeserializer deserializer;
     private final ReviewCommentCreatedService reviewCommentCreatedService;
 
     @Override
@@ -21,11 +20,7 @@ public class ReviewCommentCreatedInboxHandler implements CollectInboxEventHandle
 
     @Override
     public void handle(CollectInboxContext context) {
-        try {
-            ReviewCommentCreatedRequest request = objectMapper.readValue(context.payloadJson(), ReviewCommentCreatedRequest.class);
-            reviewCommentCreatedService.createReviewComment(request);
-        } catch (Exception e) {
-            throw new RuntimeException(supportType() + " 핸들러 처리 중 예외가 발생했습니다.", e);
-        }
+        ReviewCommentCreatedRequest request = deserializer.deserialize(context, supportType(), ReviewCommentCreatedRequest.class);
+        reviewCommentCreatedService.createReviewComment(request);
     }
 }

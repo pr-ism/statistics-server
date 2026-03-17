@@ -33,7 +33,8 @@ class PullRequestReopenedInboxHandlerTest {
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        handler = new PullRequestReopenedInboxHandler(objectMapper, pullRequestReopenedService);
+        CollectInboxPayloadDeserializer deserializer = new CollectInboxPayloadDeserializer(objectMapper);
+        handler = new PullRequestReopenedInboxHandler(deserializer, pullRequestReopenedService);
     }
 
     @Test
@@ -63,12 +64,12 @@ class PullRequestReopenedInboxHandlerTest {
     }
 
     @Test
-    void 역직렬화_실패시_RuntimeException으로_감싸서_던진다() {
+    void 역직렬화_실패시_IllegalArgumentException을_던진다() {
         // given
         CollectInboxContext context = new CollectInboxContext(1L, "{invalid-json}");
 
         // when & then
         assertThatThrownBy(() -> handler.handle(context))
-                .isInstanceOf(RuntimeException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }
