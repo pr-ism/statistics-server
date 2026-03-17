@@ -1,5 +1,6 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest.dto.request;
 
+import com.prism.statistics.application.collect.inbox.CollectInboxRequest;
 import java.time.Instant;
 import java.util.List;
 
@@ -13,7 +14,7 @@ public record PullRequestSynchronizedRequest(
         int changedFiles,
         CommitsData commits,
         List<FileData> files
-) {
+) implements CollectInboxRequest {
 
     public record CommitsData(int totalCount, List<CommitNode> nodes) {}
 

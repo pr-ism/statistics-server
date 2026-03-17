@@ -1,5 +1,6 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest.dto.request;
 
+import com.prism.statistics.application.collect.inbox.CollectInboxRequest;
 import java.time.Instant;
 import java.util.List;
 
@@ -8,7 +9,7 @@ public record PullRequestOpenedRequest(
         boolean isDraft,
         PullRequestData pullRequest,
         List<FileData> files
-) {
+) implements CollectInboxRequest {
 
     public record PullRequestData(
             Long githubPullRequestId,

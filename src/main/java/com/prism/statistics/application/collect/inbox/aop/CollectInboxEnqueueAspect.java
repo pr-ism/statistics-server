@@ -2,6 +2,7 @@ package com.prism.statistics.application.collect.inbox.aop;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prism.statistics.application.collect.inbox.CollectInboxProcessor;
+import com.prism.statistics.application.collect.inbox.CollectInboxRequest;
 import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class CollectInboxEnqueueAspect {
             ProceedingJoinPoint joinPoint,
             InboxEnqueue inboxEnqueue,
             Long projectId,
-            Object request
+            CollectInboxRequest request
     ) throws Throwable {
         if (processingSourceContext.isInboxProcessing()) {
             return joinPoint.proceed();
@@ -40,7 +41,7 @@ public class CollectInboxEnqueueAspect {
     public Object enqueueWithRequest(
             ProceedingJoinPoint joinPoint,
             InboxEnqueue inboxEnqueue,
-            Object request
+            CollectInboxRequest request
     ) throws Throwable {
         if (processingSourceContext.isInboxProcessing()) {
             return joinPoint.proceed();
@@ -50,10 +51,10 @@ public class CollectInboxEnqueueAspect {
         return null;
     }
 
-    private void enqueue(CollectInboxType collectType, Long projectId, Object request) {
+    private void enqueue(CollectInboxType collectType, Long projectId, CollectInboxRequest request) {
         try {
             String payloadJson = objectMapper.writeValueAsString(request);
-            long runId = extractRunId(request);
+            long runId = request.runId();
             boolean enqueued = collectInboxProcessor.enqueue(collectType, projectId, runId, payloadJson);
 
             if (!enqueued) {
@@ -62,14 +63,6 @@ public class CollectInboxEnqueueAspect {
         } catch (Exception e) {
             log.error("collect inbox enqueue 처리 중 예외가 발생했습니다. collectType={}", collectType, e);
             throw new RuntimeException(e);
-        }
-    }
-
-    private long extractRunId(Object request) {
-        try {
-            return (long) request.getClass().getMethod("runId").invoke(request);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("request에서 runId를 추출할 수 없습니다.", e);
         }
     }
 }
