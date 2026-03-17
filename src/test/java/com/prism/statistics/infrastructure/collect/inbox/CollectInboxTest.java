@@ -8,6 +8,7 @@ import java.time.Instant;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -59,72 +60,10 @@ class CollectInboxTest {
     }
 
     @Test
-    void PENDING_상태에서_PROCESSING으로_전이한다() {
-        // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
-        Instant now = Instant.now();
-
-        // when
-        inbox.markProcessing(now);
-
-        // then
-        assertAll(
-                () -> assertThat(inbox.getStatus()).isEqualTo(CollectInboxStatus.PROCESSING),
-                () -> assertThat(inbox.getProcessingAttempt()).isEqualTo(1),
-                () -> assertThat(inbox.getProcessingStartedAt()).isEqualTo(now),
-                () -> assertThat(inbox.getFailureReason()).isNull(),
-                () -> assertThat(inbox.getFailureType()).isNull(),
-                () -> assertThat(inbox.getFailedAt()).isNull()
-        );
-    }
-
-    @Test
-    void RETRY_PENDING_상태에서_PROCESSING으로_전이한다() {
-        // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
-        Instant now = Instant.now();
-        inbox.markProcessing(now);
-        inbox.markRetryPending(now, "일시적 오류");
-
-        // when
-        inbox.markProcessing(now);
-
-        // then
-        assertAll(
-                () -> assertThat(inbox.getStatus()).isEqualTo(CollectInboxStatus.PROCESSING),
-                () -> assertThat(inbox.getProcessingAttempt()).isEqualTo(2)
-        );
-    }
-
-    @Test
-    void PROCESSED_상태에서_PROCESSING으로_전이하면_예외가_발생한다() {
-        // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
-        Instant now = Instant.now();
-        inbox.markProcessing(now);
-        inbox.markProcessed(now);
-
-        // when & then
-        assertThatThrownBy(() -> inbox.markProcessing(now))
-                .isInstanceOf(IllegalStateException.class);
-    }
-
-    @Test
-    void markProcessing_시_processingStartedAt이_null이면_예외가_발생한다() {
-        // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
-
-        // when & then
-        assertThatThrownBy(() -> inbox.markProcessing(null))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
     void PROCESSING_상태에서_PROCESSED로_전이한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
+        CollectInbox inbox = createProcessingInbox();
         Instant now = Instant.now();
-        inbox.markProcessing(now);
 
         // when
         inbox.markProcessed(now);
@@ -152,9 +91,8 @@ class CollectInboxTest {
     @Test
     void PROCESSING_상태에서_RETRY_PENDING으로_전이한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
+        CollectInbox inbox = createProcessingInbox();
         Instant now = Instant.now();
-        inbox.markProcessing(now);
 
         // when
         inbox.markRetryPending(now, "일시적 오류");
@@ -172,9 +110,8 @@ class CollectInboxTest {
     @Test
     void markRetryPending_시_failureReason이_blank이면_예외가_발생한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
+        CollectInbox inbox = createProcessingInbox();
         Instant now = Instant.now();
-        inbox.markProcessing(now);
 
         // when & then
         assertThatThrownBy(() -> inbox.markRetryPending(now, "  "))
@@ -184,9 +121,8 @@ class CollectInboxTest {
     @Test
     void PROCESSING_상태에서_BUSINESS_INVARIANT로_FAILED_전이한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
+        CollectInbox inbox = createProcessingInbox();
         Instant now = Instant.now();
-        inbox.markProcessing(now);
 
         // when
         inbox.markFailed(now, "비즈니스 로직 실패", CollectInboxFailureType.BUSINESS_INVARIANT);
@@ -204,9 +140,8 @@ class CollectInboxTest {
     @Test
     void PROCESSING_상태에서_RETRY_EXHAUSTED로_FAILED_전이한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
+        CollectInbox inbox = createProcessingInbox();
         Instant now = Instant.now();
-        inbox.markProcessing(now);
 
         // when
         inbox.markFailed(now, "재시도 횟수 초과", CollectInboxFailureType.RETRY_EXHAUSTED);
@@ -229,12 +164,17 @@ class CollectInboxTest {
     @Test
     void markFailed_시_failureType이_null이면_예외가_발생한다() {
         // given
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
+        CollectInbox inbox = createProcessingInbox();
         Instant now = Instant.now();
-        inbox.markProcessing(now);
 
         // when & then
         assertThatThrownBy(() -> inbox.markFailed(now, "실패", null))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    private CollectInbox createProcessingInbox() {
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
+        ReflectionTestUtils.setField(inbox, "status", CollectInboxStatus.PROCESSING);
+        return inbox;
     }
 }
