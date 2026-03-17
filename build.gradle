@@ -95,7 +95,6 @@ def jacocoExcludePatterns = [
 		"**/common/**",
 		"**/exception/**",
 		"**/aop/**",
-		"**/routing/*InboxHandler*",
 
 		"**/Q*",
 		"**/generated/**",
