@@ -47,6 +47,19 @@ class CollectInboxTest {
     }
 
     @Test
+    void pending_생성_시_runId가_0이면_정상_생성된다() {
+        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, 0L, PAYLOAD_JSON);
+
+        assertThat(inbox.getRunId()).isZero();
+    }
+
+    @Test
+    void pending_생성_시_runId가_음수이면_예외가_발생한다() {
+        assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, -1L, PAYLOAD_JSON))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void pending_생성_시_payloadJson이_null이면_예외가_발생한다() {
         assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, null))
                 .isInstanceOf(IllegalArgumentException.class);

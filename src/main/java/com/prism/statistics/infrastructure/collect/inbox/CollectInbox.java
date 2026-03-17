@@ -139,8 +139,8 @@ public class CollectInbox extends BaseTimeEntity {
     }
 
     private static void validateRunId(Long runId) {
-        if (runId == null) {
-            throw new IllegalArgumentException("runId는 비어 있을 수 없습니다.");
+        if (runId == null || runId < 0) {
+            throw new IllegalArgumentException("runId는 0 이상이어야 합니다.");
         }
     }
 
