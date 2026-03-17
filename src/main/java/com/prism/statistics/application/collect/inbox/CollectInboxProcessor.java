@@ -36,8 +36,6 @@ public class CollectInboxProcessor {
     }
 
     public void processPending(int limit) {
-        recoverTimeoutProcessing();
-
         List<CollectInbox> pendings = collectInboxRepository.findClaimable(limit);
 
         for (CollectInbox pending : pendings) {
@@ -45,7 +43,7 @@ public class CollectInboxProcessor {
         }
     }
 
-    private void recoverTimeoutProcessing() {
+    public void recoverTimeoutProcessing() {
         Instant now = clock.instant();
         int recoveredCount = collectInboxRepository.recoverTimeoutProcessing(
                 now.minusMillis(collectInboxProperties.processingTimeoutMs()),

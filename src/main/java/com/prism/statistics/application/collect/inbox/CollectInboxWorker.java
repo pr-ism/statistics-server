@@ -26,4 +26,17 @@ public class CollectInboxWorker {
             log.error("collect inbox worker 실행에 실패했습니다.", e);
         }
     }
+
+    @Scheduled(fixedDelayString = "${app.collect.inbox.processing-timeout-ms:60000}")
+    public void recoverTimeoutProcessing() {
+        if (!collectInboxProperties.workerEnabled()) {
+            return;
+        }
+
+        try {
+            collectInboxProcessor.recoverTimeoutProcessing();
+        } catch (Exception e) {
+            log.error("collect inbox timeout 복구에 실패했습니다.", e);
+        }
+    }
 }

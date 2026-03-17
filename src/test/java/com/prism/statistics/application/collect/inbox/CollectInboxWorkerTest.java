@@ -65,4 +65,38 @@ class CollectInboxWorkerTest {
         // then
         verify(collectInboxProcessor, never()).processPending(30);
     }
+
+    @Test
+    void 타임아웃_복구_워커는_타임아웃_복구를_실행한다() {
+        // when
+        collectInboxWorker.recoverTimeoutProcessing();
+
+        // then
+        verify(collectInboxProcessor).recoverTimeoutProcessing();
+    }
+
+    @Test
+    void 타임아웃_복구_워커_실행_중_예외가_발생해도_예외를_전파하지_않는다() {
+        // given
+        willThrow(new RuntimeException("recovery failure"))
+                .given(collectInboxProcessor)
+                .recoverTimeoutProcessing();
+
+        // when & then
+        assertThatCode(() -> collectInboxWorker.recoverTimeoutProcessing())
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void worker_enabled가_false면_타임아웃_복구를_실행하지_않는다() {
+        // given
+        collectInboxProperties = new CollectInboxProperties(200L, 60000L, false, 30);
+        collectInboxWorker = new CollectInboxWorker(collectInboxProperties, collectInboxProcessor);
+
+        // when
+        collectInboxWorker.recoverTimeoutProcessing();
+
+        // then
+        verify(collectInboxProcessor, never()).recoverTimeoutProcessing();
+    }
 }

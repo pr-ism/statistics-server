@@ -76,28 +76,21 @@ class CollectInboxProcessorTest {
     }
 
     @Test
-    void processPending은_타임아웃_복구_후_대기중인_엔트리를_처리한다() {
+    void processPending은_대기중인_엔트리를_처리한다() {
         // given
         CollectInbox pending = org.mockito.Mockito.mock(CollectInbox.class);
-        given(collectInboxRepository.recoverTimeoutProcessing(any(), any(), anyString(), anyInt()))
-                .willReturn(0);
         given(collectInboxRepository.findClaimable(10)).willReturn(List.of(pending));
 
         // when
         collectInboxProcessor.processPending(10);
 
         // then
-        verify(collectInboxRepository).recoverTimeoutProcessing(
-                any(), any(), anyString(), eq(3)
-        );
         verify(collectInboxEntryProcessor).process(pending);
     }
 
     @Test
     void processPending에서_대기중인_엔트리가_없으면_처리하지_않는다() {
         // given
-        given(collectInboxRepository.recoverTimeoutProcessing(any(), any(), anyString(), anyInt()))
-                .willReturn(0);
         given(collectInboxRepository.findClaimable(10)).willReturn(List.of());
 
         // when
@@ -112,8 +105,6 @@ class CollectInboxProcessorTest {
         // given
         CollectInbox first = org.mockito.Mockito.mock(CollectInbox.class);
         CollectInbox second = org.mockito.Mockito.mock(CollectInbox.class);
-        given(collectInboxRepository.recoverTimeoutProcessing(any(), any(), anyString(), anyInt()))
-                .willReturn(0);
         given(collectInboxRepository.findClaimable(10)).willReturn(List.of(first, second));
         willThrow(new RuntimeException("처리 실패"))
                 .given(collectInboxEntryProcessor).process(first);
@@ -125,5 +116,20 @@ class CollectInboxProcessorTest {
         // then
         verify(collectInboxEntryProcessor).process(first);
         verify(collectInboxEntryProcessor).process(second);
+    }
+
+    @Test
+    void recoverTimeoutProcessing은_타임아웃된_엔트리를_복구한다() {
+        // given
+        given(collectInboxRepository.recoverTimeoutProcessing(any(), any(), anyString(), anyInt()))
+                .willReturn(2);
+
+        // when
+        collectInboxProcessor.recoverTimeoutProcessing();
+
+        // then
+        verify(collectInboxRepository).recoverTimeoutProcessing(
+                any(), any(), anyString(), eq(3)
+        );
     }
 }
