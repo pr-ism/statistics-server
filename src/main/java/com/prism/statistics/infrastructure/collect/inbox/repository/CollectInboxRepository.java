@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface CollectInboxRepository {
 
-    boolean enqueue(CollectInboxType collectType, Long projectId, Long runId, String payloadJson);
+    boolean enqueue(CollectInboxType collectType, Long projectId, long runId, String payloadJson);
 
     List<CollectInbox> findClaimable(int limit);
 

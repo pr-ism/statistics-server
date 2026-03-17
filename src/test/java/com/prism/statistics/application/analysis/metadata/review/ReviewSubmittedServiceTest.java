@@ -169,7 +169,7 @@ class ReviewSubmittedServiceTest {
             int commentCount
     ) {
         return new ReviewSubmittedRequest(
-                null,
+                1L,
                 githubPullRequestId,
                 pullRequestNumber,
                 githubReviewId,

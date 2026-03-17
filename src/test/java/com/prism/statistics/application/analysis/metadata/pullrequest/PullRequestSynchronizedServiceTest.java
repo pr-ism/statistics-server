@@ -259,7 +259,7 @@ class PullRequestSynchronizedServiceTest {
         );
 
         PullRequestSynchronizedRequest request = new PullRequestSynchronizedRequest(
-                null,
+                1L,
                 TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
                 "non-existent-sha",
@@ -295,7 +295,7 @@ class PullRequestSynchronizedServiceTest {
         );
 
         return new PullRequestSynchronizedRequest(
-                null,
+                1L,
                 TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
                 "sha3",
@@ -324,7 +324,7 @@ class PullRequestSynchronizedServiceTest {
         );
 
         return new PullRequestSynchronizedRequest(
-                null,
+                1L,
                 TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
                 "sha2",

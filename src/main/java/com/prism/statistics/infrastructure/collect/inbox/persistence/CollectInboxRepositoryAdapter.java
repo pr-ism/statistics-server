@@ -35,7 +35,7 @@ public class CollectInboxRepositoryAdapter implements CollectInboxRepository {
     private final MysqlDuplicateKeyDetector mysqlDuplicateKeyDetector;
 
     @Override
-    public boolean enqueue(CollectInboxType collectType, Long projectId, Long runId, String payloadJson) {
+    public boolean enqueue(CollectInboxType collectType, Long projectId, long runId, String payloadJson) {
         CollectInbox inbox = CollectInbox.pending(collectType, projectId, runId, payloadJson);
 
         try {

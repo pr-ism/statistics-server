@@ -61,7 +61,7 @@ class ProjectIdResolvingFacadeTest {
     void apiKey를_projectId로_변환하여_PullRequest를_닫는다() {
         // given
         PullRequestClosedRequest request = new PullRequestClosedRequest(
-                null, 123, false, Instant.now(), null
+                1L, 123, false, Instant.now(), null
         );
 
         // when
@@ -77,7 +77,7 @@ class ProjectIdResolvingFacadeTest {
     void apiKey를_projectId로_변환하여_PullRequest를_리뷰_준비_상태로_변경한다() {
         // given
         PullRequestReadyForReviewRequest request = new PullRequestReadyForReviewRequest(
-                null, 123, Instant.now()
+                1L, 123, Instant.now()
         );
 
         // when
@@ -93,7 +93,7 @@ class ProjectIdResolvingFacadeTest {
     void apiKey를_projectId로_변환하여_PullRequest를_다시_연다() {
         // given
         PullRequestReopenedRequest request = new PullRequestReopenedRequest(
-                null, 123, Instant.now()
+                1L, 123, Instant.now()
         );
 
         // when
@@ -109,7 +109,7 @@ class ProjectIdResolvingFacadeTest {
     void apiKey를_projectId로_변환하여_PullRequest를_Draft로_변환한다() {
         // given
         PullRequestConvertedToDraftRequest request = new PullRequestConvertedToDraftRequest(
-                null, 123, Instant.now()
+                1L, 123, Instant.now()
         );
 
         // when
@@ -124,7 +124,7 @@ class ProjectIdResolvingFacadeTest {
     void 잘못된_apiKey로_호출하면_예외가_발생한다() {
         // given
         PullRequestClosedRequest request = new PullRequestClosedRequest(
-                null, 123, false, Instant.now(), null
+                1L, 123, false, Instant.now(), null
         );
 
         // when & then
@@ -157,6 +157,6 @@ class ProjectIdResolvingFacadeTest {
                 new FileData("src/main/java/NewFile.java", "added", 20, 0)
         );
 
-        return new PullRequestOpenedRequest(null, false, pullRequestData, files);
+        return new PullRequestOpenedRequest(1L, false, pullRequestData, files);
     }
 }

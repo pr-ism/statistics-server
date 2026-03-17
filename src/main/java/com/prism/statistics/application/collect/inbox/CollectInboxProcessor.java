@@ -29,7 +29,7 @@ public class CollectInboxProcessor {
     public boolean enqueue(
             CollectInboxType collectType,
             Long projectId,
-            Long runId,
+            long runId,
             String payloadJson
     ) {
         return collectInboxRepository.enqueue(collectType, projectId, runId, payloadJson);

@@ -177,7 +177,7 @@ class PullRequestOpenedServiceTest {
         );
 
         return new PullRequestOpenedRequest(
-                null,
+                1L,
                 isDraft,
                 pullRequestData,
                 files

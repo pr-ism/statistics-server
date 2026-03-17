@@ -3,7 +3,7 @@ package com.prism.statistics.application.analysis.metadata.pullrequest.dto.reque
 import java.time.Instant;
 
 public record PullRequestClosedRequest(
-        Long runId,
+        long runId,
         int pullRequestNumber,
         boolean isMerged,
         Instant closedAt,

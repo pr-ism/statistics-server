@@ -53,7 +53,7 @@ public class CollectInboxEnqueueAspect {
     private void enqueue(CollectInboxType collectType, Long projectId, Object request) {
         try {
             String payloadJson = objectMapper.writeValueAsString(request);
-            Long runId = extractRunId(request);
+            long runId = extractRunId(request);
             boolean enqueued = collectInboxProcessor.enqueue(collectType, projectId, runId, payloadJson);
 
             if (!enqueued) {
@@ -65,9 +65,9 @@ public class CollectInboxEnqueueAspect {
         }
     }
 
-    private Long extractRunId(Object request) {
+    private long extractRunId(Object request) {
         try {
-            return (Long) request.getClass().getMethod("runId").invoke(request);
+            return (long) request.getClass().getMethod("runId").invoke(request);
         } catch (Exception e) {
             throw new IllegalArgumentException("request에서 runId를 추출할 수 없습니다.", e);
         }

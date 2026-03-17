@@ -15,7 +15,7 @@ class CollectInboxTest {
 
     private static final CollectInboxType TYPE = CollectInboxType.PULL_REQUEST_OPENED;
     private static final Long PROJECT_ID = 1L;
-    private static final Long RUN_ID = 12345678L;
+    private static final long RUN_ID = 12345678L;
     private static final String PAYLOAD_JSON = "{\"pullRequest\":{\"number\":1}}";
 
     @Test
@@ -41,16 +41,9 @@ class CollectInboxTest {
     }
 
     @Test
-    void pending_생성_시_runId가_null이면_예외가_발생한다() {
-        assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, null, PAYLOAD_JSON))
+    void pending_생성_시_runId가_0이면_예외가_발생한다() {
+        assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, 0L, PAYLOAD_JSON))
                 .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void pending_생성_시_runId가_0이면_정상_생성된다() {
-        CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, 0L, PAYLOAD_JSON);
-
-        assertThat(inbox.getRunId()).isZero();
     }
 
     @Test

@@ -245,7 +245,7 @@ class ReviewCommentCreatedServiceTest {
             Long authorId
     ) {
         return new ReviewCommentCreatedRequest(
-                null,
+                1L,
                 githubCommentId,
                 githubReviewId,
                 body,

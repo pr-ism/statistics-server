@@ -22,7 +22,7 @@ public class CollectInbox extends BaseTimeEntity {
 
     private Long projectId;
 
-    private Long runId;
+    private long runId;
 
     @Lob
     private String payloadJson;
@@ -46,7 +46,7 @@ public class CollectInbox extends BaseTimeEntity {
     public static CollectInbox pending(
             CollectInboxType collectType,
             Long projectId,
-            Long runId,
+            long runId,
             String payloadJson
     ) {
         validateCollectType(collectType);
@@ -66,7 +66,7 @@ public class CollectInbox extends BaseTimeEntity {
     private CollectInbox(
             CollectInboxType collectType,
             Long projectId,
-            Long runId,
+            long runId,
             String payloadJson,
             CollectInboxStatus status,
             int processingAttempt
@@ -138,9 +138,9 @@ public class CollectInbox extends BaseTimeEntity {
         }
     }
 
-    private static void validateRunId(Long runId) {
-        if (runId == null || runId < 0) {
-            throw new IllegalArgumentException("runId는 0 이상이어야 합니다.");
+    private static void validateRunId(long runId) {
+        if (runId <= 0) {
+            throw new IllegalArgumentException("runId는 0보다 커야 합니다.");
         }
     }
 

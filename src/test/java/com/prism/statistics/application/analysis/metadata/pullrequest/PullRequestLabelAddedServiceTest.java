@@ -181,7 +181,7 @@ class PullRequestLabelAddedServiceTest {
 
     private PullRequestLabelAddedRequest createLabelAddedRequest(String labelName) {
         return new PullRequestLabelAddedRequest(
-                null,
+                1L,
                 TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
                 TEST_HEAD_COMMIT_SHA,

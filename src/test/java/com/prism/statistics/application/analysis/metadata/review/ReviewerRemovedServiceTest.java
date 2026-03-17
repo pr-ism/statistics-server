@@ -169,7 +169,7 @@ class ReviewerRemovedServiceTest {
 
     private ReviewerRemovedRequest createReviewerRemovedRequest(String login, Long id) {
         return new ReviewerRemovedRequest(
-                null,
+                1L,
                 TEST_GITHUB_PULL_REQUEST_ID,
                 TEST_PULL_REQUEST_NUMBER,
                 TEST_HEAD_COMMIT_SHA,
