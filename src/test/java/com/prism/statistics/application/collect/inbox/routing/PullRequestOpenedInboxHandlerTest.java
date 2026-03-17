@@ -78,6 +78,7 @@ class PullRequestOpenedInboxHandlerTest {
         // then
         ArgumentCaptor<PullRequestOpenedRequest> captor = ArgumentCaptor.forClass(PullRequestOpenedRequest.class);
         verify(pullRequestOpenedService).createPullRequest(eq(1L), captor.capture());
+        assertThat(captor.getValue().runId()).isEqualTo(100L);
         assertThat(captor.getValue().pullRequest().number()).isEqualTo(10);
     }
 
@@ -115,11 +116,12 @@ class PullRequestOpenedInboxHandlerTest {
                 }
                 """;
         CollectInboxContext context = new CollectInboxContext(1L, payloadJson);
-        willThrow(new IllegalArgumentException("비즈니스 오류"))
+        IllegalArgumentException businessException = new IllegalArgumentException("비즈니스 오류");
+        willThrow(businessException)
                 .given(pullRequestOpenedService).createPullRequest(any(), any());
 
         // when & then
         assertThatThrownBy(() -> handler.handle(context))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isSameAs(businessException);
     }
 }
