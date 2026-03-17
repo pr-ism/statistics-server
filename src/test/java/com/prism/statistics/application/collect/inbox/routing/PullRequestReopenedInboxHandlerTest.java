@@ -60,6 +60,7 @@ class PullRequestReopenedInboxHandlerTest {
         // then
         ArgumentCaptor<PullRequestReopenedRequest> captor = ArgumentCaptor.forClass(PullRequestReopenedRequest.class);
         verify(pullRequestReopenedService).reopenPullRequest(eq(1L), captor.capture());
+        assertThat(captor.getValue().runId()).isEqualTo(100L);
         assertThat(captor.getValue().pullRequestNumber()).isEqualTo(10);
     }
 

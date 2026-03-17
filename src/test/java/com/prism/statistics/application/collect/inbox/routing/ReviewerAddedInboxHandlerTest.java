@@ -62,6 +62,7 @@ class ReviewerAddedInboxHandlerTest {
         // then
         ArgumentCaptor<ReviewerAddedRequest> captor = ArgumentCaptor.forClass(ReviewerAddedRequest.class);
         verify(reviewerAddedService).addReviewer(captor.capture());
+        assertThat(captor.getValue().runId()).isEqualTo(100L);
         assertThat(captor.getValue().reviewer().login()).isEqualTo("reviewer1");
     }
 

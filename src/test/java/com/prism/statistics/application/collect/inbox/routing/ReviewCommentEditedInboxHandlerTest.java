@@ -60,6 +60,7 @@ class ReviewCommentEditedInboxHandlerTest {
         // then
         ArgumentCaptor<ReviewCommentEditedRequest> captor = ArgumentCaptor.forClass(ReviewCommentEditedRequest.class);
         verify(reviewCommentEditedService).editReviewComment(captor.capture());
+        assertThat(captor.getValue().runId()).isEqualTo(100L);
         assertThat(captor.getValue().githubCommentId()).isEqualTo(300L);
     }
 

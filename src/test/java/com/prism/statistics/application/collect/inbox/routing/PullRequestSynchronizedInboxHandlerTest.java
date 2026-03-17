@@ -68,6 +68,7 @@ class PullRequestSynchronizedInboxHandlerTest {
         // then
         ArgumentCaptor<PullRequestSynchronizedRequest> captor = ArgumentCaptor.forClass(PullRequestSynchronizedRequest.class);
         verify(pullRequestSynchronizedService).synchronizePullRequest(captor.capture());
+        assertThat(captor.getValue().runId()).isEqualTo(100L);
         assertThat(captor.getValue().pullRequestNumber()).isEqualTo(10);
     }
 

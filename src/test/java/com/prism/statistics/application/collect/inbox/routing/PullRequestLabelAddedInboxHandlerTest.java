@@ -62,6 +62,7 @@ class PullRequestLabelAddedInboxHandlerTest {
         // then
         ArgumentCaptor<PullRequestLabelAddedRequest> captor = ArgumentCaptor.forClass(PullRequestLabelAddedRequest.class);
         verify(pullRequestLabelAddedService).addPullRequestLabel(captor.capture());
+        assertThat(captor.getValue().runId()).isEqualTo(100L);
         assertThat(captor.getValue().label().name()).isEqualTo("bug");
     }
 

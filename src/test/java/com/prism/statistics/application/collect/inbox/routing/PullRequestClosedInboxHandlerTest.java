@@ -62,6 +62,7 @@ class PullRequestClosedInboxHandlerTest {
         // then
         ArgumentCaptor<PullRequestClosedRequest> captor = ArgumentCaptor.forClass(PullRequestClosedRequest.class);
         verify(pullRequestClosedService).closePullRequest(eq(1L), captor.capture());
+        assertThat(captor.getValue().runId()).isEqualTo(100L);
         assertThat(captor.getValue().pullRequestNumber()).isEqualTo(10);
     }
 

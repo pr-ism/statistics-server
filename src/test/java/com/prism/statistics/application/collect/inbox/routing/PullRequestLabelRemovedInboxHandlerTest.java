@@ -62,6 +62,7 @@ class PullRequestLabelRemovedInboxHandlerTest {
         // then
         ArgumentCaptor<PullRequestLabelRemovedRequest> captor = ArgumentCaptor.forClass(PullRequestLabelRemovedRequest.class);
         verify(pullRequestLabelRemovedService).removePullRequestLabel(captor.capture());
+        assertThat(captor.getValue().runId()).isEqualTo(100L);
         assertThat(captor.getValue().label().name()).isEqualTo("bug");
     }
 

@@ -62,6 +62,7 @@ class ReviewerRemovedInboxHandlerTest {
         // then
         ArgumentCaptor<ReviewerRemovedRequest> captor = ArgumentCaptor.forClass(ReviewerRemovedRequest.class);
         verify(reviewerRemovedService).removeReviewer(captor.capture());
+        assertThat(captor.getValue().runId()).isEqualTo(100L);
         assertThat(captor.getValue().reviewer().login()).isEqualTo("reviewer1");
     }
 

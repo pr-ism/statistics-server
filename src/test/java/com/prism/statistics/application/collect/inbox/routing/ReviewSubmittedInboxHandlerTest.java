@@ -66,6 +66,7 @@ class ReviewSubmittedInboxHandlerTest {
         // then
         ArgumentCaptor<ReviewSubmittedRequest> captor = ArgumentCaptor.forClass(ReviewSubmittedRequest.class);
         verify(reviewSubmittedService).submitReview(captor.capture());
+        assertThat(captor.getValue().runId()).isEqualTo(100L);
         assertThat(captor.getValue().githubReviewId()).isEqualTo(200L);
     }
 

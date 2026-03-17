@@ -59,6 +59,7 @@ class ReviewCommentDeletedInboxHandlerTest {
         // then
         ArgumentCaptor<ReviewCommentDeletedRequest> captor = ArgumentCaptor.forClass(ReviewCommentDeletedRequest.class);
         verify(reviewCommentDeletedService).deleteReviewComment(captor.capture());
+        assertThat(captor.getValue().runId()).isEqualTo(100L);
         assertThat(captor.getValue().githubCommentId()).isEqualTo(300L);
     }
 
