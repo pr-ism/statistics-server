@@ -12,7 +12,12 @@ public class CollectInboxEventRouter {
     private final Map<CollectInboxType, CollectInboxEventHandler> handlers = new EnumMap<>(CollectInboxType.class);
 
     public CollectInboxEventRouter(List<CollectInboxEventHandler> handlerList) {
-        handlerList.forEach(handler -> handlers.put(handler.supportType(), handler));
+        handlerList.forEach(handler -> {
+            CollectInboxEventHandler previous = handlers.putIfAbsent(handler.supportType(), handler);
+            if (previous != null) {
+                throw new IllegalStateException("중복 CollectInboxEventHandler 등록: " + handler.supportType());
+            }
+        });
     }
 
     public void route(CollectInboxContext context, CollectInboxType collectType) {

@@ -21,6 +21,9 @@ class CollectInboxEventRouterTest {
     @Mock
     CollectInboxEventHandler handler;
 
+    @Mock
+    CollectInboxEventHandler duplicateHandler;
+
     @Test
     void 등록된_collectType이면_해당_핸들러가_호출된다() {
         // given
@@ -45,5 +48,16 @@ class CollectInboxEventRouterTest {
         // when & then
         assertThatThrownBy(() -> router.route(context, CollectInboxType.PULL_REQUEST_CLOSED))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void 동일한_collectType의_핸들러가_중복_등록되면_예외가_발생한다() {
+        // given
+        given(handler.supportType()).willReturn(CollectInboxType.PULL_REQUEST_OPENED);
+        given(duplicateHandler.supportType()).willReturn(CollectInboxType.PULL_REQUEST_OPENED);
+
+        // when & then
+        assertThatThrownBy(() -> new CollectInboxEventRouter(List.of(handler, duplicateHandler)))
+                .isInstanceOf(IllegalStateException.class);
     }
 }
