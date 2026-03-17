@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.prism.statistics.application.analysis.metadata.review.ReviewerAddedService;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerAddedRequest;
+import com.prism.statistics.application.collect.ProjectApiKeyService;
 import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.PullRequestNotFoundException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
@@ -20,6 +21,9 @@ class ReviewerAddedControllerTest extends CommonControllerSliceTestSupport {
 
     private static final String API_KEY_HEADER = "X-API-Key";
     private static final String TEST_API_KEY = "test-api-key";
+
+    @Autowired
+    private ProjectApiKeyService projectApiKeyService;
 
     @Autowired
     private ReviewerAddedService reviewerAddedService;
@@ -86,7 +90,7 @@ class ReviewerAddedControllerTest extends CommonControllerSliceTestSupport {
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(reviewerAddedService).addReviewer(any(ReviewerAddedRequest.class));
+                .given(projectApiKeyService).validateApiKey(TEST_API_KEY);
 
         // when & then
         mockMvc.perform(

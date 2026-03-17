@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.PullRequestLabelAddedService;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelAddedRequest;
+import com.prism.statistics.application.collect.ProjectApiKeyService;
 import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.PullRequestNotFoundException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
@@ -22,6 +23,9 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
 
     private static final String API_KEY_HEADER = "X-API-Key";
     private static final String TEST_API_KEY = "test-api-key";
+
+    @Autowired
+    private ProjectApiKeyService projectApiKeyService;
 
     @Autowired
     private PullRequestLabelAddedService pullRequestLabelAddedService;
@@ -89,7 +93,7 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(pullRequestLabelAddedService).addPullRequestLabel(any(PullRequestLabelAddedRequest.class));
+                .given(projectApiKeyService).validateApiKey(TEST_API_KEY);
 
         // when & then
         mockMvc.perform(
