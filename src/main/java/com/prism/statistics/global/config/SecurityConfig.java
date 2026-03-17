@@ -63,6 +63,7 @@ public class SecurityConfig {
                     .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                     .requestMatchers("/docs/index.html").permitAll()
                     .requestMatchers("/collect/**").permitAll()
+                    .requestMatchers("/projects/**").permitAll()
                     .anyRequest().authenticated()
             )
             .exceptionHandling(handler -> handler

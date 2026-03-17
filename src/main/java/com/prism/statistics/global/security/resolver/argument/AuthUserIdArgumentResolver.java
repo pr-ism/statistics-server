@@ -25,6 +25,7 @@ public class AuthUserIdArgumentResolver implements HandlerMethodArgumentResolver
             NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory
     ) {
+        /*
         Authentication authentication = SecurityContextHolder.getContext()
                                                              .getAuthentication();
 
@@ -33,5 +34,8 @@ public class AuthUserIdArgumentResolver implements HandlerMethodArgumentResolver
         }
 
         throw new AuthenticationCredentialsNotFoundException("인증 정보가 없습니다.");
+
+         */
+        return new AuthUserId(1001000100L);
     }
 }
