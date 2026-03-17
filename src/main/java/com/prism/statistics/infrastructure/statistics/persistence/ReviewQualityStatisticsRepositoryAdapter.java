@@ -275,14 +275,14 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
     }
 
     private record ReviewActivityAggregate(
-            long totalCount,
-            long reviewedCount,
-            long totalReviewRoundTrips,
-            long totalCommentCount,
+            Long totalCount,
+            Long reviewedCount,
+            Long totalReviewRoundTrips,
+            Long totalCommentCount,
             BigDecimal totalCommentDensity,
-            long withAdditionalReviewersCount,
-            long withChangesAfterReviewCount,
-            long highIntensityPrCount
+            Long withAdditionalReviewersCount,
+            Long withChangesAfterReviewCount,
+            Long highIntensityPrCount
     ) {
         static ReviewActivityAggregate empty() {
             return new ReviewActivityAggregate(0L, 0L, 0L, 0L, BigDecimal.ZERO, 0L, 0L, 0L);
@@ -290,8 +290,8 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
     }
 
     private record ChangesResolutionAggregate(
-            long totalChangesResolutionMinutes,
-            long changesResolvedCount
+            Long totalChangesResolutionMinutes,
+            Long changesResolvedCount
     ) {
         static ChangesResolutionAggregate empty() {
             return new ChangesResolutionAggregate(0L, 0L);
@@ -299,11 +299,11 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
     }
 
     private record ReviewSessionAggregate(
-            long totalSessionCount,
-            long uniqueReviewerCount,
-            long uniquePullRequestCount,
-            long totalSessionDurationMinutes,
-            long totalReviewCount
+            Long totalSessionCount,
+            Long uniqueReviewerCount,
+            Long uniquePullRequestCount,
+            Long totalSessionDurationMinutes,
+            Long totalReviewCount
     ) {
         static ReviewSessionAggregate empty() {
             return new ReviewSessionAggregate(0L, 0L, 0L, 0L, 0L);
