@@ -10,8 +10,6 @@ import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.prism.statistics.application.collect.inbox.routing.CollectInboxContext;
-import com.prism.statistics.application.collect.inbox.routing.CollectInboxEventRouter;
 import com.prism.statistics.global.config.properties.CollectRetryProperties;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInbox;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxFailureType;
@@ -20,15 +18,17 @@ import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.infrastructure.collect.inbox.repository.CollectInboxRepository;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.dao.QueryTimeoutException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.QueryTimeoutException;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings("NonAsciiCharacters")
 @ExtendWith(MockitoExtension.class)
@@ -39,7 +39,7 @@ class CollectInboxEntryProcessorTest {
     CollectInboxRepository collectInboxRepository;
 
     @Mock
-    CollectInboxEventRouter collectInboxServiceRouter;
+    CollectInboxClaimedExecutor collectInboxClaimedExecutor;
 
     CollectInboxEntryProcessor collectInboxEntryProcessor;
 
@@ -48,12 +48,11 @@ class CollectInboxEntryProcessorTest {
         CollectRetryProperties retryProperties = new CollectRetryProperties(3);
 
         collectInboxEntryProcessor = new CollectInboxEntryProcessor(
-                Clock.systemUTC(),
+                Clock.fixed(Instant.parse("2026-03-16T00:00:00Z"), ZoneId.of("Asia/Seoul")),
                 retryProperties,
                 collectInboxRepository,
-                collectInboxServiceRouter,
+                collectInboxClaimedExecutor,
                 new CollectInboxFailureReasonTruncator(),
-                new ProcessingSourceContext(),
                 new CollectRetryExceptionClassifier()
         );
     }
@@ -70,8 +69,7 @@ class CollectInboxEntryProcessorTest {
 
         // then
         verify(collectInboxRepository, never()).findById(anyLong());
-        verify(collectInboxRepository, never()).save(any());
-        verify(collectInboxServiceRouter, never()).route(any(), any());
+        verify(collectInboxClaimedExecutor, never()).execute(any());
     }
 
     @Test
@@ -86,23 +84,16 @@ class CollectInboxEntryProcessorTest {
         collectInboxEntryProcessor.process(pending);
 
         // then
-        verify(collectInboxRepository, never()).save(any());
-        verify(collectInboxServiceRouter, never()).route(any(), any());
+        verify(collectInboxClaimedExecutor, never()).execute(any());
     }
 
     @Test
-    void 정상처리시_ServiceRouter가_호출되고_PROCESSED로_저장된다() {
+    void 정상처리시_executor가_호출된다() {
         // given
         CollectInbox pending = org.mockito.Mockito.mock(CollectInbox.class);
         given(pending.getId()).willReturn(11L);
 
-        CollectInbox actual = CollectInbox.pending(
-                CollectInboxType.PULL_REQUEST_OPENED,
-                1L,
-                1L,
-                "{}"
-        );
-        actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));
+        CollectInbox actual = createProcessingInbox(1L, 1);
 
         given(collectInboxRepository.markProcessingIfClaimable(eq(11L), any())).willReturn(true);
         given(collectInboxRepository.findById(11L)).willReturn(Optional.of(actual));
@@ -111,15 +102,7 @@ class CollectInboxEntryProcessorTest {
         collectInboxEntryProcessor.process(pending);
 
         // then
-        assertAll(
-                () -> assertThat(actual.getStatus()).isEqualTo(CollectInboxStatus.PROCESSED),
-                () -> assertThat(actual.getProcessingAttempt()).isEqualTo(1)
-        );
-        verify(collectInboxServiceRouter).route(
-                eq(new CollectInboxContext(1L, "{}")),
-                eq(CollectInboxType.PULL_REQUEST_OPENED)
-        );
-        verify(collectInboxRepository).save(actual);
+        verify(collectInboxClaimedExecutor).execute(actual);
     }
 
     @Test
@@ -128,19 +111,13 @@ class CollectInboxEntryProcessorTest {
         CollectInbox pending = org.mockito.Mockito.mock(CollectInbox.class);
         given(pending.getId()).willReturn(10L);
 
-        CollectInbox actual = CollectInbox.pending(
-                CollectInboxType.PULL_REQUEST_OPENED,
-                1L,
-                2L,
-                "{}"
-        );
-        actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));
+        CollectInbox actual = createProcessingInbox(2L, 1);
 
         given(collectInboxRepository.markProcessingIfClaimable(eq(10L), any())).willReturn(true);
         given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
         willThrow(new QueryTimeoutException("DB 타임아웃"))
-                .given(collectInboxServiceRouter)
-                .route(any(), any());
+                .given(collectInboxClaimedExecutor)
+                .execute(any());
 
         // when
         collectInboxEntryProcessor.process(pending);
@@ -148,7 +125,6 @@ class CollectInboxEntryProcessorTest {
         // then
         assertAll(
                 () -> assertThat(actual.getStatus()).isEqualTo(CollectInboxStatus.RETRY_PENDING),
-                () -> assertThat(actual.getProcessingAttempt()).isEqualTo(1),
                 () -> assertThat(actual.getFailureType()).isNull()
         );
         verify(collectInboxRepository).save(actual);
@@ -160,19 +136,13 @@ class CollectInboxEntryProcessorTest {
         CollectInbox pending = org.mockito.Mockito.mock(CollectInbox.class);
         given(pending.getId()).willReturn(10L);
 
-        CollectInbox actual = CollectInbox.pending(
-                CollectInboxType.PULL_REQUEST_OPENED,
-                1L,
-                20L,
-                "{}"
-        );
-        actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));
+        CollectInbox actual = createProcessingInbox(20L, 1);
 
         given(collectInboxRepository.markProcessingIfClaimable(eq(10L), any())).willReturn(true);
         given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
         willThrow(new IllegalArgumentException("비즈니스 로직 위반"))
-                .given(collectInboxServiceRouter)
-                .route(any(), any());
+                .given(collectInboxClaimedExecutor)
+                .execute(any());
 
         // when
         collectInboxEntryProcessor.process(pending);
@@ -180,7 +150,6 @@ class CollectInboxEntryProcessorTest {
         // then
         assertAll(
                 () -> assertThat(actual.getStatus()).isEqualTo(CollectInboxStatus.FAILED),
-                () -> assertThat(actual.getProcessingAttempt()).isEqualTo(1),
                 () -> assertThat(actual.getFailureType()).isEqualTo(CollectInboxFailureType.BUSINESS_INVARIANT)
         );
         verify(collectInboxRepository).save(actual);
@@ -192,23 +161,13 @@ class CollectInboxEntryProcessorTest {
         CollectInbox pending = org.mockito.Mockito.mock(CollectInbox.class);
         given(pending.getId()).willReturn(10L);
 
-        CollectInbox actual = CollectInbox.pending(
-                CollectInboxType.PULL_REQUEST_OPENED,
-                1L,
-                3L,
-                "{}"
-        );
-        actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));
-        actual.markRetryPending(Instant.parse("2026-02-15T00:01:00Z"), "1차 실패");
-        actual.markProcessing(Instant.parse("2026-02-15T00:02:00Z"));
-        actual.markRetryPending(Instant.parse("2026-02-15T00:03:00Z"), "2차 실패");
-        actual.markProcessing(Instant.parse("2026-02-15T00:04:00Z"));
+        CollectInbox actual = createProcessingInbox(3L, 3);
 
         given(collectInboxRepository.markProcessingIfClaimable(eq(10L), any())).willReturn(true);
         given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
         willThrow(new QueryTimeoutException("3차 실패"))
-                .given(collectInboxServiceRouter)
-                .route(any(), any());
+                .given(collectInboxClaimedExecutor)
+                .execute(any());
 
         // when
         collectInboxEntryProcessor.process(pending);
@@ -216,7 +175,6 @@ class CollectInboxEntryProcessorTest {
         // then
         assertAll(
                 () -> assertThat(actual.getStatus()).isEqualTo(CollectInboxStatus.FAILED),
-                () -> assertThat(actual.getProcessingAttempt()).isEqualTo(3),
                 () -> assertThat(actual.getFailureType()).isEqualTo(CollectInboxFailureType.RETRY_EXHAUSTED)
         );
         verify(collectInboxRepository).save(actual);
@@ -228,19 +186,13 @@ class CollectInboxEntryProcessorTest {
         CollectInbox pending = org.mockito.Mockito.mock(CollectInbox.class);
         given(pending.getId()).willReturn(10L);
 
-        CollectInbox actual = CollectInbox.pending(
-                CollectInboxType.PULL_REQUEST_OPENED,
-                1L,
-                4L,
-                "{}"
-        );
-        actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));
+        CollectInbox actual = createProcessingInbox(4L, 1);
 
         given(collectInboxRepository.markProcessingIfClaimable(eq(10L), any())).willReturn(true);
         given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
         willThrow(new RuntimeException("x".repeat(600)))
-                .given(collectInboxServiceRouter)
-                .route(any(), any());
+                .given(collectInboxClaimedExecutor)
+                .execute(any());
 
         // when
         collectInboxEntryProcessor.process(pending);
@@ -256,19 +208,13 @@ class CollectInboxEntryProcessorTest {
         CollectInbox pending = org.mockito.Mockito.mock(CollectInbox.class);
         given(pending.getId()).willReturn(10L);
 
-        CollectInbox actual = CollectInbox.pending(
-                CollectInboxType.PULL_REQUEST_OPENED,
-                1L,
-                5L,
-                "{}"
-        );
-        actual.markProcessing(Instant.parse("2026-02-15T00:00:00Z"));
+        CollectInbox actual = createProcessingInbox(5L, 1);
 
         given(collectInboxRepository.markProcessingIfClaimable(eq(10L), any())).willReturn(true);
         given(collectInboxRepository.findById(10L)).willReturn(Optional.of(actual));
         willThrow(new RuntimeException())
-                .given(collectInboxServiceRouter)
-                .route(any(), any());
+                .given(collectInboxClaimedExecutor)
+                .execute(any());
 
         // when
         collectInboxEntryProcessor.process(pending);
@@ -276,5 +222,14 @@ class CollectInboxEntryProcessorTest {
         // then
         assertThat(actual.getFailureReason()).isEqualTo("unknown failure");
         verify(collectInboxRepository).save(actual);
+    }
+
+    private CollectInbox createProcessingInbox(long runId, int processingAttempt) {
+        CollectInbox inbox = CollectInbox.pending(
+                CollectInboxType.PULL_REQUEST_OPENED, 1L, runId, "{}"
+        );
+        ReflectionTestUtils.setField(inbox, "status", CollectInboxStatus.PROCESSING);
+        ReflectionTestUtils.setField(inbox, "processingAttempt", processingAttempt);
+        return inbox;
     }
 }

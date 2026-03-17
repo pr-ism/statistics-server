@@ -1,7 +1,5 @@
 package com.prism.statistics.application.collect.inbox;
 
-import com.prism.statistics.application.collect.inbox.routing.CollectInboxContext;
-import com.prism.statistics.application.collect.inbox.routing.CollectInboxEventRouter;
 import com.prism.statistics.global.config.properties.CollectRetryProperties;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInbox;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxFailureType;
@@ -22,9 +20,8 @@ public class CollectInboxEntryProcessor {
     private final Clock clock;
     private final CollectRetryProperties collectRetryProperties;
     private final CollectInboxRepository collectInboxRepository;
-    private final CollectInboxEventRouter collectInboxEventRouter;
+    private final CollectInboxClaimedExecutor collectInboxClaimedExecutor;
     private final CollectInboxFailureReasonTruncator failureReasonTruncator;
-    private final ProcessingSourceContext processingSourceContext;
     private final CollectRetryExceptionClassifier retryExceptionClassifier;
 
     public void process(CollectInbox inbox) {
@@ -50,16 +47,7 @@ public class CollectInboxEntryProcessor {
 
     private void processClaimedInbox(CollectInbox claimedInbox) {
         try {
-            CollectInboxContext context = new CollectInboxContext(
-                    claimedInbox.getProjectId(),
-                    claimedInbox.getPayloadJson()
-            );
-            processingSourceContext.withInboxProcessing(
-                    () -> collectInboxEventRouter.route(context, claimedInbox.getCollectType())
-            );
-
-            claimedInbox.markProcessed(clock.instant());
-            collectInboxRepository.save(claimedInbox);
+            collectInboxClaimedExecutor.execute(claimedInbox);
         } catch (Exception e) {
             log.error(
                     "{} inbox 처리에 실패했습니다. inboxId={}",
