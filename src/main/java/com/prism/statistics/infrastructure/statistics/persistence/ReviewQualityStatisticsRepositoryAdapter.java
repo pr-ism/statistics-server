@@ -11,7 +11,7 @@ import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.statistics.repository.ReviewQualityStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.ReviewActivityStatisticsDto;
 import com.prism.statistics.domain.statistics.repository.dto.ReviewSessionStatisticsDto;
-import com.querydsl.core.types.Projections;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.DateTimePath;
@@ -75,8 +75,8 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             LocalDate startDate,
             LocalDate endDate
     ) {
-        ReviewActivityAggregate result = queryFactory
-                .select(Projections.constructor(ReviewActivityAggregate.class,
+        Tuple tuple = queryFactory
+                .select(
                         reviewActivity.count(),
                         new CaseBuilder()
                                 .when(reviewActivity.reviewRoundTrips.gt(0)).then(1L).otherwise(0L)
@@ -98,7 +98,7 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
                                                         .add(reviewActivity.codeDeletionsAfterReview)
                                                         .goe(HIGH_CHANGE_THRESHOLD))))
                                 .then(1L).otherwise(0L).sumLong().coalesce(0L)
-                ))
+                )
                 .from(reviewActivity)
                 .join(pullRequest).on(pullRequest.id.eq(reviewActivity.pullRequestId))
                 .where(
@@ -107,11 +107,16 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
                 )
                 .fetchOne();
 
-        if (result == null) {
-            return ReviewActivityAggregate.empty();
-        }
-
-        return result;
+        return new ReviewActivityAggregate(
+                nullableLong(tuple, 0),
+                nullableLong(tuple, 1),
+                nullableLong(tuple, 2),
+                nullableLong(tuple, 3),
+                tuple != null ? tuple.get(4, BigDecimal.class) : BigDecimal.ZERO,
+                nullableLong(tuple, 5),
+                nullableLong(tuple, 6),
+                nullableLong(tuple, 7)
+        );
     }
 
     private ChangesResolutionAggregate aggregateChangesResolutionMetricsByProjectId(
@@ -119,11 +124,11 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             LocalDate startDate,
             LocalDate endDate
     ) {
-        ChangesResolutionAggregate result = queryFactory
-                .select(Projections.constructor(ChangesResolutionAggregate.class,
+        Tuple tuple = queryFactory
+                .select(
                         reviewResponseTime.changesResolution.minutes.sumLong().coalesce(0L),
                         reviewResponseTime.changesResolution.minutes.count()
-                ))
+                )
                 .from(reviewResponseTime)
                 .join(pullRequest).on(pullRequest.id.eq(reviewResponseTime.pullRequestId))
                 .where(
@@ -132,11 +137,10 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
                 )
                 .fetchOne();
 
-        if (result == null) {
-            return ChangesResolutionAggregate.empty();
-        }
-
-        return result;
+        return new ChangesResolutionAggregate(
+                nullableLong(tuple, 0),
+                nullableLong(tuple, 1)
+        );
     }
 
     private ReviewActivityStatisticsDto buildReviewActivityStatisticsDto(
@@ -190,14 +194,14 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             LocalDate startDate,
             LocalDate endDate
     ) {
-        ReviewSessionAggregate result = queryFactory
-                .select(Projections.constructor(ReviewSessionAggregate.class,
+        Tuple tuple = queryFactory
+                .select(
                         reviewSession.count(),
                         reviewSession.reviewer.userId.countDistinct(),
                         reviewSession.pullRequestId.countDistinct(),
                         reviewSession.sessionDuration.minutes.sumLong().coalesce(0L),
                         reviewSession.reviewCount.sumLong().coalesce(0L)
-                ))
+                )
                 .from(reviewSession)
                 .join(pullRequest).on(pullRequest.id.eq(reviewSession.pullRequestId))
                 .where(
@@ -206,11 +210,13 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
                 )
                 .fetchOne();
 
-        if (result == null) {
-            return ReviewSessionAggregate.empty();
-        }
-
-        return result;
+        return new ReviewSessionAggregate(
+                nullableLong(tuple, 0),
+                nullableLong(tuple, 1),
+                nullableLong(tuple, 2),
+                nullableLong(tuple, 3),
+                nullableLong(tuple, 4)
+        );
     }
 
     private long fetchChangesRequestedCount(Long projectId, LocalDate startDate, LocalDate endDate) {
@@ -255,6 +261,14 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
                        .orElse(0L);
     }
 
+    private long nullableLong(Tuple tuple, int index) {
+        if (tuple == null) {
+            return 0L;
+        }
+        Number value = tuple.get(index, Number.class);
+        return value != null ? value.longValue() : 0L;
+    }
+
     private BooleanExpression dateRangeCondition(
             DateTimePath<LocalDateTime> dateTimePath,
             LocalDate startDate,
@@ -275,38 +289,29 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
     }
 
     private record ReviewActivityAggregate(
-            Long totalCount,
-            Long reviewedCount,
-            Long totalReviewRoundTrips,
-            Long totalCommentCount,
+            long totalCount,
+            long reviewedCount,
+            long totalReviewRoundTrips,
+            long totalCommentCount,
             BigDecimal totalCommentDensity,
-            Long withAdditionalReviewersCount,
-            Long withChangesAfterReviewCount,
-            Long highIntensityPrCount
+            long withAdditionalReviewersCount,
+            long withChangesAfterReviewCount,
+            long highIntensityPrCount
     ) {
-        static ReviewActivityAggregate empty() {
-            return new ReviewActivityAggregate(0L, 0L, 0L, 0L, BigDecimal.ZERO, 0L, 0L, 0L);
-        }
     }
 
     private record ChangesResolutionAggregate(
-            Long totalChangesResolutionMinutes,
-            Long changesResolvedCount
+            long totalChangesResolutionMinutes,
+            long changesResolvedCount
     ) {
-        static ChangesResolutionAggregate empty() {
-            return new ChangesResolutionAggregate(0L, 0L);
-        }
     }
 
     private record ReviewSessionAggregate(
-            Long totalSessionCount,
-            Long uniqueReviewerCount,
-            Long uniquePullRequestCount,
-            Long totalSessionDurationMinutes,
-            Long totalReviewCount
+            long totalSessionCount,
+            long uniqueReviewerCount,
+            long uniquePullRequestCount,
+            long totalSessionDurationMinutes,
+            long totalReviewCount
     ) {
-        static ReviewSessionAggregate empty() {
-            return new ReviewSessionAggregate(0L, 0L, 0L, 0L, 0L);
-        }
     }
 }
