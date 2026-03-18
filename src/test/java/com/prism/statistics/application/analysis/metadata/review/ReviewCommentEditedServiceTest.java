@@ -1,35 +1,39 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentEditedRequest;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
-import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewCommentRepository;
 import com.prism.statistics.domain.analysis.metadata.review.exception.ReviewCommentNotFoundException;
-import java.time.Instant;
-import java.time.LocalDateTime;
+import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewCommentRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class ReviewCommentEditedServiceTest {
 
-    private static final String TEST_API_KEY = "test-api-key";
+
     private static final Long EXISTING_COMMENT_ID = 100L;
     private static final String ORIGINAL_BODY = "원본 댓글 내용";
     private static final LocalDateTime ORIGINAL_UPDATED_AT = LocalDateTime.of(2024, 1, 15, 10, 0, 0);
 
     @Autowired
     private ReviewCommentEditedService reviewCommentEditedService;
+
+    @Autowired
+    private ProcessingSourceContext processingSourceContext;
 
     @Autowired
     private JpaReviewCommentRepository jpaReviewCommentRepository;
@@ -43,13 +47,14 @@ class ReviewCommentEditedServiceTest {
         LocalDateTime expectedUpdatedAt = LocalDateTime.of(2024, 1, 15, 11, 0, 0);
 
         ReviewCommentEditedRequest request = new ReviewCommentEditedRequest(
+                1L,
                 EXISTING_COMMENT_ID,
                 newBody,
                 newerUpdatedAt
         );
 
         // when
-        reviewCommentEditedService.editReviewComment(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentEditedService.editReviewComment(request));
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -67,13 +72,14 @@ class ReviewCommentEditedServiceTest {
         Instant olderUpdatedAt = Instant.parse("2024-01-15T00:00:00Z"); // KST 09:00 (기존 10:00보다 과거)
 
         ReviewCommentEditedRequest request = new ReviewCommentEditedRequest(
+                1L,
                 EXISTING_COMMENT_ID,
                 newBody,
                 olderUpdatedAt
         );
 
         // when
-        reviewCommentEditedService.editReviewComment(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentEditedService.editReviewComment(request));
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -91,13 +97,14 @@ class ReviewCommentEditedServiceTest {
         Instant sameUpdatedAt = Instant.parse("2024-01-15T01:00:00Z"); // KST 10:00 (기존과 동일)
 
         ReviewCommentEditedRequest request = new ReviewCommentEditedRequest(
+                1L,
                 EXISTING_COMMENT_ID,
                 newBody,
                 sameUpdatedAt
         );
 
         // when
-        reviewCommentEditedService.editReviewComment(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentEditedService.editReviewComment(request));
 
         // then
         ReviewComment result = jpaReviewCommentRepository.findByGithubCommentId(EXISTING_COMMENT_ID).orElseThrow();
@@ -107,34 +114,20 @@ class ReviewCommentEditedServiceTest {
         );
     }
 
-    @Test
-    void 존재하지_않는_API_Key면_예외가_발생한다() {
-        // given
-        String invalidApiKey = "invalid-api-key";
-        ReviewCommentEditedRequest request = new ReviewCommentEditedRequest(
-                EXISTING_COMMENT_ID,
-                "수정된 댓글 내용",
-                Instant.now()
-        );
-
-        // when & then
-        assertThatThrownBy(() -> reviewCommentEditedService.editReviewComment(invalidApiKey, request))
-                .isInstanceOf(InvalidApiKeyException.class);
-    }
-
     @Sql("/sql/webhook/insert_project.sql")
     @Test
     void 존재하지_않는_댓글이면_예외가_발생한다() {
         // given
         Long nonExistentCommentId = 999L;
         ReviewCommentEditedRequest request = new ReviewCommentEditedRequest(
+                1L,
                 nonExistentCommentId,
                 "수정된 댓글 내용",
                 Instant.now()
         );
 
         // when & then
-        assertThatThrownBy(() -> reviewCommentEditedService.editReviewComment(TEST_API_KEY, request))
+        assertThatThrownBy(() -> processingSourceContext.withInboxProcessing(() -> reviewCommentEditedService.editReviewComment(request)))
                 .isInstanceOf(ReviewCommentNotFoundException.class);
     }
 }

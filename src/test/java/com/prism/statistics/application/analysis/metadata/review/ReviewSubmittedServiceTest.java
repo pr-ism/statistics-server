@@ -1,36 +1,39 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewSubmittedRequest;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewSubmittedRequest.ReviewerData;
 import com.prism.statistics.domain.analysis.metadata.review.Review;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewRepository;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 @IntegrationTest
 @SuppressWarnings("NonAsciiCharacters")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class ReviewSubmittedServiceTest {
 
-    private static final String TEST_API_KEY = "test-api-key";
+
     private static final Instant TEST_SUBMITTED_AT = Instant.parse("2024-01-15T10:00:00Z");
     private static final LocalDateTime EXPECTED_SUBMITTED_AT = LocalDateTime.of(2024, 1, 15, 19, 0, 0);
 
     @Autowired
     private ReviewSubmittedService reviewSubmittedService;
+
+    @Autowired
+    private ProcessingSourceContext processingSourceContext;
 
     @Autowired
     private JpaReviewRepository jpaReviewRepository;
@@ -42,7 +45,7 @@ class ReviewSubmittedServiceTest {
         ReviewSubmittedRequest request = createReviewSubmittedRequest(100L, "approved");
 
         // when
-        reviewSubmittedService.submitReview(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         assertThat(jpaReviewRepository.count()).isEqualTo(1);
@@ -61,7 +64,7 @@ class ReviewSubmittedServiceTest {
         );
 
         // when
-        reviewSubmittedService.submitReview(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         List<Review> reviews = jpaReviewRepository.findAll();
@@ -88,7 +91,7 @@ class ReviewSubmittedServiceTest {
         ReviewSubmittedRequest request = createReviewSubmittedRequest(100L, "changes_requested");
 
         // when
-        reviewSubmittedService.submitReview(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         Review review = jpaReviewRepository.findAll().get(0);
@@ -105,7 +108,7 @@ class ReviewSubmittedServiceTest {
         );
 
         // when
-        reviewSubmittedService.submitReview(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         Review review = jpaReviewRepository.findAll().get(0);
@@ -125,7 +128,7 @@ class ReviewSubmittedServiceTest {
         );
 
         // when
-        reviewSubmittedService.submitReview(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         Review review = jpaReviewRepository.findAll().getFirst();
@@ -140,22 +143,11 @@ class ReviewSubmittedServiceTest {
         ReviewSubmittedRequest request = createReviewSubmittedRequest(sameGithubReviewId, "approved");
 
         // when
-        reviewSubmittedService.submitReview(TEST_API_KEY, request);
-        reviewSubmittedService.submitReview(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
+        processingSourceContext.withInboxProcessing(() -> reviewSubmittedService.submitReview(request));
 
         // then
         assertThat(jpaReviewRepository.count()).isEqualTo(1);
-    }
-
-    @Test
-    void 존재하지_않는_API_Key면_예외가_발생한다() {
-        // given
-        ReviewSubmittedRequest request = createReviewSubmittedRequest(100L, "approved");
-        String invalidApiKey = "invalid-api-key";
-
-        // when & then
-        assertThatThrownBy(() -> reviewSubmittedService.submitReview(invalidApiKey, request))
-                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     private ReviewSubmittedRequest createReviewSubmittedRequest(Long githubReviewId, String state) {
@@ -177,6 +169,7 @@ class ReviewSubmittedServiceTest {
             int commentCount
     ) {
         return new ReviewSubmittedRequest(
+                1L,
                 githubPullRequestId,
                 pullRequestNumber,
                 githubReviewId,

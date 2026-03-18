@@ -1,8 +1,10 @@
 package com.prism.statistics.application.analysis.metadata.review.dto.request;
 
+import com.prism.statistics.application.collect.inbox.CollectInboxRequest;
 import java.time.Instant;
 
 public record ReviewCommentCreatedRequest(
+        long runId,
         Long githubCommentId,
         Long githubReviewId,
         String body,
@@ -14,7 +16,7 @@ public record ReviewCommentCreatedRequest(
         Long inReplyToId,
         CommentAuthorData author,
         Instant createdAt
-) {
+) implements CollectInboxRequest {
 
     public record CommentAuthorData(
             String login,

@@ -41,4 +41,21 @@ class ProjectApiKeyServiceTest {
                 .isInstanceOf(InvalidApiKeyException.class);
     }
 
+    @Sql("/sql/webhook/insert_project.sql")
+    @Test
+    void 유효한_API_Key로_검증하면_예외가_발생하지_않는다() {
+        // when & then
+        projectApiKeyService.validateApiKey(TEST_API_KEY);
+    }
+
+    @Test
+    void 존재하지_않는_API_Key로_검증하면_예외가_발생한다() {
+        // given
+        String invalidApiKey = "invalid-api-key";
+
+        // when & then
+        assertThatThrownBy(() -> projectApiKeyService.validateApiKey(invalidApiKey))
+                .isInstanceOf(InvalidApiKeyException.class);
+    }
+
 }

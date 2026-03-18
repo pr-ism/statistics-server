@@ -41,3 +41,11 @@ app:
     metadata:
       batch-insert:
         chunk-size: 100
+  collect:
+    inbox:
+      poll-delay-ms: 200
+      processing-timeout-ms: 60000
+      worker-enabled: true
+      batch-size: 30
+    retry:
+      max-attempts: 3

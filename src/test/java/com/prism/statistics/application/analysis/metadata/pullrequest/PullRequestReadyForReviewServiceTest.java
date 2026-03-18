@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestReadyForReviewRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestStateChangedEvent;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.PullRequest;
@@ -36,6 +37,9 @@ class PullRequestReadyForReviewServiceTest {
     private PullRequestReadyForReviewService pullRequestReadyForReviewService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaPullRequestRepository jpaPullRequestRepository;
 
     @Autowired
@@ -51,7 +55,7 @@ class PullRequestReadyForReviewServiceTest {
         PullRequestReadyForReviewRequest request = createReadyForReviewRequest();
 
         // when
-        pullRequestReadyForReviewService.readyForReview(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestReadyForReviewService.readyForReview(TEST_PROJECT_ID, request));
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -65,7 +69,7 @@ class PullRequestReadyForReviewServiceTest {
         PullRequestReadyForReviewRequest request = createReadyForReviewRequest();
 
         // when
-        pullRequestReadyForReviewService.readyForReview(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestReadyForReviewService.readyForReview(TEST_PROJECT_ID, request));
 
         // then
         long eventCount = applicationEvents.stream(PullRequestStateChangedEvent.class).count();
@@ -79,7 +83,7 @@ class PullRequestReadyForReviewServiceTest {
         PullRequestReadyForReviewRequest request = createReadyForReviewRequest();
 
         // when
-        pullRequestReadyForReviewService.readyForReview(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestReadyForReviewService.readyForReview(TEST_PROJECT_ID, request));
 
         // then
         assertThat(jpaPullRequestStateHistoryRepository.count()).isEqualTo(1);
@@ -98,7 +102,7 @@ class PullRequestReadyForReviewServiceTest {
         PullRequestReadyForReviewRequest request = createReadyForReviewRequest();
 
         // when
-        pullRequestReadyForReviewService.readyForReview(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestReadyForReviewService.readyForReview(TEST_PROJECT_ID, request));
 
         // then
         assertAll(
@@ -115,7 +119,7 @@ class PullRequestReadyForReviewServiceTest {
         PullRequestReadyForReviewRequest request = createReadyForReviewRequest();
 
         // when
-        pullRequestReadyForReviewService.readyForReview(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestReadyForReviewService.readyForReview(TEST_PROJECT_ID, request));
 
         // then
         assertAll(
@@ -126,6 +130,7 @@ class PullRequestReadyForReviewServiceTest {
 
     private PullRequestReadyForReviewRequest createReadyForReviewRequest() {
         return new PullRequestReadyForReviewRequest(
+                1L,
                 TEST_PULL_REQUEST_NUMBER,
                 READY_FOR_REVIEW_AT
         );

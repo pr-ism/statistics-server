@@ -2,7 +2,9 @@ package com.prism.statistics.presentation.collect.review.reviewer;
 
 import com.prism.statistics.application.analysis.metadata.review.ReviewerAddedService;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerAddedRequest;
+import com.prism.statistics.application.collect.ProjectApiKeyService;
 import lombok.RequiredArgsConstructor;
+import com.prism.statistics.presentation.common.ResponseEntityConst;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ReviewerAddedController {
 
+    private final ProjectApiKeyService projectApiKeyService;
     private final ReviewerAddedService reviewerAddedService;
 
     @PostMapping("/reviewer/added")
@@ -22,7 +25,8 @@ public class ReviewerAddedController {
             @RequestHeader("X-API-Key") String apiKey,
             @RequestBody ReviewerAddedRequest request
     ) {
-        reviewerAddedService.addReviewer(apiKey, request);
-        return ResponseEntity.ok().build();
+        projectApiKeyService.validateApiKey(apiKey);
+        reviewerAddedService.addReviewer(request);
+        return ResponseEntityConst.NO_CONTENT;
     }
 }

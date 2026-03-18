@@ -1,7 +1,6 @@
 package com.prism.statistics.presentation.collect.pullrequest.label;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
@@ -11,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.PullRequestLabelRemovedService;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestLabelRemovedRequest;
+import com.prism.statistics.application.collect.ProjectApiKeyService;
 import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.exception.PullRequestNotFoundException;
 import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
@@ -23,6 +23,9 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
 
     private static final String API_KEY_HEADER = "X-API-Key";
     private static final String TEST_API_KEY = "test-api-key";
+
+    @Autowired
+    private ProjectApiKeyService projectApiKeyService;
 
     @Autowired
     private PullRequestLabelRemovedService pullRequestLabelRemovedService;
@@ -40,7 +43,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
                 }
                 """;
 
-        willDoNothing().given(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
+        willDoNothing().given(pullRequestLabelRemovedService).removePullRequestLabel(any(PullRequestLabelRemovedRequest.class));
 
         // when & then
         mockMvc.perform(
@@ -49,9 +52,9 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
-        verify(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
+        verify(pullRequestLabelRemovedService).removePullRequestLabel(any(PullRequestLabelRemovedRequest.class));
     }
 
     @Test
@@ -90,7 +93,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
                 """;
 
         willThrow(new InvalidApiKeyException())
-                .given(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
+                .given(projectApiKeyService).validateApiKey(TEST_API_KEY);
 
         // when & then
         mockMvc.perform(
@@ -118,7 +121,7 @@ class PullRequestLabelRemovedControllerTest extends CommonControllerSliceTestSup
                 """;
 
         willThrow(new PullRequestNotFoundException())
-                .given(pullRequestLabelRemovedService).removePullRequestLabel(eq(TEST_API_KEY), any(PullRequestLabelRemovedRequest.class));
+                .given(pullRequestLabelRemovedService).removePullRequestLabel(any(PullRequestLabelRemovedRequest.class));
 
         // when & then
         mockMvc.perform(

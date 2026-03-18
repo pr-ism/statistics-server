@@ -23,6 +23,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -37,6 +38,9 @@ class ProjectIdResolvingFacadeTest {
     private ProjectIdResolvingFacade projectIdResolvingFacade;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaPullRequestRepository jpaPullRequestRepository;
 
     @Sql("/sql/webhook/insert_project.sql")
@@ -46,7 +50,7 @@ class ProjectIdResolvingFacadeTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest();
 
         // when
-        projectIdResolvingFacade.createPullRequest(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.createPullRequest(TEST_API_KEY, request));
 
         // then
         assertThat(jpaPullRequestRepository.count()).isEqualTo(1);
@@ -57,11 +61,11 @@ class ProjectIdResolvingFacadeTest {
     void apiKey를_projectId로_변환하여_PullRequest를_닫는다() {
         // given
         PullRequestClosedRequest request = new PullRequestClosedRequest(
-                123, false, Instant.now(), null
+                1L, 123, false, Instant.now(), null
         );
 
         // when
-        projectIdResolvingFacade.closePullRequest(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.closePullRequest(TEST_API_KEY, request));
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -73,11 +77,11 @@ class ProjectIdResolvingFacadeTest {
     void apiKey를_projectId로_변환하여_PullRequest를_리뷰_준비_상태로_변경한다() {
         // given
         PullRequestReadyForReviewRequest request = new PullRequestReadyForReviewRequest(
-                123, Instant.now()
+                1L, 123, Instant.now()
         );
 
         // when
-        projectIdResolvingFacade.readyForReview(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.readyForReview(TEST_API_KEY, request));
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -89,11 +93,11 @@ class ProjectIdResolvingFacadeTest {
     void apiKey를_projectId로_변환하여_PullRequest를_다시_연다() {
         // given
         PullRequestReopenedRequest request = new PullRequestReopenedRequest(
-                123, Instant.now()
+                1L, 123, Instant.now()
         );
 
         // when
-        projectIdResolvingFacade.reopenPullRequest(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.reopenPullRequest(TEST_API_KEY, request));
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -105,11 +109,11 @@ class ProjectIdResolvingFacadeTest {
     void apiKey를_projectId로_변환하여_PullRequest를_Draft로_변환한다() {
         // given
         PullRequestConvertedToDraftRequest request = new PullRequestConvertedToDraftRequest(
-                123, Instant.now()
+                1L, 123, Instant.now()
         );
 
         // when
-        projectIdResolvingFacade.convertToDraft(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.convertToDraft(TEST_API_KEY, request));
 
         // then
         assertThat(jpaPullRequestRepository.findAll().getFirst().getState())
@@ -120,11 +124,11 @@ class ProjectIdResolvingFacadeTest {
     void 잘못된_apiKey로_호출하면_예외가_발생한다() {
         // given
         PullRequestClosedRequest request = new PullRequestClosedRequest(
-                123, false, Instant.now(), null
+                1L, 123, false, Instant.now(), null
         );
 
         // when & then
-        assertThatThrownBy(() -> projectIdResolvingFacade.closePullRequest("invalid-api-key", request))
+        assertThatThrownBy(() -> processingSourceContext.withInboxProcessing(() -> projectIdResolvingFacade.closePullRequest("invalid-api-key", request)))
                 .isInstanceOf(InvalidApiKeyException.class);
     }
 
@@ -153,6 +157,6 @@ class ProjectIdResolvingFacadeTest {
                 new FileData("src/main/java/NewFile.java", "added", 20, 0)
         );
 
-        return new PullRequestOpenedRequest(false, pullRequestData, files);
+        return new PullRequestOpenedRequest(1L, false, pullRequestData, files);
     }
 }

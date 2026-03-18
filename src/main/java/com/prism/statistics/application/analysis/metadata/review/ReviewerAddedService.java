@@ -1,13 +1,13 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerAddedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
-import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.RequestedReviewer;
 import com.prism.statistics.domain.analysis.metadata.review.repository.RequestedReviewerRepository;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +18,11 @@ import java.time.LocalDateTime;
 public class ReviewerAddedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
-    private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final RequestedReviewerRepository requestedReviewerRepository;
 
-    public void addReviewer(String apiKey, ReviewerAddedRequest request) {
-        validateApiKey(apiKey);
-
+    @InboxEnqueue(CollectInboxType.REVIEWER_ADDED)
+    public void addReviewer(ReviewerAddedRequest request) {
         RequestedReviewer requestedReviewer = createRequestedReviewer(request);
         requestedReviewerRepository.saveOrFind(requestedReviewer);
     }
@@ -47,9 +45,4 @@ public class ReviewerAddedService {
         return requestedReviewer;
     }
 
-    private void validateApiKey(String apiKey) {
-        if (!projectRepository.existsByApiKey(apiKey)) {
-            throw new InvalidApiKeyException();
-        }
-    }
 }

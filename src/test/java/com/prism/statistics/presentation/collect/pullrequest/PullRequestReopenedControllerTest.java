@@ -45,7 +45,7 @@ class PullRequestReopenedControllerTest extends CommonControllerSliceTestSupport
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(projectIdResolvingFacade).reopenPullRequest(eq(TEST_API_KEY), any(PullRequestReopenedRequest.class));
     }

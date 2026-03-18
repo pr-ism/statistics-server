@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.Author;
@@ -43,6 +44,9 @@ class PullRequestOpenedServiceTest {
     private PullRequestOpenedService pullRequestOpenedService;
 
     @Autowired
+    private ProcessingSourceContext processingSourceContext;
+
+    @Autowired
     private JpaPullRequestRepository jpaPullRequestRepository;
 
     @Autowired
@@ -70,7 +74,7 @@ class PullRequestOpenedServiceTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(false);
 
         // when
-        pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request));
 
         // then
         assertAll(
@@ -90,7 +94,7 @@ class PullRequestOpenedServiceTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(false);
 
         // when
-        pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request));
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -104,7 +108,7 @@ class PullRequestOpenedServiceTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(true);
 
         // when
-        pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request));
 
         // then
         PullRequest pullRequest = jpaPullRequestRepository.findAll().getFirst();
@@ -118,7 +122,7 @@ class PullRequestOpenedServiceTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(false);
 
         // when
-        pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request));
 
         // then
         long eventCount = applicationEvents.stream(PullRequestOpenCreatedEvent.class).count();
@@ -132,7 +136,7 @@ class PullRequestOpenedServiceTest {
         PullRequestOpenedRequest request = createPullRequestOpenedRequest(true);
 
         // when
-        pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request);
+        processingSourceContext.withInboxProcessing(() -> pullRequestOpenedService.createPullRequest(TEST_PROJECT_ID, request));
 
         // then
         long eventCount = applicationEvents.stream(PullRequestOpenCreatedEvent.class).count();
@@ -173,6 +177,7 @@ class PullRequestOpenedServiceTest {
         );
 
         return new PullRequestOpenedRequest(
+                1L,
                 isDraft,
                 pullRequestData,
                 files

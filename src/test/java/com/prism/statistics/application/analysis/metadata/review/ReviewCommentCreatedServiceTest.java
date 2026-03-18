@@ -1,15 +1,16 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.application.IntegrationTest;
+import com.prism.statistics.application.collect.inbox.ProcessingSourceContext;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentCreatedRequest;
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewCommentCreatedRequest.CommentAuthorData;
 import com.prism.statistics.domain.analysis.metadata.review.ReviewComment;
 import com.prism.statistics.domain.analysis.metadata.review.enums.CommentSide;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
+
 import com.prism.statistics.infrastructure.analysis.metadata.review.persistence.JpaReviewCommentRepository;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -25,12 +26,15 @@ import org.springframework.test.context.jdbc.Sql;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class ReviewCommentCreatedServiceTest {
 
-    private static final String TEST_API_KEY = "test-api-key";
+
     private static final Instant TEST_CREATED_AT = Instant.parse("2024-01-15T10:00:00Z");
     private static final LocalDateTime EXPECTED_CREATED_AT = LocalDateTime.of(2024, 1, 15, 19, 0, 0);
 
     @Autowired
     private ReviewCommentCreatedService reviewCommentCreatedService;
+
+    @Autowired
+    private ProcessingSourceContext processingSourceContext;
 
     @Autowired
     private JpaReviewCommentRepository jpaReviewCommentRepository;
@@ -42,7 +46,7 @@ class ReviewCommentCreatedServiceTest {
         ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(100L);
 
         // when
-        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         assertThat(jpaReviewCommentRepository.count()).isEqualTo(1);
@@ -68,7 +72,7 @@ class ReviewCommentCreatedServiceTest {
         );
 
         // when
-        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         List<ReviewComment> comments = jpaReviewCommentRepository.findAll();
@@ -110,7 +114,7 @@ class ReviewCommentCreatedServiceTest {
         );
 
         // when
-        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         ReviewComment comment = jpaReviewCommentRepository.findAll().get(0);
@@ -138,7 +142,7 @@ class ReviewCommentCreatedServiceTest {
         );
 
         // when
-        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         ReviewComment comment = jpaReviewCommentRepository.findAll().get(0);
@@ -164,7 +168,7 @@ class ReviewCommentCreatedServiceTest {
         );
 
         // when
-        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         ReviewComment comment = jpaReviewCommentRepository.findAll().get(0);
@@ -178,7 +182,7 @@ class ReviewCommentCreatedServiceTest {
         ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(100L);
 
         // when
-        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         ReviewComment comment = jpaReviewCommentRepository.findAll().getFirst();
@@ -192,7 +196,7 @@ class ReviewCommentCreatedServiceTest {
         ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(100L);
 
         // when
-        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         ReviewComment comment = jpaReviewCommentRepository.findAll().getFirst();
@@ -207,22 +211,11 @@ class ReviewCommentCreatedServiceTest {
         ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(sameGithubCommentId);
 
         // when
-        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
-        reviewCommentCreatedService.createReviewComment(TEST_API_KEY, request);
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
+        processingSourceContext.withInboxProcessing(() -> reviewCommentCreatedService.createReviewComment(request));
 
         // then
         assertThat(jpaReviewCommentRepository.count()).isEqualTo(1);
-    }
-
-    @Test
-    void 존재하지_않는_API_Key면_예외가_발생한다() {
-        // given
-        ReviewCommentCreatedRequest request = createReviewCommentCreatedRequest(100L);
-        String invalidApiKey = "invalid-api-key";
-
-        // when & then
-        assertThatThrownBy(() -> reviewCommentCreatedService.createReviewComment(invalidApiKey, request))
-                .isInstanceOf(InvalidApiKeyException.class);
     }
 
     private ReviewCommentCreatedRequest createReviewCommentCreatedRequest(Long githubCommentId) {
@@ -252,6 +245,7 @@ class ReviewCommentCreatedServiceTest {
             Long authorId
     ) {
         return new ReviewCommentCreatedRequest(
+                1L,
                 githubCommentId,
                 githubReviewId,
                 body,

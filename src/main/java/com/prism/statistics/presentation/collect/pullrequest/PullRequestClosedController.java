@@ -3,6 +3,7 @@ package com.prism.statistics.presentation.collect.pullrequest;
 import com.prism.statistics.application.collect.ProjectIdResolvingFacade;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestClosedRequest;
 import lombok.RequiredArgsConstructor;
+import com.prism.statistics.presentation.common.ResponseEntityConst;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +24,6 @@ public class PullRequestClosedController {
             @RequestBody PullRequestClosedRequest request
     ) {
         projectIdResolvingFacade.closePullRequest(apiKey, request);
-        return ResponseEntity.ok().build();
+        return ResponseEntityConst.NO_CONTENT;
     }
 }

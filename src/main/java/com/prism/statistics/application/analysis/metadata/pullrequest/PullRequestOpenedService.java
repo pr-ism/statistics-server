@@ -1,6 +1,8 @@
 package com.prism.statistics.application.analysis.metadata.pullrequest;
 
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.CommitNode;
 import com.prism.statistics.application.analysis.metadata.pullrequest.dto.request.PullRequestOpenedRequest.PullRequestData;
 import com.prism.statistics.application.analysis.metadata.pullrequest.event.PullRequestOpenCreatedEvent;
@@ -29,6 +31,7 @@ public class PullRequestOpenedService {
     private final PullRequestRepository pullRequestRepository;
     private final ApplicationEventPublisher eventPublisher;
 
+    @InboxEnqueue(CollectInboxType.PULL_REQUEST_OPENED)
     @Transactional
     public void createPullRequest(Long projectId, PullRequestOpenedRequest request) {
         if (request.isDraft()) {

@@ -1,15 +1,15 @@
 package com.prism.statistics.application.analysis.metadata.review;
 
 import com.prism.statistics.application.analysis.metadata.review.dto.request.ReviewerRemovedRequest;
+import com.prism.statistics.application.collect.inbox.aop.InboxEnqueue;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.application.analysis.metadata.utils.LocalDateTimeConverter;
 import com.prism.statistics.domain.analysis.metadata.common.vo.GithubUser;
 import com.prism.statistics.domain.analysis.metadata.pullrequest.repository.PullRequestRepository;
-import com.prism.statistics.domain.project.repository.ProjectRepository;
 import com.prism.statistics.domain.analysis.metadata.review.history.RequestedReviewerHistory;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewerAction;
 import com.prism.statistics.domain.analysis.metadata.review.repository.RequestedReviewerHistoryRepository;
 import com.prism.statistics.domain.analysis.metadata.review.repository.RequestedReviewerRepository;
-import com.prism.statistics.domain.project.exception.InvalidApiKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,15 +21,13 @@ import java.time.LocalDateTime;
 public class ReviewerRemovedService {
 
     private final LocalDateTimeConverter localDateTimeConverter;
-    private final ProjectRepository projectRepository;
     private final PullRequestRepository pullRequestRepository;
     private final RequestedReviewerRepository requestedReviewerRepository;
     private final RequestedReviewerHistoryRepository requestedReviewerHistoryRepository;
 
+    @InboxEnqueue(CollectInboxType.REVIEWER_REMOVED)
     @Transactional
-    public void removeReviewer(String apiKey, ReviewerRemovedRequest request) {
-        validateApiKey(apiKey);
-
+    public void removeReviewer(ReviewerRemovedRequest request) {
         Long githubPullRequestId = request.githubPullRequestId();
         Long userId = request.reviewer().id();
 
@@ -56,9 +54,4 @@ public class ReviewerRemovedService {
         requestedReviewerHistoryRepository.save(requestedReviewerHistory);
     }
 
-    private void validateApiKey(String apiKey) {
-        if (!projectRepository.existsByApiKey(apiKey)) {
-            throw new InvalidApiKeyException();
-        }
-    }
 }
