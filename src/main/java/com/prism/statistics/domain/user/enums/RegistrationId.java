@@ -5,7 +5,8 @@ import java.util.Arrays;
 public enum RegistrationId {
 
     KAKAO("kakao"),
-    GOOGLE("google");
+    GOOGLE("google"),
+    GITHUB("github");
 
     private final String name;
 

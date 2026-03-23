@@ -30,6 +30,15 @@ class RegistrationIdTest {
     }
 
     @Test
+    void 깃허브_이름으로_등록된_RegistrationId를_찾을_수_있다() {
+        // when
+        RegistrationId actual = RegistrationId.findBy("github");
+
+        // then
+        assertThat(actual).isEqualTo(RegistrationId.GITHUB);
+    }
+
+    @Test
     void 등록되지_않은_이름이면_RegistrationId를_찾을_수_없다() {
         // when & then
         assertThatThrownBy(() -> RegistrationId.findBy("invalid"))
@@ -49,6 +58,15 @@ class RegistrationIdTest {
     void 구글_지원하는_RegistrationId_이름인지_여부를_확인한다() {
         // when
         boolean actual = RegistrationId.contains("google");
+
+        // then
+        assertThat(actual).isTrue();
+    }
+
+    @Test
+    void 깃허브_지원하는_RegistrationId_이름인지_여부를_확인한다() {
+        // when
+        boolean actual = RegistrationId.contains("github");
 
         // then
         assertThat(actual).isTrue();
