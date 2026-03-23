@@ -81,7 +81,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         }
 
         if (principal instanceof OAuth2User oAuth2User) {
-            return String.valueOf(oAuth2User.getAttribute("id"));
+            int id = oAuth2User.getAttribute("id");
+            return String.valueOf(id);
         }
 
         throw new AuthenticationServiceException("소셜 로그인 사용자 정보가 없습니다.");
