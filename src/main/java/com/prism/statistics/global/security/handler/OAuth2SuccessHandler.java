@@ -28,7 +28,6 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -76,16 +75,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private String extractSocialId(Authentication authentication) {
         Object principal = authentication.getPrincipal();
 
-        if (principal instanceof OidcUser oidcUser) {
-            return oidcUser.getSubject();
+        if (!(principal instanceof OAuth2User oAuth2User)) {
+            throw new AuthenticationServiceException("소셜 로그인 사용자 정보가 없습니다.");
         }
 
-        if (principal instanceof OAuth2User oAuth2User) {
-            int id = oAuth2User.getAttribute("id");
-            return String.valueOf(id);
-        }
-
-        throw new AuthenticationServiceException("소셜 로그인 사용자 정보가 없습니다.");
+        return oAuth2User.getName();
     }
 
     private TokenResponse generateTokens(Long userId) {
