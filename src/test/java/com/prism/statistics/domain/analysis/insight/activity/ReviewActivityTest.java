@@ -27,15 +27,15 @@ class ReviewActivityTest {
 
         // when
         ReviewActivity activity = ReviewActivity.builder()
-                .pullRequestId(pullRequestId)
-                .reviewRoundTrips(reviewRoundTrips)
-                .totalCommentCount(totalCommentCount)
-                .totalAdditions(totalAdditions)
-                .totalDeletions(totalDeletions)
-                .codeAdditionsAfterReview(codeAdditionsAfterReview)
-                .codeDeletionsAfterReview(codeDeletionsAfterReview)
-                .additionalReviewerCount(additionalReviewerCount)
-                .build();
+                                                .pullRequestId(pullRequestId)
+                                                .reviewRoundTrips(reviewRoundTrips)
+                                                .totalCommentCount(totalCommentCount)
+                                                .totalAdditions(totalAdditions)
+                                                .totalDeletions(totalDeletions)
+                                                .codeAdditionsAfterReview(codeAdditionsAfterReview)
+                                                .codeDeletionsAfterReview(codeDeletionsAfterReview)
+                                                .additionalReviewerCount(additionalReviewerCount)
+                                                .build();
 
         // then
         assertAll(
@@ -55,12 +55,12 @@ class ReviewActivityTest {
     void 코멘트_밀도를_계산한다() {
         // given
         ReviewActivity activity = ReviewActivity.builder()
-                .pullRequestId(1L)
-                .reviewRoundTrips(3)
-                .totalCommentCount(15)
-                .totalAdditions(100)
-                .totalDeletions(50)
-                .build();
+                                                .pullRequestId(1L)
+                                                .reviewRoundTrips(3)
+                                                .totalCommentCount(15)
+                                                .totalAdditions(100)
+                                                .totalDeletions(50)
+                                                .build();
 
         // then
         assertThat(activity.getCommentDensity()).isEqualByComparingTo(new BigDecimal("0.1"));
@@ -70,10 +70,10 @@ class ReviewActivityTest {
     void 변경이_없으면_코멘트_밀도가_0이다() {
         // given
         ReviewActivity activity = ReviewActivity.builder()
-                .pullRequestId(1L)
-                .reviewRoundTrips(1)
-                .totalCommentCount(5)
-                .build();
+                                                .pullRequestId(1L)
+                                                .reviewRoundTrips(1)
+                                                .totalCommentCount(5)
+                                                .build();
 
         // then
         assertThat(activity.getCommentDensity()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -97,8 +97,8 @@ class ReviewActivityTest {
     void PR_ID가_null이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> ReviewActivity.builder()
-                .pullRequestId(null)
-                .build())
+                                               .pullRequestId(null)
+                                               .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Pull Request ID는 필수입니다.");
     }
@@ -107,9 +107,9 @@ class ReviewActivityTest {
     void 리뷰_왕복_횟수가_음수이면_예외가_발생한다() {
         // when & then
         assertThatThrownBy(() -> ReviewActivity.builder()
-                .pullRequestId(1L)
-                .reviewRoundTrips(-1)
-                .build())
+                                               .pullRequestId(1L)
+                                               .reviewRoundTrips(-1)
+                                               .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("값은 0보다 작을 수 없습니다.");
     }
@@ -199,12 +199,12 @@ class ReviewActivityTest {
     void PR_변경량_업데이트_시_밀도를_재계산한다() {
         // given
         ReviewActivity activity = ReviewActivity.builder()
-                .pullRequestId(1L)
-                .reviewRoundTrips(1)
-                .totalCommentCount(10)
-                .totalAdditions(100)
-                .totalDeletions(50)
-                .build();
+                                                .pullRequestId(1L)
+                                                .reviewRoundTrips(1)
+                                                .totalCommentCount(10)
+                                                .totalAdditions(100)
+                                                .totalDeletions(50)
+                                                .build();
 
         // when
         activity.updateTotalChanges(200, 100);
@@ -217,12 +217,12 @@ class ReviewActivityTest {
     void 총_변경량을_계산한다() {
         // given
         ReviewActivity activity = ReviewActivity.builder()
-                .pullRequestId(1L)
-                .reviewRoundTrips(1)
-                .totalCommentCount(5)
-                .totalAdditions(100)
-                .totalDeletions(50)
-                .build();
+                                                .pullRequestId(1L)
+                                                .reviewRoundTrips(1)
+                                                .totalCommentCount(5)
+                                                .totalAdditions(100)
+                                                .totalDeletions(50)
+                                                .build();
 
         // when
         int totalChanges = activity.calculateTotalChanges();
@@ -235,19 +235,19 @@ class ReviewActivityTest {
     void 높은_코멘트_밀도_여부를_확인한다() {
         // given
         ReviewActivity highDensity = ReviewActivity.builder()
-                .pullRequestId(1L)
-                .reviewRoundTrips(1)
-                .totalCommentCount(15)
-                .totalAdditions(100)
-                .totalDeletions(50)
-                .build();
+                                                   .pullRequestId(1L)
+                                                   .reviewRoundTrips(1)
+                                                   .totalCommentCount(15)
+                                                   .totalAdditions(100)
+                                                   .totalDeletions(50)
+                                                   .build();
         ReviewActivity lowDensity = ReviewActivity.builder()
-                .pullRequestId(1L)
-                .reviewRoundTrips(1)
-                .totalCommentCount(5)
-                .totalAdditions(100)
-                .totalDeletions(50)
-                .build();
+                                                  .pullRequestId(1L)
+                                                  .reviewRoundTrips(1)
+                                                  .totalCommentCount(5)
+                                                  .totalAdditions(100)
+                                                  .totalDeletions(50)
+                                                  .build();
 
         // then
         assertAll(
@@ -260,28 +260,57 @@ class ReviewActivityTest {
     void 유의미한_변경_여부를_확인한다() {
         // given
         ReviewActivity significant = ReviewActivity.builder()
-                .pullRequestId(1L)
-                .reviewRoundTrips(1)
-                .totalCommentCount(5)
-                .totalAdditions(100)
-                .totalDeletions(50)
-                .codeAdditionsAfterReview(10)
-                .codeDeletionsAfterReview(5)
-                .build();
+                                                   .pullRequestId(1L)
+                                                   .reviewRoundTrips(1)
+                                                   .totalCommentCount(5)
+                                                   .totalAdditions(100)
+                                                   .totalDeletions(50)
+                                                   .codeAdditionsAfterReview(10)
+                                                   .codeDeletionsAfterReview(5)
+                                                   .build();
         ReviewActivity insignificant = ReviewActivity.builder()
-                .pullRequestId(1L)
-                .reviewRoundTrips(1)
-                .totalCommentCount(5)
-                .totalAdditions(100)
-                .totalDeletions(50)
-                .codeAdditionsAfterReview(5)
-                .codeDeletionsAfterReview(2)
-                .build();
+                                                     .pullRequestId(1L)
+                                                     .reviewRoundTrips(1)
+                                                     .totalCommentCount(5)
+                                                     .totalAdditions(100)
+                                                     .totalDeletions(50)
+                                                     .codeAdditionsAfterReview(5)
+                                                     .codeDeletionsAfterReview(2)
+                                                     .build();
 
         // then
         assertAll(
                 () -> assertThat(significant.hasSignificantChangesAfterReview()).isTrue(),
                 () -> assertThat(insignificant.hasSignificantChangesAfterReview()).isFalse()
+        );
+    }
+
+    @Test
+    void 리뷰_이후_코드_변경_여부를_확인한다() {
+        // given
+        ReviewActivity changed = ReviewActivity.builder()
+                                               .pullRequestId(1L)
+                                               .reviewRoundTrips(1)
+                                               .totalCommentCount(5)
+                                               .totalAdditions(100)
+                                               .totalDeletions(50)
+                                               .codeAdditionsAfterReview(1)
+                                               .codeDeletionsAfterReview(0)
+                                               .build();
+        ReviewActivity unchanged = ReviewActivity.builder()
+                                                 .pullRequestId(1L)
+                                                 .reviewRoundTrips(1)
+                                                 .totalCommentCount(5)
+                                                 .totalAdditions(100)
+                                                 .totalDeletions(50)
+                                                 .codeAdditionsAfterReview(0)
+                                                 .codeDeletionsAfterReview(0)
+                                                 .build();
+
+        // then
+        assertAll(
+                () -> assertThat(changed.hasCodeChangesAfterReview()).isTrue(),
+                () -> assertThat(unchanged.hasCodeChangesAfterReview()).isFalse()
         );
     }
 }
