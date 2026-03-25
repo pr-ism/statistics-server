@@ -284,4 +284,33 @@ class ReviewActivityTest {
                 () -> assertThat(insignificant.hasSignificantChangesAfterReview()).isFalse()
         );
     }
+
+    @Test
+    void 리뷰_이후_코드_변경_여부를_확인한다() {
+        // given
+        ReviewActivity changed = ReviewActivity.builder()
+                .pullRequestId(1L)
+                .reviewRoundTrips(1)
+                .totalCommentCount(5)
+                .totalAdditions(100)
+                .totalDeletions(50)
+                .codeAdditionsAfterReview(1)
+                .codeDeletionsAfterReview(0)
+                .build();
+        ReviewActivity unchanged = ReviewActivity.builder()
+                .pullRequestId(1L)
+                .reviewRoundTrips(1)
+                .totalCommentCount(5)
+                .totalAdditions(100)
+                .totalDeletions(50)
+                .codeAdditionsAfterReview(0)
+                .codeDeletionsAfterReview(0)
+                .build();
+
+        // then
+        assertAll(
+                () -> assertThat(changed.hasCodeChangesAfterReview()).isTrue(),
+                () -> assertThat(unchanged.hasCodeChangesAfterReview()).isFalse()
+        );
+    }
 }

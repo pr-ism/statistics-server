@@ -287,12 +287,20 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
 
     private long nullableLong(Tuple tuple, int index) {
         Long value = tuple.get(index, Long.class);
-        return value != null ? value : 0L;
+        if (value != null) {
+            return value;
+        }
+
+        return 0L;
     }
 
     private BigDecimal nullableBigDecimal(Tuple tuple, int index) {
         BigDecimal value = tuple.get(index, BigDecimal.class);
-        return value != null ? value : BigDecimal.ZERO;
+        if (value != null) {
+            return value;
+        }
+
+        return BigDecimal.ZERO;
     }
 
     private BooleanExpression dateRangeCondition(
