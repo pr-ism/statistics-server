@@ -6,20 +6,19 @@ import static com.prism.statistics.domain.analysis.insight.review.QReviewSession
 import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
 import static com.prism.statistics.domain.analysis.metadata.review.QReview.review;
 
-import com.prism.statistics.domain.analysis.metadata.review.QReview;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.statistics.repository.ReviewQualityStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.ReviewActivityStatisticsDto;
 import com.prism.statistics.domain.statistics.repository.dto.ReviewSessionStatisticsDto;
-import com.querydsl.core.types.Projections;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -75,8 +74,8 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             LocalDate startDate,
             LocalDate endDate
     ) {
-        ReviewActivityAggregate result = queryFactory
-                .select(Projections.constructor(ReviewActivityAggregate.class,
+        Tuple result = queryFactory
+                .select(
                         reviewActivity.count(),
                         new CaseBuilder()
                                 .when(reviewActivity.reviewRoundTrips.gt(0)).then(1L).otherwise(0L)
@@ -98,7 +97,7 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
                                                         .add(reviewActivity.codeDeletionsAfterReview)
                                                         .goe(HIGH_CHANGE_THRESHOLD))))
                                 .then(1L).otherwise(0L).sumLong().coalesce(0L)
-                ))
+                )
                 .from(reviewActivity)
                 .join(pullRequest).on(pullRequest.id.eq(reviewActivity.pullRequestId))
                 .where(
@@ -111,7 +110,16 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             return ReviewActivityAggregate.empty();
         }
 
-        return result;
+        return new ReviewActivityAggregate(
+                nullableLong(result, 0),
+                nullableLong(result, 1),
+                nullableLong(result, 2),
+                nullableLong(result, 3),
+                nullableBigDecimal(result, 4),
+                nullableLong(result, 5),
+                nullableLong(result, 6),
+                nullableLong(result, 7)
+        );
     }
 
     private ChangesResolutionAggregate aggregateChangesResolutionMetricsByProjectId(
@@ -119,11 +127,11 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             LocalDate startDate,
             LocalDate endDate
     ) {
-        ChangesResolutionAggregate result = queryFactory
-                .select(Projections.constructor(ChangesResolutionAggregate.class,
+        Tuple result = queryFactory
+                .select(
                         reviewResponseTime.changesResolution.minutes.sumLong().coalesce(0L),
                         reviewResponseTime.changesResolution.minutes.count()
-                ))
+                )
                 .from(reviewResponseTime)
                 .join(pullRequest).on(pullRequest.id.eq(reviewResponseTime.pullRequestId))
                 .where(
@@ -136,7 +144,10 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             return ChangesResolutionAggregate.empty();
         }
 
-        return result;
+        return new ChangesResolutionAggregate(
+                nullableLong(result, 0),
+                nullableLong(result, 1)
+        );
     }
 
     private ReviewActivityStatisticsDto buildReviewActivityStatisticsDto(
@@ -190,14 +201,14 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             LocalDate startDate,
             LocalDate endDate
     ) {
-        ReviewSessionAggregate result = queryFactory
-                .select(Projections.constructor(ReviewSessionAggregate.class,
+        Tuple result = queryFactory
+                .select(
                         reviewSession.count(),
                         reviewSession.reviewer.userId.countDistinct(),
                         reviewSession.pullRequestId.countDistinct(),
                         reviewSession.sessionDuration.minutes.sumLong().coalesce(0L),
                         reviewSession.reviewCount.sumLong().coalesce(0L)
-                ))
+                )
                 .from(reviewSession)
                 .join(pullRequest).on(pullRequest.id.eq(reviewSession.pullRequestId))
                 .where(
@@ -210,7 +221,13 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             return ReviewSessionAggregate.empty();
         }
 
-        return result;
+        return new ReviewSessionAggregate(
+                nullableLong(result, 0),
+                nullableLong(result, 1),
+                nullableLong(result, 2),
+                nullableLong(result, 3),
+                nullableLong(result, 4)
+        );
     }
 
     private long fetchChangesRequestedCount(Long projectId, LocalDate startDate, LocalDate endDate) {
@@ -230,29 +247,52 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
     }
 
     private long fetchFirstReviewApproveCount(Long projectId, LocalDate startDate, LocalDate endDate) {
-        QReview reviewSub = new QReview("reviewSub");
-
-        Long count = queryFactory
-                .select(review.count())
+        List<Tuple> firstReviewCandidates = queryFactory
+                .select(
+                        review.pullRequestId,
+                        review.reviewState
+                )
                 .from(review)
                 .join(pullRequest).on(pullRequest.id.eq(review.pullRequestId))
                 .where(
                         pullRequest.projectId.eq(projectId),
-                        review.reviewState.eq(ReviewState.APPROVED),
-                        dateRangeCondition(review.githubSubmittedAt, startDate, endDate),
-                        review.githubSubmittedAt.eq(
-                                JPAExpressions.select(reviewSub.githubSubmittedAt.min())
-                                        .from(reviewSub)
-                                        .where(
-                                                reviewSub.pullRequestId.eq(review.pullRequestId),
-                                                dateRangeCondition(reviewSub.githubSubmittedAt, startDate, endDate)
-                                        )
-                        )
+                        dateRangeCondition(review.githubSubmittedAt, startDate, endDate)
                 )
-                .fetchOne();
+                .orderBy(
+                        review.pullRequestId.asc(),
+                        review.githubSubmittedAt.asc(),
+                        review.id.asc()
+                )
+                .fetch();
 
-        return Optional.ofNullable(count)
-                       .orElse(0L);
+        long approvedFirstReviewCount = 0L;
+        Long previousPullRequestId = null;
+
+        for (Tuple firstReviewCandidate : firstReviewCandidates) {
+            Long pullRequestId = firstReviewCandidate.get(review.pullRequestId);
+            ReviewState reviewState = firstReviewCandidate.get(review.reviewState);
+
+            if (pullRequestId == null || pullRequestId.equals(previousPullRequestId)) {
+                continue;
+            }
+
+            if (reviewState == ReviewState.APPROVED) {
+                approvedFirstReviewCount++;
+            }
+            previousPullRequestId = pullRequestId;
+        }
+
+        return approvedFirstReviewCount;
+    }
+
+    private long nullableLong(Tuple tuple, int index) {
+        Long value = tuple.get(index, Long.class);
+        return value != null ? value : 0L;
+    }
+
+    private BigDecimal nullableBigDecimal(Tuple tuple, int index) {
+        BigDecimal value = tuple.get(index, BigDecimal.class);
+        return value != null ? value : BigDecimal.ZERO;
     }
 
     private BooleanExpression dateRangeCondition(

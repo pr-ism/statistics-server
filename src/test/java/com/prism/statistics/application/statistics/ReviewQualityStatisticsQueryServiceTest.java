@@ -352,6 +352,28 @@ class ReviewQualityStatisticsQueryServiceTest {
         );
     }
 
+    @Test
+    void 동일한_시각의_첫_승인_리뷰가_여러개여도_PR당_한번만_집계한다() {
+        // given
+        Project project = createAndSaveProject(USER_ID);
+        PullRequest pr = createAndSavePullRequest(project.getId());
+
+        createAndSaveReviewActivity(pr.getId(), ONE_INT, ONE_INT, FIFTY_INT, THIRTY_INT, false, ZERO_INT);
+
+        LocalDateTime reviewedAt = LocalDateTime.now().minusMinutes(THIRTY_MINUTES);
+        createAndSaveReview(pr, reviewedAt, ReviewState.APPROVED);
+        createAndSaveReview(pr, reviewedAt, ReviewState.APPROVED);
+
+        ReviewQualityStatisticsRequest request = new ReviewQualityStatisticsRequest(null, null);
+
+        // when
+        ReviewQualityStatisticsResponse response = reviewQualityStatisticsQueryService
+                .findReviewQualityStatistics(USER_ID, project.getId(), request);
+
+        // then
+        assertThat(response.reviewActivity().firstReviewApproveRate()).isEqualTo(REVIEW_RATE_100);
+    }
+
     private Project createAndSaveProject(Long userId) {
         Project project = Project.create(TEST_PROJECT_NAME, TEST_API_KEY_PREFIX + System.nanoTime(), userId);
         return projectRepository.save(project);
