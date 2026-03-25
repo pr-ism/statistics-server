@@ -6,6 +6,7 @@ import static com.prism.statistics.domain.analysis.insight.review.QReviewSession
 import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
 import static com.prism.statistics.domain.analysis.metadata.review.QReview.review;
 
+import com.prism.statistics.domain.analysis.metadata.review.QReview;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.statistics.repository.ReviewQualityStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.ReviewActivityStatisticsDto;
@@ -16,11 +17,11 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -259,42 +260,34 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
     }
 
     private long fetchFirstReviewApproveCount(Long projectId, LocalDate startDate, LocalDate endDate) {
-        List<Tuple> firstReviewCandidates = queryFactory
-                .select(
-                        review.pullRequestId,
-                        review.reviewState
-                )
+        QReview earlierReview = new QReview("earlierReview");
+
+        Long approvedFirstReviewCount = queryFactory
+                .select(review.count())
                 .from(review)
                 .join(pullRequest).on(pullRequest.id.eq(review.pullRequestId))
                 .where(
                         pullRequest.projectId.eq(projectId),
-                        dateRangeCondition(review.githubSubmittedAt, startDate, endDate)
+                        review.reviewState.eq(ReviewState.APPROVED),
+                        dateRangeCondition(review.githubSubmittedAt, startDate, endDate),
+                        JPAExpressions
+                                .selectOne()
+                                .from(earlierReview)
+                                .where(
+                                        earlierReview.pullRequestId.eq(review.pullRequestId),
+                                        dateRangeCondition(earlierReview.githubSubmittedAt, startDate, endDate),
+                                        earlierReview.githubSubmittedAt.lt(review.githubSubmittedAt)
+                                                .or(
+                                                        earlierReview.githubSubmittedAt.eq(review.githubSubmittedAt)
+                                                                                        .and(earlierReview.id.lt(review.id))
+                                                )
+                                )
+                                .notExists()
                 )
-                .orderBy(
-                        review.pullRequestId.asc(),
-                        review.githubSubmittedAt.asc(),
-                        review.id.asc()
-                )
-                .fetch();
+                .fetchOne();
 
-        long approvedFirstReviewCount = 0L;
-        Long previousPullRequestId = null;
-
-        for (Tuple firstReviewCandidate : firstReviewCandidates) {
-            Long pullRequestId = firstReviewCandidate.get(review.pullRequestId);
-            ReviewState reviewState = firstReviewCandidate.get(review.reviewState);
-
-            if (pullRequestId == null || pullRequestId.equals(previousPullRequestId)) {
-                continue;
-            }
-
-            if (reviewState == ReviewState.APPROVED) {
-                approvedFirstReviewCount++;
-            }
-            previousPullRequestId = pullRequestId;
-        }
-
-        return approvedFirstReviewCount;
+        return Optional.ofNullable(approvedFirstReviewCount)
+                       .orElse(0L);
     }
 
     private long nullableLong(Tuple tuple, int index) {
