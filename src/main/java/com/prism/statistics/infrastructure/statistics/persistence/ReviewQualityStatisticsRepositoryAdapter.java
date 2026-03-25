@@ -11,9 +11,11 @@ import com.prism.statistics.domain.statistics.repository.ReviewQualityStatistics
 import com.prism.statistics.domain.statistics.repository.dto.ReviewActivityStatisticsDto;
 import com.prism.statistics.domain.statistics.repository.dto.ReviewSessionStatisticsDto;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -74,29 +76,39 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             LocalDate startDate,
             LocalDate endDate
     ) {
+        NumberExpression<Long> totalCountExpr = reviewActivity.count();
+        NumberExpression<Long> reviewedCountExpr = new CaseBuilder()
+                .when(reviewActivity.reviewRoundTrips.gt(0)).then(1L).otherwise(0L)
+                .sumLong().coalesce(0L);
+        NumberExpression<Long> totalReviewRoundTripsExpr = reviewActivity.reviewRoundTrips.sumLong().coalesce(0L);
+        NumberExpression<Long> totalCommentCountExpr = reviewActivity.totalCommentCount.sumLong().coalesce(0L);
+        NumberExpression<BigDecimal> totalCommentDensityExpr = reviewActivity.commentDensity.sumBigDecimal()
+                                                                                      .coalesce(BigDecimal.ZERO);
+        NumberExpression<Long> withAdditionalReviewersCountExpr = new CaseBuilder()
+                .when(reviewActivity.hasAdditionalReviewers.isTrue()).then(1L).otherwise(0L)
+                .sumLong().coalesce(0L);
+        NumberExpression<Long> withChangesAfterReviewCountExpr = new CaseBuilder()
+                .when(reviewActivity.codeAdditionsAfterReview.gt(0)
+                                                             .or(reviewActivity.codeDeletionsAfterReview.gt(0)))
+                .then(1L).otherwise(0L).sumLong().coalesce(0L);
+        NumberExpression<Long> highIntensityPrCountExpr = new CaseBuilder()
+                .when(reviewActivity.reviewRoundTrips.gt(0).and(
+                        reviewActivity.commentDensity.goe(HIGH_COMMENT_DENSITY_THRESHOLD)
+                                                     .or(reviewActivity.codeAdditionsAfterReview
+                                                             .add(reviewActivity.codeDeletionsAfterReview)
+                                                             .goe(HIGH_CHANGE_THRESHOLD))))
+                .then(1L).otherwise(0L).sumLong().coalesce(0L);
+
         Tuple result = queryFactory
                 .select(
-                        reviewActivity.count(),
-                        new CaseBuilder()
-                                .when(reviewActivity.reviewRoundTrips.gt(0)).then(1L).otherwise(0L)
-                                .sumLong().coalesce(0L),
-                        reviewActivity.reviewRoundTrips.sumLong().coalesce(0L),
-                        reviewActivity.totalCommentCount.sumLong().coalesce(0L),
-                        reviewActivity.commentDensity.sumBigDecimal().coalesce(BigDecimal.ZERO),
-                        new CaseBuilder()
-                                .when(reviewActivity.hasAdditionalReviewers.isTrue()).then(1L).otherwise(0L)
-                                .sumLong().coalesce(0L),
-                        new CaseBuilder()
-                                .when(reviewActivity.codeAdditionsAfterReview.gt(0)
-                                                                             .or(reviewActivity.codeDeletionsAfterReview.gt(0)))
-                                .then(1L).otherwise(0L).sumLong().coalesce(0L),
-                        new CaseBuilder()
-                                .when(reviewActivity.reviewRoundTrips.gt(0).and(
-                                        reviewActivity.commentDensity.goe(HIGH_COMMENT_DENSITY_THRESHOLD)
-                                                                     .or(reviewActivity.codeAdditionsAfterReview
-                                                                             .add(reviewActivity.codeDeletionsAfterReview)
-                                                                             .goe(HIGH_CHANGE_THRESHOLD))))
-                                .then(1L).otherwise(0L).sumLong().coalesce(0L)
+                        totalCountExpr,
+                        reviewedCountExpr,
+                        totalReviewRoundTripsExpr,
+                        totalCommentCountExpr,
+                        totalCommentDensityExpr,
+                        withAdditionalReviewersCountExpr,
+                        withChangesAfterReviewCountExpr,
+                        highIntensityPrCountExpr
                 )
                 .from(reviewActivity)
                 .join(pullRequest).on(pullRequest.id.eq(reviewActivity.pullRequestId))
@@ -111,14 +123,14 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
         }
 
         return new ReviewActivityAggregate(
-                nullableLong(result, 0),
-                nullableLong(result, 1),
-                nullableLong(result, 2),
-                nullableLong(result, 3),
-                nullableBigDecimal(result, 4),
-                nullableLong(result, 5),
-                nullableLong(result, 6),
-                nullableLong(result, 7)
+                nullableLong(result, totalCountExpr),
+                nullableLong(result, reviewedCountExpr),
+                nullableLong(result, totalReviewRoundTripsExpr),
+                nullableLong(result, totalCommentCountExpr),
+                nullableBigDecimal(result, totalCommentDensityExpr),
+                nullableLong(result, withAdditionalReviewersCountExpr),
+                nullableLong(result, withChangesAfterReviewCountExpr),
+                nullableLong(result, highIntensityPrCountExpr)
         );
     }
 
@@ -294,8 +306,17 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
         return 0L;
     }
 
-    private BigDecimal nullableBigDecimal(Tuple tuple, int index) {
-        BigDecimal value = tuple.get(index, BigDecimal.class);
+    private long nullableLong(Tuple tuple, Expression<Long> expression) {
+        Long value = tuple.get(expression);
+        if (value != null) {
+            return value;
+        }
+
+        return 0L;
+    }
+
+    private BigDecimal nullableBigDecimal(Tuple tuple, Expression<BigDecimal> expression) {
+        BigDecimal value = tuple.get(expression);
         if (value != null) {
             return value;
         }
