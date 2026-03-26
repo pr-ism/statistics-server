@@ -6,22 +6,23 @@ import static com.prism.statistics.domain.analysis.insight.review.QReviewSession
 import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
 import static com.prism.statistics.domain.analysis.metadata.review.QReview.review;
 
-import com.prism.statistics.domain.analysis.insight.activity.ReviewActivity;
-import com.prism.statistics.domain.analysis.insight.review.ReviewResponseTime;
-import com.prism.statistics.domain.analysis.insight.review.ReviewSession;
-import com.prism.statistics.domain.analysis.metadata.review.Review;
+import com.prism.statistics.domain.analysis.metadata.review.QReview;
 import com.prism.statistics.domain.analysis.metadata.review.enums.ReviewState;
 import com.prism.statistics.domain.statistics.repository.ReviewQualityStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.ReviewActivityStatisticsDto;
 import com.prism.statistics.domain.statistics.repository.dto.ReviewSessionStatisticsDto;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualityStatisticsRepository {
 
+    private static final int HIGH_CHANGE_THRESHOLD = 10;
     private static final long DATE_RANGE_INCLUSIVE_DAYS = 1L;
+    private static final BigDecimal HIGH_COMMENT_DENSITY_THRESHOLD = BigDecimal.valueOf(0.1);
 
     private final JPAQueryFactory queryFactory;
 
@@ -41,40 +44,145 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             LocalDate startDate,
             LocalDate endDate
     ) {
-        List<ReviewActivity> activities = queryFactory
-                .selectFrom(reviewActivity)
-                .join(pullRequest).on(pullRequest.id.eq(reviewActivity.pullRequestId))
-                .where(
-                        pullRequest.projectId.eq(projectId),
-                        activityDateRangeCondition(startDate, endDate)
-                )
-                .fetch();
+        ReviewActivityAggregate reviewActivityAggregate = aggregateReviewActivityMetricsByProjectId(
+                projectId,
+                startDate,
+                endDate
+        );
 
-        if (activities.isEmpty()) {
+        if (reviewActivityAggregate.totalCount() == 0L) {
             return Optional.empty();
         }
 
-        List<Long> pullRequestIds = activities.stream()
-                .map(activity -> activity.getPullRequestId())
-                .toList();
+        long changesRequestedCount = fetchChangesRequestedCount(projectId, startDate, endDate);
+        long firstReviewApproveCount = fetchFirstReviewApproveCount(projectId, startDate, endDate);
 
-        List<Review> reviews = queryFactory
-                .selectFrom(review)
-                .where(
-                        review.pullRequestId.in(pullRequestIds),
-                        reviewDateRangeCondition(startDate, endDate)
+        ChangesResolutionAggregate changesResolutionAggregate = aggregateChangesResolutionMetricsByProjectId(
+                projectId,
+                startDate,
+                endDate
+        );
+        ReviewActivityStatisticsDto reviewActivityStatisticsDto = buildReviewActivityStatisticsDto(
+                reviewActivityAggregate,
+                firstReviewApproveCount,
+                changesRequestedCount,
+                changesResolutionAggregate
+        );
+
+        return Optional.of(reviewActivityStatisticsDto);
+    }
+
+    private ReviewActivityAggregate aggregateReviewActivityMetricsByProjectId(
+            Long projectId,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        NumberExpression<Long> totalCountExpr = reviewActivity.count();
+        NumberExpression<Long> reviewedCountExpr = new CaseBuilder()
+                .when(reviewActivity.reviewRoundTrips.gt(0)).then(1L).otherwise(0L)
+                .sumLong().coalesce(0L);
+        NumberExpression<Long> totalReviewRoundTripsExpr = reviewActivity.reviewRoundTrips.sumLong().coalesce(0L);
+        NumberExpression<Long> totalCommentCountExpr = reviewActivity.totalCommentCount.sumLong().coalesce(0L);
+        NumberExpression<BigDecimal> totalCommentDensityExpr = reviewActivity.commentDensity.sumBigDecimal()
+                                                                                      .coalesce(BigDecimal.ZERO);
+        NumberExpression<Long> withAdditionalReviewersCountExpr = new CaseBuilder()
+                .when(reviewActivity.hasAdditionalReviewers.isTrue()).then(1L).otherwise(0L)
+                .sumLong().coalesce(0L);
+        NumberExpression<Long> withChangesAfterReviewCountExpr = new CaseBuilder()
+                .when(reviewActivity.codeAdditionsAfterReview.gt(0)
+                                                             .or(reviewActivity.codeDeletionsAfterReview.gt(0)))
+                .then(1L).otherwise(0L).sumLong().coalesce(0L);
+        NumberExpression<Long> highIntensityPrCountExpr = new CaseBuilder()
+                .when(reviewActivity.reviewRoundTrips.gt(0).and(
+                        reviewActivity.commentDensity.goe(HIGH_COMMENT_DENSITY_THRESHOLD)
+                                                     .or(reviewActivity.codeAdditionsAfterReview
+                                                             .add(reviewActivity.codeDeletionsAfterReview)
+                                                             .goe(HIGH_CHANGE_THRESHOLD))))
+                .then(1L).otherwise(0L).sumLong().coalesce(0L);
+
+        Tuple result = queryFactory
+                .select(
+                        totalCountExpr,
+                        reviewedCountExpr,
+                        totalReviewRoundTripsExpr,
+                        totalCommentCountExpr,
+                        totalCommentDensityExpr,
+                        withAdditionalReviewersCountExpr,
+                        withChangesAfterReviewCountExpr,
+                        highIntensityPrCountExpr
                 )
-                .fetch();
-
-        List<ReviewResponseTime> responseTimes = queryFactory
-                .selectFrom(reviewResponseTime)
+                .from(reviewActivity)
+                .join(pullRequest).on(pullRequest.id.eq(reviewActivity.pullRequestId))
                 .where(
-                        reviewResponseTime.pullRequestId.in(pullRequestIds),
-                        responseTimeDateRangeCondition(startDate, endDate)
+                        pullRequest.projectId.eq(projectId),
+                        dateRangeCondition(reviewActivity.createdAt, startDate, endDate)
                 )
-                .fetch();
+                .fetchOne();
 
-        return Optional.of(aggregateActivityStatistics(activities, reviews, responseTimes));
+        if (result == null) {
+            return ReviewActivityAggregate.empty();
+        }
+
+        return new ReviewActivityAggregate(
+                nullableLong(result, totalCountExpr),
+                nullableLong(result, reviewedCountExpr),
+                nullableLong(result, totalReviewRoundTripsExpr),
+                nullableLong(result, totalCommentCountExpr),
+                nullableBigDecimal(result, totalCommentDensityExpr),
+                nullableLong(result, withAdditionalReviewersCountExpr),
+                nullableLong(result, withChangesAfterReviewCountExpr),
+                nullableLong(result, highIntensityPrCountExpr)
+        );
+    }
+
+    private ChangesResolutionAggregate aggregateChangesResolutionMetricsByProjectId(
+            Long projectId,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        Tuple result = queryFactory
+                .select(
+                        reviewResponseTime.changesResolution.minutes.sumLong().coalesce(0L),
+                        reviewResponseTime.changesResolution.minutes.count()
+                )
+                .from(reviewResponseTime)
+                .join(pullRequest).on(pullRequest.id.eq(reviewResponseTime.pullRequestId))
+                .where(
+                        pullRequest.projectId.eq(projectId),
+                        dateRangeCondition(reviewResponseTime.lastChangesRequestedAt, startDate, endDate)
+                )
+                .fetchOne();
+
+        if (result == null) {
+            return ChangesResolutionAggregate.empty();
+        }
+
+        return new ChangesResolutionAggregate(
+                nullableLong(result, 0),
+                nullableLong(result, 1)
+        );
+    }
+
+    private ReviewActivityStatisticsDto buildReviewActivityStatisticsDto(
+            ReviewActivityAggregate reviewActivityAggregate,
+            long firstReviewApproveCount,
+            long changesRequestedCount,
+            ChangesResolutionAggregate changesResolutionAggregate
+    ) {
+        return new ReviewActivityStatisticsDto(
+                reviewActivityAggregate.totalCount(),
+                reviewActivityAggregate.reviewedCount(),
+                reviewActivityAggregate.totalReviewRoundTrips(),
+                reviewActivityAggregate.totalCommentCount(),
+                reviewActivityAggregate.totalCommentDensity(),
+                reviewActivityAggregate.withAdditionalReviewersCount(),
+                reviewActivityAggregate.withChangesAfterReviewCount(),
+                firstReviewApproveCount,
+                changesRequestedCount,
+                changesResolutionAggregate.totalChangesResolutionMinutes(),
+                changesResolutionAggregate.changesResolvedCount(),
+                reviewActivityAggregate.highIntensityPrCount()
+        );
     }
 
     @Override
@@ -84,223 +192,183 @@ public class ReviewQualityStatisticsRepositoryAdapter implements ReviewQualitySt
             LocalDate startDate,
             LocalDate endDate
     ) {
-        List<ReviewSession> sessions = queryFactory
-                .selectFrom(reviewSession)
-                .join(pullRequest).on(pullRequest.id.eq(reviewSession.pullRequestId))
-                .where(
-                        pullRequest.projectId.eq(projectId),
-                        sessionDateRangeCondition(startDate, endDate)
-                )
-                .fetch();
+        ReviewSessionAggregate reviewSessionAggregate = aggregateReviewSessionMetricsByProjectId(projectId, startDate, endDate);
 
-        if (sessions.isEmpty()) {
+        if (reviewSessionAggregate.totalSessionCount() == 0L) {
             return Optional.empty();
         }
 
-        return Optional.of(aggregateSessionStatistics(sessions));
+        ReviewSessionStatisticsDto reviewSessionStatisticsDto = new ReviewSessionStatisticsDto(
+                reviewSessionAggregate.totalSessionCount(),
+                reviewSessionAggregate.uniqueReviewerCount(),
+                reviewSessionAggregate.uniquePullRequestCount(),
+                reviewSessionAggregate.totalSessionDurationMinutes(),
+                reviewSessionAggregate.totalReviewCount()
+        );
+
+        return Optional.of(reviewSessionStatisticsDto);
     }
 
-    private ReviewActivityStatisticsDto aggregateActivityStatistics(
-            List<ReviewActivity> activities,
-            List<Review> reviews,
-            List<ReviewResponseTime> responseTimes
+    private ReviewSessionAggregate aggregateReviewSessionMetricsByProjectId(
+            Long projectId,
+            LocalDate startDate,
+            LocalDate endDate
     ) {
-        long totalCount = activities.size();
+        Tuple result = queryFactory
+                .select(
+                        reviewSession.count(),
+                        reviewSession.reviewer.userId.countDistinct(),
+                        reviewSession.pullRequestId.countDistinct(),
+                        reviewSession.sessionDuration.minutes.sumLong().coalesce(0L),
+                        reviewSession.reviewCount.sumLong().coalesce(0L)
+                )
+                .from(reviewSession)
+                .join(pullRequest).on(pullRequest.id.eq(reviewSession.pullRequestId))
+                .where(
+                        pullRequest.projectId.eq(projectId),
+                        dateRangeCondition(reviewSession.createdAt, startDate, endDate)
+                )
+                .fetchOne();
 
-        long reviewedCount = activities.stream()
-                .filter(activity -> activity.hasReviewActivity())
-                .count();
+        if (result == null) {
+            return ReviewSessionAggregate.empty();
+        }
 
-        long totalReviewRoundTrips = activities.stream()
-                .mapToLong(activity -> activity.getReviewRoundTrips())
-                .sum();
-
-        long totalCommentCount = activities.stream()
-                .mapToLong(activity -> activity.getTotalCommentCount())
-                .sum();
-
-        BigDecimal totalCommentDensity = activities.stream()
-                .map(activity -> activity.getCommentDensity())
-                .reduce(BigDecimal.ZERO, (left, right) -> left.add(right));
-
-        long withAdditionalReviewersCount = activities.stream()
-                .filter(activity -> activity.isHasAdditionalReviewers())
-                .count();
-
-        long withChangesAfterReviewCount = activities.stream()
-                .filter(activity -> activity.hasCodeChangesAfterReview())
-                .count();
-
-        long firstReviewApproveCount = calculateFirstReviewApproveCount(reviews);
-        long changesRequestedCount = calculateChangesRequestedCount(reviews);
-        long totalChangesResolutionMinutes = calculateTotalChangesResolutionMinutes(responseTimes);
-        long changesResolvedCount = calculateChangesResolvedCount(responseTimes);
-        long highIntensityPrCount = calculateHighIntensityPrCount(activities);
-
-        return new ReviewActivityStatisticsDto(
-                totalCount,
-                reviewedCount,
-                totalReviewRoundTrips,
-                totalCommentCount,
-                totalCommentDensity,
-                withAdditionalReviewersCount,
-                withChangesAfterReviewCount,
-                firstReviewApproveCount,
-                changesRequestedCount,
-                totalChangesResolutionMinutes,
-                changesResolvedCount,
-                highIntensityPrCount
+        return new ReviewSessionAggregate(
+                nullableLong(result, 0),
+                nullableLong(result, 1),
+                nullableLong(result, 2),
+                nullableLong(result, 3),
+                nullableLong(result, 4)
         );
     }
 
-    private long calculateFirstReviewApproveCount(List<Review> reviews) {
-        Map<Long, Review> firstReviewByPr = reviews.stream()
-                .collect(Collectors.toMap(
-                        review -> review.getPullRequestId(),
-                        r -> r,
-                        (existing, replacement) -> selectEarlierReview(existing, replacement)
-                ));
+    private long fetchChangesRequestedCount(Long projectId, LocalDate startDate, LocalDate endDate) {
+        Long count = queryFactory
+                .select(review.pullRequestId.countDistinct())
+                .from(review)
+                .join(pullRequest).on(pullRequest.id.eq(review.pullRequestId))
+                .where(
+                        pullRequest.projectId.eq(projectId),
+                        review.reviewState.eq(ReviewState.CHANGES_REQUESTED),
+                        dateRangeCondition(review.githubSubmittedAt, startDate, endDate)
+                )
+                .fetchOne();
 
-        return firstReviewByPr.values().stream()
-                .filter(r -> r.getReviewState() == ReviewState.APPROVED)
-                .count();
+        return Optional.ofNullable(count)
+                       .orElse(0L);
     }
 
-    private long calculateChangesRequestedCount(List<Review> reviews) {
-        return reviews.stream()
-                .filter(r -> r.getReviewState() == ReviewState.CHANGES_REQUESTED)
-                .map(review -> review.getPullRequestId())
-                .distinct()
-                .count();
+    private long fetchFirstReviewApproveCount(Long projectId, LocalDate startDate, LocalDate endDate) {
+        QReview earlierReview = new QReview("earlierReview");
+
+        Long approvedFirstReviewCount = queryFactory
+                .select(review.count())
+                .from(review)
+                .join(pullRequest).on(pullRequest.id.eq(review.pullRequestId))
+                .where(
+                        pullRequest.projectId.eq(projectId),
+                        review.reviewState.eq(ReviewState.APPROVED),
+                        dateRangeCondition(review.githubSubmittedAt, startDate, endDate),
+                        JPAExpressions
+                                .selectOne()
+                                .from(earlierReview)
+                                .where(
+                                        earlierReview.pullRequestId.eq(review.pullRequestId),
+                                        dateRangeCondition(earlierReview.githubSubmittedAt, startDate, endDate),
+                                        earlierReview.githubSubmittedAt.lt(review.githubSubmittedAt)
+                                                .or(
+                                                        earlierReview.githubSubmittedAt.eq(review.githubSubmittedAt)
+                                                                                        .and(earlierReview.id.lt(review.id))
+                                                )
+                                )
+                                .notExists()
+                )
+                .fetchOne();
+
+        return Optional.ofNullable(approvedFirstReviewCount)
+                       .orElse(0L);
     }
 
-    private long calculateTotalChangesResolutionMinutes(List<ReviewResponseTime> responseTimes) {
-        return responseTimes.stream()
-                .filter(responseTime -> isResolved(responseTime))
-                .mapToLong(rt -> rt.getChangesResolution().getMinutes())
-                .sum();
+    private long nullableLong(Tuple tuple, int index) {
+        Long value = tuple.get(index, Long.class);
+        if (value != null) {
+            return value;
+        }
+
+        return 0L;
     }
 
-    private long calculateChangesResolvedCount(List<ReviewResponseTime> responseTimes) {
-        return responseTimes.stream()
-                .filter(responseTime -> isResolved(responseTime))
-                .count();
+    private long nullableLong(Tuple tuple, Expression<Long> expression) {
+        Long value = tuple.get(expression);
+        if (value != null) {
+            return value;
+        }
+
+        return 0L;
     }
 
-    private ReviewSessionStatisticsDto aggregateSessionStatistics(List<ReviewSession> sessions) {
-        long totalSessionCount = sessions.size();
+    private BigDecimal nullableBigDecimal(Tuple tuple, Expression<BigDecimal> expression) {
+        BigDecimal value = tuple.get(expression);
+        if (value != null) {
+            return value;
+        }
 
-        long uniqueReviewerCount = sessions.stream()
-                .map(s -> s.getReviewer().getUserId())
-                .distinct()
-                .count();
-
-        long uniquePullRequestCount = sessions.stream()
-                .map(session -> session.getPullRequestId())
-                .distinct()
-                .count();
-
-        long totalSessionDurationMinutes = sessions.stream()
-                .filter(s -> s.getSessionDuration() != null)
-                .mapToLong(s -> s.getSessionDuration().getMinutes())
-                .sum();
-
-        long totalReviewCount = sessions.stream()
-                .mapToLong(session -> session.getReviewCount())
-                .sum();
-
-        return new ReviewSessionStatisticsDto(
-                totalSessionCount,
-                uniqueReviewerCount,
-                uniquePullRequestCount,
-                totalSessionDurationMinutes,
-                totalReviewCount
-        );
+        return BigDecimal.ZERO;
     }
 
-    private long calculateHighIntensityPrCount(List<ReviewActivity> activities) {
-        return activities.stream()
-                .filter(activity -> activity.hasReviewActivity())
-                .filter(activity -> activity.hasHighCommentDensity() || activity.hasSignificantChangesAfterReview())
-                .count();
-    }
-
-    private BooleanExpression activityDateRangeCondition(LocalDate startDate, LocalDate endDate) {
+    private BooleanExpression dateRangeCondition(
+            DateTimePath<LocalDateTime> dateTimePath,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
         if (startDate == null && endDate == null) {
             return null;
         }
-
         if (startDate != null && endDate != null) {
-            return reviewActivity.createdAt.goe(startDate.atStartOfDay())
-                    .and(reviewActivity.createdAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay()));
+            return dateTimePath.goe(startDate.atStartOfDay())
+                               .and(dateTimePath.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay()));
         }
-
         if (startDate != null) {
-            return reviewActivity.createdAt.goe(startDate.atStartOfDay());
+            return dateTimePath.goe(startDate.atStartOfDay());
         }
 
-        return reviewActivity.createdAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay());
+        return dateTimePath.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay());
     }
 
-    private BooleanExpression sessionDateRangeCondition(LocalDate startDate, LocalDate endDate) {
-        if (startDate == null && endDate == null) {
-            return null;
+    private record ReviewActivityAggregate(
+            long totalCount,
+            long reviewedCount,
+            long totalReviewRoundTrips,
+            long totalCommentCount,
+            BigDecimal totalCommentDensity,
+            long withAdditionalReviewersCount,
+            long withChangesAfterReviewCount,
+            long highIntensityPrCount
+    ) {
+        static ReviewActivityAggregate empty() {
+            return new ReviewActivityAggregate(0L, 0L, 0L, 0L, BigDecimal.ZERO, 0L, 0L, 0L);
         }
-
-        if (startDate != null && endDate != null) {
-            return reviewSession.createdAt.goe(startDate.atStartOfDay())
-                    .and(reviewSession.createdAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay()));
-        }
-
-        if (startDate != null) {
-            return reviewSession.createdAt.goe(startDate.atStartOfDay());
-        }
-
-        return reviewSession.createdAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay());
     }
 
-    private BooleanExpression reviewDateRangeCondition(LocalDate startDate, LocalDate endDate) {
-        if (startDate == null && endDate == null) {
-            return null;
+    private record ChangesResolutionAggregate(
+            long totalChangesResolutionMinutes,
+            long changesResolvedCount
+    ) {
+        static ChangesResolutionAggregate empty() {
+            return new ChangesResolutionAggregate(0L, 0L);
         }
-
-        if (startDate != null && endDate != null) {
-            return review.githubSubmittedAt.goe(startDate.atStartOfDay())
-                    .and(review.githubSubmittedAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay()));
-        }
-
-        if (startDate != null) {
-            return review.githubSubmittedAt.goe(startDate.atStartOfDay());
-        }
-
-        return review.githubSubmittedAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay());
     }
 
-    private BooleanExpression responseTimeDateRangeCondition(LocalDate startDate, LocalDate endDate) {
-        if (startDate == null && endDate == null) {
-            return null;
+    private record ReviewSessionAggregate(
+            long totalSessionCount,
+            long uniqueReviewerCount,
+            long uniquePullRequestCount,
+            long totalSessionDurationMinutes,
+            long totalReviewCount
+    ) {
+        static ReviewSessionAggregate empty() {
+            return new ReviewSessionAggregate(0L, 0L, 0L, 0L, 0L);
         }
-
-        if (startDate != null && endDate != null) {
-            return reviewResponseTime.lastChangesRequestedAt.goe(startDate.atStartOfDay())
-                    .and(reviewResponseTime.lastChangesRequestedAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay()));
-        }
-
-        if (startDate != null) {
-            return reviewResponseTime.lastChangesRequestedAt.goe(startDate.atStartOfDay());
-        }
-
-        return reviewResponseTime.lastChangesRequestedAt.lt(endDate.plusDays(DATE_RANGE_INCLUSIVE_DAYS).atStartOfDay());
-    }
-
-    private Review selectEarlierReview(Review existing, Review replacement) {
-        if (existing.getGithubSubmittedAt().isBefore(replacement.getGithubSubmittedAt())) {
-            return existing;
-        }
-        return replacement;
-    }
-
-    private boolean isResolved(ReviewResponseTime responseTime) {
-        return responseTime.isResolved();
     }
 }

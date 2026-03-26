@@ -352,6 +352,28 @@ class ReviewQualityStatisticsQueryServiceTest {
         );
     }
 
+    @Test
+    void 동일한_시각의_첫_승인_리뷰가_여러개여도_PR당_한번만_집계한다() {
+        // given
+        Project project = createAndSaveProject(USER_ID);
+        PullRequest pr = createAndSavePullRequest(project.getId());
+
+        createAndSaveReviewActivity(pr.getId(), ONE_INT, ONE_INT, FIFTY_INT, THIRTY_INT, false, ZERO_INT);
+
+        LocalDateTime reviewedAt = LocalDateTime.now().minusMinutes(THIRTY_MINUTES);
+        createAndSaveReview(pr, reviewedAt, ReviewState.APPROVED);
+        createAndSaveReview(pr, reviewedAt, ReviewState.APPROVED);
+
+        ReviewQualityStatisticsRequest request = new ReviewQualityStatisticsRequest(null, null);
+
+        // when
+        ReviewQualityStatisticsResponse response = reviewQualityStatisticsQueryService
+                .findReviewQualityStatistics(USER_ID, project.getId(), request);
+
+        // then
+        assertThat(response.reviewActivity().firstReviewApproveRate()).isEqualTo(REVIEW_RATE_100);
+    }
+
     private Project createAndSaveProject(Long userId) {
         Project project = Project.create(TEST_PROJECT_NAME, TEST_API_KEY_PREFIX + System.nanoTime(), userId);
         return projectRepository.save(project);
@@ -359,38 +381,38 @@ class ReviewQualityStatisticsQueryServiceTest {
 
     private PullRequest createAndSavePullRequest(Long projectId) {
         PullRequest pullRequest = PullRequest.builder()
-                .githubPullRequestId(System.nanoTime())
-                .projectId(projectId)
-                .author(GithubUser.create(TEST_USER_NAME, USER_ID))
-                .pullRequestNumber((int) (Math.abs(System.nanoTime() % PR_NUMBER_BOUND) + 1))
-                .headCommitSha(TEST_HEAD_COMMIT_SHA)
-                .title(TEST_PR_TITLE)
-                .state(PullRequestState.MERGED)
-                .link(TEST_PR_LINK)
-                .changeStats(PullRequestChangeStats.create(
-                        DEFAULT_CHANGE_STATS_ADDITIONS,
-                        DEFAULT_CHANGE_STATS_DELETIONS,
-                        DEFAULT_CHANGE_STATS_CHANGED_FILES
-                ))
-                .commitCount(DEFAULT_COMMIT_COUNT)
-                .timing(PullRequestTiming.createOpen(LocalDateTime.now().minusDays(ONE_DAY)))
-                .build();
+                                             .githubPullRequestId(System.nanoTime())
+                                             .projectId(projectId)
+                                             .author(GithubUser.create(TEST_USER_NAME, USER_ID))
+                                             .pullRequestNumber((int) (Math.abs(System.nanoTime() % PR_NUMBER_BOUND) + 1))
+                                             .headCommitSha(TEST_HEAD_COMMIT_SHA)
+                                             .title(TEST_PR_TITLE)
+                                             .state(PullRequestState.MERGED)
+                                             .link(TEST_PR_LINK)
+                                             .changeStats(PullRequestChangeStats.create(
+                                                     DEFAULT_CHANGE_STATS_ADDITIONS,
+                                                     DEFAULT_CHANGE_STATS_DELETIONS,
+                                                     DEFAULT_CHANGE_STATS_CHANGED_FILES
+                                             ))
+                                             .commitCount(DEFAULT_COMMIT_COUNT)
+                                             .timing(PullRequestTiming.createOpen(LocalDateTime.now().minusDays(ONE_DAY)))
+                                             .build();
 
         return pullRequestRepository.save(pullRequest);
     }
 
     private void createAndSaveReview(PullRequest pullRequest, LocalDateTime reviewedAt, ReviewState reviewState) {
         Review review = Review.builder()
-                .githubPullRequestId(pullRequest.getGithubPullRequestId())
-                .pullRequestNumber(pullRequest.getPullRequestNumber())
-                .githubReviewId(System.nanoTime())
-                .reviewer(GithubUser.create(FIRST_REVIEWER_NAME, FIRST_REVIEWER_ID))
-                .reviewState(reviewState)
-                .headCommitSha(TEST_HEAD_COMMIT_SHA)
-                .body("LGTM")
-                .commentCount(ONE_INT)
-                .githubSubmittedAt(reviewedAt)
-                .build();
+                              .githubPullRequestId(pullRequest.getGithubPullRequestId())
+                              .pullRequestNumber(pullRequest.getPullRequestNumber())
+                              .githubReviewId(System.nanoTime())
+                              .reviewer(GithubUser.create(FIRST_REVIEWER_NAME, FIRST_REVIEWER_ID))
+                              .reviewState(reviewState)
+                              .headCommitSha(TEST_HEAD_COMMIT_SHA)
+                              .body("LGTM")
+                              .commentCount(ONE_INT)
+                              .githubSubmittedAt(reviewedAt)
+                              .build();
         review.assignPullRequestId(pullRequest.getId());
 
         reviewRepository.save(review);
@@ -406,15 +428,15 @@ class ReviewQualityStatisticsQueryServiceTest {
             int codeChangesAfterReview
     ) {
         ReviewActivity activity = ReviewActivity.builder()
-                .pullRequestId(pullRequestId)
-                .reviewRoundTrips(reviewRoundTrips)
-                .totalCommentCount(commentCount)
-                .totalAdditions(totalAdditions)
-                .totalDeletions(totalDeletions)
-                .additionalReviewerCount(resolveAdditionalReviewerCount(hasAdditionalReviewers))
-                .codeAdditionsAfterReview(codeChangesAfterReview)
-                .codeDeletionsAfterReview(ZERO_INT)
-                .build();
+                                                .pullRequestId(pullRequestId)
+                                                .reviewRoundTrips(reviewRoundTrips)
+                                                .totalCommentCount(commentCount)
+                                                .totalAdditions(totalAdditions)
+                                                .totalDeletions(totalDeletions)
+                                                .additionalReviewerCount(resolveAdditionalReviewerCount(hasAdditionalReviewers))
+                                                .codeAdditionsAfterReview(codeChangesAfterReview)
+                                                .codeDeletionsAfterReview(ZERO_INT)
+                                                .build();
 
         reviewActivityRepository.save(activity);
     }
