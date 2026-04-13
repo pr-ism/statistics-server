@@ -16,6 +16,9 @@ import com.prism.statistics.infrastructure.collect.inbox.CollectInboxFailureType
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxStatus;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.infrastructure.collect.inbox.repository.CollectInboxRepository;
+import com.prism.statistics.infrastructure.common.BoxEventTime;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxFailureSnapshot;
+import com.prism.statistics.infrastructure.common.BoxProcessingLease;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -28,7 +31,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.QueryTimeoutException;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings("NonAsciiCharacters")
 @ExtendWith(MockitoExtension.class)
@@ -125,7 +127,7 @@ class CollectInboxEntryProcessorTest {
         // then
         assertAll(
                 () -> assertThat(actual.getStatus()).isEqualTo(CollectInboxStatus.RETRY_PENDING),
-                () -> assertThat(actual.getFailureType()).isNull()
+                () -> assertThat(actual.getFailure().type()).isEqualTo(CollectInboxFailureType.RETRYABLE)
         );
         verify(collectInboxRepository).save(actual);
     }
@@ -150,7 +152,7 @@ class CollectInboxEntryProcessorTest {
         // then
         assertAll(
                 () -> assertThat(actual.getStatus()).isEqualTo(CollectInboxStatus.FAILED),
-                () -> assertThat(actual.getFailureType()).isEqualTo(CollectInboxFailureType.BUSINESS_INVARIANT)
+                () -> assertThat(actual.getFailure().type()).isEqualTo(CollectInboxFailureType.BUSINESS_INVARIANT)
         );
         verify(collectInboxRepository).save(actual);
     }
@@ -175,7 +177,7 @@ class CollectInboxEntryProcessorTest {
         // then
         assertAll(
                 () -> assertThat(actual.getStatus()).isEqualTo(CollectInboxStatus.FAILED),
-                () -> assertThat(actual.getFailureType()).isEqualTo(CollectInboxFailureType.RETRY_EXHAUSTED)
+                () -> assertThat(actual.getFailure().type()).isEqualTo(CollectInboxFailureType.RETRY_EXHAUSTED)
         );
         verify(collectInboxRepository).save(actual);
     }
@@ -198,7 +200,7 @@ class CollectInboxEntryProcessorTest {
         collectInboxEntryProcessor.process(pending);
 
         // then
-        assertThat(actual.getFailureReason()).hasSize(500);
+        assertThat(actual.getFailure().reason()).hasSize(500);
         verify(collectInboxRepository).save(actual);
     }
 
@@ -220,16 +222,23 @@ class CollectInboxEntryProcessorTest {
         collectInboxEntryProcessor.process(pending);
 
         // then
-        assertThat(actual.getFailureReason()).isEqualTo("unknown failure");
+        assertThat(actual.getFailure().reason()).isEqualTo("unknown failure");
         verify(collectInboxRepository).save(actual);
     }
 
     private CollectInbox createProcessingInbox(long runId, int processingAttempt) {
-        CollectInbox inbox = CollectInbox.pending(
-                CollectInboxType.PULL_REQUEST_OPENED, 1L, runId, "{}"
-        );
-        ReflectionTestUtils.setField(inbox, "status", CollectInboxStatus.PROCESSING);
-        ReflectionTestUtils.setField(inbox, "processingAttempt", processingAttempt);
-        return inbox;
+        return CollectInbox.rehydrateBuilder()
+                .id(1L)
+                .collectType(CollectInboxType.PULL_REQUEST_OPENED)
+                .projectId(1L)
+                .runId(runId)
+                .payloadJson("{}")
+                .status(CollectInboxStatus.PROCESSING)
+                .processingAttempt(processingAttempt)
+                .processingLease(BoxProcessingLease.claimed(Instant.parse("2026-03-16T00:00:00Z")))
+                .processedTime(BoxEventTime.absent())
+                .failedTime(BoxEventTime.absent())
+                .failure(CollectInboxFailureSnapshot.absent())
+                .build();
     }
 }
