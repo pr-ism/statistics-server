@@ -240,8 +240,12 @@ public class CollectInbox {
             validateRetryPendingState(processingAttempt, processingLease, processedTime, failedTime, failure);
             return;
         }
+        if (status == CollectInboxStatus.FAILED) {
+            validateFailedState(processingAttempt, processingLease, processedTime, failedTime, failure);
+            return;
+        }
 
-        validateFailedState(processingAttempt, processingLease, processedTime, failedTime, failure);
+        throw new IllegalStateException("알 수 없는 상태입니다: " + status);
     }
 
     private static void validatePendingState(
