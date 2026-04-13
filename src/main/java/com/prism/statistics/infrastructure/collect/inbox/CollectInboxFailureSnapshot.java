@@ -5,7 +5,7 @@ public sealed interface CollectInboxFailureSnapshot
         CollectInboxFailureSnapshot.PresentCollectInboxFailureSnapshot {
 
     static CollectInboxFailureSnapshot absent() {
-        return new AbsentCollectInboxFailureSnapshot();
+        return AbsentCollectInboxFailureSnapshot.INSTANCE;
     }
 
     static CollectInboxFailureSnapshot present(String reason, CollectInboxFailureType type) {
@@ -30,6 +30,12 @@ public sealed interface CollectInboxFailureSnapshot
     }
 
     final class AbsentCollectInboxFailureSnapshot implements CollectInboxFailureSnapshot {
+
+        private static final AbsentCollectInboxFailureSnapshot INSTANCE =
+                new AbsentCollectInboxFailureSnapshot();
+
+        private AbsentCollectInboxFailureSnapshot() {
+        }
 
         @Override
         public boolean isPresent() {
