@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prism.statistics.infrastructure.common.BoxEventTime;
-import com.prism.statistics.infrastructure.collect.inbox.CollectInboxFailureSnapshot;
 import com.prism.statistics.infrastructure.common.BoxProcessingLease;
 import java.time.Instant;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -27,8 +26,10 @@ class CollectInboxTest {
 
     @Test
     void PENDING_상태의_inbox를_생성한다() {
+        // when
         CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
 
+        // then
         assertAll(
                 () -> assertThat(inbox.getCollectType()).isEqualTo(TYPE),
                 () -> assertThat(inbox.getProjectId()).isEqualTo(PROJECT_ID),
@@ -45,30 +46,35 @@ class CollectInboxTest {
 
     @Test
     void pending_생성_시_collectType이_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> CollectInbox.pending(null, PROJECT_ID, RUN_ID, PAYLOAD_JSON))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void pending_생성_시_runId가_0이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, 0L, PAYLOAD_JSON))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void pending_생성_시_runId가_음수이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, -1L, PAYLOAD_JSON))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void pending_생성_시_payloadJson이_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void rehydrate는_상태별_유효한_조합을_허용한다() {
+        // when & then
         assertAll(
                 () -> assertThatCode(this::createPendingInbox).doesNotThrowAnyException(),
                 () -> assertThatCode(this::createProcessingInbox).doesNotThrowAnyException(),
@@ -80,6 +86,7 @@ class CollectInboxTest {
 
     @Test
     void rehydrate_시_id가_null이면_예외가_발생한다() {
+        // when & then
         assertThatThrownBy(() -> CollectInbox.rehydrateBuilder()
                 .id(null)
                 .collectType(TYPE)
@@ -98,6 +105,7 @@ class CollectInboxTest {
 
     @Test
     void rehydrate_시_PROCESSING_상태는_claimed_lease가_필수다() {
+        // when & then
         assertThatThrownBy(() -> CollectInbox.rehydrateBuilder()
                 .id(1L)
                 .collectType(TYPE)
@@ -116,6 +124,7 @@ class CollectInboxTest {
 
     @Test
     void rehydrate_시_PROCESSED_상태는_processedTime이_필수다() {
+        // when & then
         assertThatThrownBy(() -> CollectInbox.rehydrateBuilder()
                 .id(1L)
                 .collectType(TYPE)
@@ -134,6 +143,7 @@ class CollectInboxTest {
 
     @Test
     void rehydrate_시_RETRY_PENDING_상태는_retry_pending용_failureType이_필수다() {
+        // when & then
         assertThatThrownBy(() -> CollectInbox.rehydrateBuilder()
                 .id(1L)
                 .collectType(TYPE)
@@ -152,6 +162,7 @@ class CollectInboxTest {
 
     @Test
     void rehydrate_시_FAILED_상태는_failed용_failureType이_필수다() {
+        // when & then
         assertThatThrownBy(() -> CollectInbox.rehydrateBuilder()
                 .id(1L)
                 .collectType(TYPE)
@@ -170,10 +181,13 @@ class CollectInboxTest {
 
     @Test
     void PROCESSING_상태에서_PROCESSED로_전이한다() {
+        // given
         CollectInbox inbox = createProcessingInbox();
 
+        // when
         inbox.markProcessed(PROCESSED_AT);
 
+        // then
         assertAll(
                 () -> assertThat(inbox.getStatus()).isEqualTo(CollectInboxStatus.PROCESSED),
                 () -> assertThat(inbox.getProcessingLease().isClaimed()).isFalse(),
@@ -186,18 +200,23 @@ class CollectInboxTest {
 
     @Test
     void PENDING_상태에서_PROCESSED로_전이하면_예외가_발생한다() {
+        // given
         CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
 
+        // when & then
         assertThatThrownBy(() -> inbox.markProcessed(PROCESSED_AT))
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void PROCESSING_상태에서_RETRY_PENDING으로_전이한다() {
+        // given
         CollectInbox inbox = createProcessingInbox();
 
+        // when
         inbox.markRetryPending(FAILED_AT, "일시적 오류");
 
+        // then
         assertAll(
                 () -> assertThat(inbox.getStatus()).isEqualTo(CollectInboxStatus.RETRY_PENDING),
                 () -> assertThat(inbox.getProcessingLease().isClaimed()).isFalse(),
@@ -210,16 +229,20 @@ class CollectInboxTest {
 
     @Test
     void markRetryPending_시_failureReason이_blank이면_예외가_발생한다() {
+        // given
         CollectInbox inbox = createProcessingInbox();
 
+        // when & then
         assertThatThrownBy(() -> inbox.markRetryPending(FAILED_AT, "  "))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void markRetryPending_시_failed용_failureType이면_예외가_발생한다() {
+        // given
         CollectInbox inbox = createProcessingInbox();
 
+        // when & then
         assertThatThrownBy(() -> inbox.markRetryPending(
                 FAILED_AT,
                 "일시적 오류",
@@ -229,10 +252,13 @@ class CollectInboxTest {
 
     @Test
     void PROCESSING_상태에서_BUSINESS_INVARIANT로_FAILED_전이한다() {
+        // given
         CollectInbox inbox = createProcessingInbox();
 
+        // when
         inbox.markFailed(FAILED_AT, "비즈니스 로직 실패", CollectInboxFailureType.BUSINESS_INVARIANT);
 
+        // then
         assertAll(
                 () -> assertThat(inbox.getStatus()).isEqualTo(CollectInboxStatus.FAILED),
                 () -> assertThat(inbox.getProcessingLease().isClaimed()).isFalse(),
@@ -245,17 +271,22 @@ class CollectInboxTest {
 
     @Test
     void PROCESSING_상태에서_RETRY_EXHAUSTED로_FAILED_전이한다() {
+        // given
         CollectInbox inbox = createProcessingInbox();
 
+        // when
         inbox.markFailed(FAILED_AT, "재시도 횟수 초과", CollectInboxFailureType.RETRY_EXHAUSTED);
 
+        // then
         assertThat(inbox.getFailure().type()).isEqualTo(CollectInboxFailureType.RETRY_EXHAUSTED);
     }
 
     @Test
     void PENDING_상태에서_FAILED로_전이하면_예외가_발생한다() {
+        // given
         CollectInbox inbox = CollectInbox.pending(TYPE, PROJECT_ID, RUN_ID, PAYLOAD_JSON);
 
+        // when & then
         assertThatThrownBy(() -> inbox.markFailed(
                 FAILED_AT,
                 "실패",
@@ -265,16 +296,20 @@ class CollectInboxTest {
 
     @Test
     void markFailed_시_failureType이_null이면_예외가_발생한다() {
+        // given
         CollectInbox inbox = createProcessingInbox();
 
+        // when & then
         assertThatThrownBy(() -> inbox.markFailed(FAILED_AT, "실패", null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void markFailed_시_retry_pending용_failureType이면_예외가_발생한다() {
+        // given
         CollectInbox inbox = createProcessingInbox();
 
+        // when & then
         assertThatThrownBy(() -> inbox.markFailed(FAILED_AT, "실패", CollectInboxFailureType.RETRYABLE))
                 .isInstanceOf(IllegalArgumentException.class);
     }
