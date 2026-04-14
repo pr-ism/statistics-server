@@ -61,6 +61,7 @@ public class CollectInbox {
             BoxEventTime failedTime,
             CollectInboxFailureSnapshot failure
     ) {
+        validateId(id);
         validateCollectType(collectType);
         validateRunId(runId);
         validatePayloadJson(payloadJson);
@@ -160,6 +161,12 @@ public class CollectInbox {
         this.processedTime = BoxEventTime.absent();
         this.failedTime = BoxEventTime.present(failedAt);
         this.failure = CollectInboxFailureSnapshot.present(failureReason, failureType);
+    }
+
+    private static void validateId(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("rehydrate 시 id는 비어 있을 수 없습니다.");
+        }
     }
 
     private static void validateCollectType(CollectInboxType collectType) {

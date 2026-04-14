@@ -79,6 +79,24 @@ class CollectInboxTest {
     }
 
     @Test
+    void rehydrate_시_id가_null이면_예외가_발생한다() {
+        assertThatThrownBy(() -> CollectInbox.rehydrateBuilder()
+                .id(null)
+                .collectType(TYPE)
+                .projectId(PROJECT_ID)
+                .runId(RUN_ID)
+                .payloadJson(PAYLOAD_JSON)
+                .status(CollectInboxStatus.PENDING)
+                .processingAttempt(0)
+                .processingLease(BoxProcessingLease.idle())
+                .processedTime(BoxEventTime.absent())
+                .failedTime(BoxEventTime.absent())
+                .failure(CollectInboxFailureSnapshot.absent())
+                .build()
+        ).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void rehydrate_시_PROCESSING_상태는_claimed_lease가_필수다() {
         assertThatThrownBy(() -> CollectInbox.rehydrateBuilder()
                 .id(1L)
