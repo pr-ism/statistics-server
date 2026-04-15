@@ -76,11 +76,11 @@ class CollectInboxTest {
     void rehydrate는_상태별_유효한_조합을_허용한다() {
         // when & then
         assertAll(
-                () -> assertThatCode(this::createPendingInbox).doesNotThrowAnyException(),
-                () -> assertThatCode(this::createProcessingInbox).doesNotThrowAnyException(),
-                () -> assertThatCode(this::createProcessedInbox).doesNotThrowAnyException(),
-                () -> assertThatCode(this::createRetryPendingInbox).doesNotThrowAnyException(),
-                () -> assertThatCode(this::createFailedInbox).doesNotThrowAnyException()
+                () -> assertThatCode(() -> createPendingInbox()).doesNotThrowAnyException(),
+                () -> assertThatCode(() -> createProcessingInbox()).doesNotThrowAnyException(),
+                () -> assertThatCode(() -> createProcessedInbox()).doesNotThrowAnyException(),
+                () -> assertThatCode(() -> createRetryPendingInbox()).doesNotThrowAnyException(),
+                () -> assertThatCode(() -> createFailedInbox()).doesNotThrowAnyException()
         );
     }
 
