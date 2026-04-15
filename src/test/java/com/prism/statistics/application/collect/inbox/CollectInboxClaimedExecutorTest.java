@@ -14,6 +14,9 @@ import com.prism.statistics.infrastructure.collect.inbox.CollectInbox;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxStatus;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxType;
 import com.prism.statistics.infrastructure.collect.inbox.repository.CollectInboxRepository;
+import com.prism.statistics.infrastructure.common.BoxEventTime;
+import com.prism.statistics.infrastructure.collect.inbox.CollectInboxFailureSnapshot;
+import com.prism.statistics.infrastructure.common.BoxProcessingLease;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -24,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @SuppressWarnings("NonAsciiCharacters")
 @ExtendWith(MockitoExtension.class)
@@ -62,7 +64,7 @@ class CollectInboxClaimedExecutorTest {
         // then
         assertAll(
                 () -> assertThat(inbox.getStatus()).isEqualTo(CollectInboxStatus.PROCESSED),
-                () -> assertThat(inbox.getProcessedAt()).isEqualTo(fixedClock.instant())
+                () -> assertThat(inbox.getProcessedTime().occurredAt()).isEqualTo(fixedClock.instant())
         );
         verify(collectInboxEventRouter).route(
                 eq(new CollectInboxContext(1L, "{}")),
@@ -91,10 +93,18 @@ class CollectInboxClaimedExecutorTest {
     }
 
     private CollectInbox createProcessingInbox() {
-        CollectInbox inbox = CollectInbox.pending(
-                CollectInboxType.PULL_REQUEST_OPENED, 1L, 1L, "{}"
-        );
-        ReflectionTestUtils.setField(inbox, "status", CollectInboxStatus.PROCESSING);
-        return inbox;
+        return CollectInbox.rehydrateBuilder()
+                .id(1L)
+                .collectType(CollectInboxType.PULL_REQUEST_OPENED)
+                .projectId(1L)
+                .runId(1L)
+                .payloadJson("{}")
+                .status(CollectInboxStatus.PROCESSING)
+                .processingAttempt(1)
+                .processingLease(BoxProcessingLease.claimed(Instant.parse("2026-03-16T00:00:00Z")))
+                .processedTime(BoxEventTime.absent())
+                .failedTime(BoxEventTime.absent())
+                .failure(CollectInboxFailureSnapshot.absent())
+                .build();
     }
 }

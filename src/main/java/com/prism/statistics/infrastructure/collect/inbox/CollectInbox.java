@@ -1,47 +1,26 @@
 package com.prism.statistics.infrastructure.collect.inbox;
 
-import com.prism.statistics.domain.common.BaseTimeEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
+import com.prism.statistics.infrastructure.common.BoxEventTime;
+import com.prism.statistics.infrastructure.common.BoxProcessingLease;
 import java.time.Instant;
-import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@Entity
-@Table(name = "collect_inbox")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CollectInbox extends BaseTimeEntity {
+public class CollectInbox {
 
-    @Enumerated(EnumType.STRING)
-    private CollectInboxType collectType;
+    private final Long id;
+    private final CollectInboxType collectType;
+    private final Long projectId;
+    private final long runId;
+    private final String payloadJson;
 
-    private Long projectId;
-
-    private long runId;
-
-    @Lob
-    private String payloadJson;
-
-    @Enumerated(EnumType.STRING)
     private CollectInboxStatus status;
-
     private int processingAttempt;
-
-    private Instant processingStartedAt;
-
-    private Instant processedAt;
-
-    private Instant failedAt;
-
-    private String failureReason;
-
-    @Enumerated(EnumType.STRING)
-    private CollectInboxFailureType failureType;
+    private BoxProcessingLease processingLease;
+    private BoxEventTime processedTime;
+    private BoxEventTime failedTime;
+    private CollectInboxFailureSnapshot failure;
 
     public static CollectInbox pending(
             CollectInboxType collectType,
@@ -54,29 +33,85 @@ public class CollectInbox extends BaseTimeEntity {
         validatePayloadJson(payloadJson);
 
         return new CollectInbox(
+                null,
                 collectType,
                 projectId,
                 runId,
                 payloadJson,
                 CollectInboxStatus.PENDING,
-                0
+                0,
+                BoxProcessingLease.idle(),
+                BoxEventTime.absent(),
+                BoxEventTime.absent(),
+                CollectInboxFailureSnapshot.absent()
         );
     }
 
-    private CollectInbox(
+    @Builder(builderMethodName = "rehydrateBuilder")
+    private static CollectInbox rehydrate(
+            Long id,
             CollectInboxType collectType,
             Long projectId,
             long runId,
             String payloadJson,
             CollectInboxStatus status,
-            int processingAttempt
+            int processingAttempt,
+            BoxProcessingLease processingLease,
+            BoxEventTime processedTime,
+            BoxEventTime failedTime,
+            CollectInboxFailureSnapshot failure
     ) {
+        validateId(id);
+        validateCollectType(collectType);
+        validateRunId(runId);
+        validatePayloadJson(payloadJson);
+        validateStatus(status);
+        validateProcessingAttempt(processingAttempt);
+        validateProcessingLease(processingLease);
+        validateProcessedTime(processedTime);
+        validateFailedTime(failedTime);
+        validateFailure(failure);
+        validateState(status, processingAttempt, processingLease, processedTime, failedTime, failure);
+
+        return new CollectInbox(
+                id,
+                collectType,
+                projectId,
+                runId,
+                payloadJson,
+                status,
+                processingAttempt,
+                processingLease,
+                processedTime,
+                failedTime,
+                failure
+        );
+    }
+
+    private CollectInbox(
+            Long id,
+            CollectInboxType collectType,
+            Long projectId,
+            long runId,
+            String payloadJson,
+            CollectInboxStatus status,
+            int processingAttempt,
+            BoxProcessingLease processingLease,
+            BoxEventTime processedTime,
+            BoxEventTime failedTime,
+            CollectInboxFailureSnapshot failure
+    ) {
+        this.id = id;
         this.collectType = collectType;
         this.projectId = projectId;
         this.runId = runId;
         this.payloadJson = payloadJson;
         this.status = status;
         this.processingAttempt = processingAttempt;
+        this.processingLease = processingLease;
+        this.processedTime = processedTime;
+        this.failedTime = failedTime;
+        this.failure = failure;
     }
 
     public void markProcessed(Instant processedAt) {
@@ -84,23 +119,31 @@ public class CollectInbox extends BaseTimeEntity {
         validateTransition(CollectInboxStatus.PROCESSING, "PROCESSED");
 
         this.status = CollectInboxStatus.PROCESSED;
-        this.processingStartedAt = null;
-        this.processedAt = processedAt;
-        this.failureReason = null;
-        this.failureType = null;
-        this.failedAt = null;
+        this.processingLease = BoxProcessingLease.idle();
+        this.processedTime = BoxEventTime.present(processedAt);
+        this.failedTime = BoxEventTime.absent();
+        this.failure = CollectInboxFailureSnapshot.absent();
     }
 
     public void markRetryPending(Instant failedAt, String failureReason) {
+        markRetryPending(failedAt, failureReason, CollectInboxFailureType.RETRYABLE);
+    }
+
+    public void markRetryPending(
+            Instant failedAt,
+            String failureReason,
+            CollectInboxFailureType failureType
+    ) {
         validateFailedAt(failedAt);
         validateFailureReason(failureReason);
+        validateRetryPendingFailureType(failureType);
         validateTransition(CollectInboxStatus.PROCESSING, "RETRY_PENDING");
 
         this.status = CollectInboxStatus.RETRY_PENDING;
-        this.processingStartedAt = null;
-        this.failedAt = failedAt;
-        this.failureReason = failureReason;
-        this.failureType = null;
+        this.processingLease = BoxProcessingLease.idle();
+        this.processedTime = BoxEventTime.absent();
+        this.failedTime = BoxEventTime.present(failedAt);
+        this.failure = CollectInboxFailureSnapshot.present(failureReason, failureType);
     }
 
     public void markFailed(
@@ -110,14 +153,20 @@ public class CollectInbox extends BaseTimeEntity {
     ) {
         validateFailedAt(failedAt);
         validateFailureReason(failureReason);
-        validateFailureType(failureType);
+        validateFailedFailureType(failureType);
         validateTransition(CollectInboxStatus.PROCESSING, "FAILED");
 
         this.status = CollectInboxStatus.FAILED;
-        this.processingStartedAt = null;
-        this.failedAt = failedAt;
-        this.failureReason = failureReason;
-        this.failureType = failureType;
+        this.processingLease = BoxProcessingLease.idle();
+        this.processedTime = BoxEventTime.absent();
+        this.failedTime = BoxEventTime.present(failedAt);
+        this.failure = CollectInboxFailureSnapshot.present(failureReason, failureType);
+    }
+
+    private static void validateId(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("rehydrate 시 id는 비어 있을 수 없습니다.");
+        }
     }
 
     private static void validateCollectType(CollectInboxType collectType) {
@@ -135,6 +184,205 @@ public class CollectInbox extends BaseTimeEntity {
     private static void validatePayloadJson(String payloadJson) {
         if (payloadJson == null || payloadJson.isBlank()) {
             throw new IllegalArgumentException("payloadJson은 비어 있을 수 없습니다.");
+        }
+    }
+
+    private static void validateStatus(CollectInboxStatus status) {
+        if (status == null) {
+            throw new IllegalArgumentException("status는 비어 있을 수 없습니다.");
+        }
+    }
+
+    private static void validateProcessingAttempt(int processingAttempt) {
+        if (processingAttempt < 0) {
+            throw new IllegalArgumentException("processingAttempt는 0 이상이어야 합니다.");
+        }
+    }
+
+    private static void validateProcessingLease(BoxProcessingLease processingLease) {
+        if (processingLease == null) {
+            throw new IllegalArgumentException("processingLease는 비어 있을 수 없습니다.");
+        }
+    }
+
+    private static void validateProcessedTime(BoxEventTime processedTime) {
+        if (processedTime == null) {
+            throw new IllegalArgumentException("processedTime은 비어 있을 수 없습니다.");
+        }
+    }
+
+    private static void validateFailedTime(BoxEventTime failedTime) {
+        if (failedTime == null) {
+            throw new IllegalArgumentException("failedTime은 비어 있을 수 없습니다.");
+        }
+    }
+
+    private static void validateFailure(CollectInboxFailureSnapshot failure) {
+        if (failure == null) {
+            throw new IllegalArgumentException("failure는 비어 있을 수 없습니다.");
+        }
+    }
+
+    private static void validateState(
+            CollectInboxStatus status,
+            int processingAttempt,
+            BoxProcessingLease processingLease,
+            BoxEventTime processedTime,
+            BoxEventTime failedTime,
+            CollectInboxFailureSnapshot failure
+    ) {
+        if (status == CollectInboxStatus.PENDING) {
+            validatePendingState(processingAttempt, processingLease, processedTime, failedTime, failure);
+            return;
+        }
+        if (status == CollectInboxStatus.PROCESSING) {
+            validateProcessingState(processingAttempt, processingLease, processedTime, failedTime, failure);
+            return;
+        }
+        if (status == CollectInboxStatus.PROCESSED) {
+            validateProcessedState(processingAttempt, processingLease, processedTime, failedTime, failure);
+            return;
+        }
+        if (status == CollectInboxStatus.RETRY_PENDING) {
+            validateRetryPendingState(processingAttempt, processingLease, processedTime, failedTime, failure);
+            return;
+        }
+        if (status == CollectInboxStatus.FAILED) {
+            validateFailedState(processingAttempt, processingLease, processedTime, failedTime, failure);
+            return;
+        }
+
+        throw new IllegalStateException("알 수 없는 상태입니다: " + status);
+    }
+
+    private static void validatePendingState(
+            int processingAttempt,
+            BoxProcessingLease processingLease,
+            BoxEventTime processedTime,
+            BoxEventTime failedTime,
+            CollectInboxFailureSnapshot failure
+    ) {
+        if (processingAttempt != 0) {
+            throw new IllegalArgumentException("PENDING 상태의 processingAttempt는 0이어야 합니다.");
+        }
+        validateIdleLease(processingLease, "PENDING");
+        validateProcessedTimeAbsent(processedTime, "PENDING");
+        validateFailedStateAbsent(failedTime, failure, "PENDING");
+    }
+
+    private static void validateProcessingState(
+            int processingAttempt,
+            BoxProcessingLease processingLease,
+            BoxEventTime processedTime,
+            BoxEventTime failedTime,
+            CollectInboxFailureSnapshot failure
+    ) {
+        validateProcessedAttemptStarted(processingAttempt, "PROCESSING");
+        if (!processingLease.isClaimed()) {
+            throw new IllegalArgumentException("PROCESSING 상태는 processingLease를 보유해야 합니다.");
+        }
+        validateProcessedTimeAbsent(processedTime, "PROCESSING");
+        validateFailedStateAbsent(failedTime, failure, "PROCESSING");
+    }
+
+    private static void validateProcessedState(
+            int processingAttempt,
+            BoxProcessingLease processingLease,
+            BoxEventTime processedTime,
+            BoxEventTime failedTime,
+            CollectInboxFailureSnapshot failure
+    ) {
+        validateProcessedAttemptStarted(processingAttempt, "PROCESSED");
+        validateIdleLease(processingLease, "PROCESSED");
+        if (!processedTime.isPresent()) {
+            throw new IllegalArgumentException("PROCESSED 상태는 processedTime이 있어야 합니다.");
+        }
+        validateFailedStateAbsent(failedTime, failure, "PROCESSED");
+    }
+
+    private static void validateRetryPendingState(
+            int processingAttempt,
+            BoxProcessingLease processingLease,
+            BoxEventTime processedTime,
+            BoxEventTime failedTime,
+            CollectInboxFailureSnapshot failure
+    ) {
+        validateProcessedAttemptStarted(processingAttempt, "RETRY_PENDING");
+        validateIdleLease(processingLease, "RETRY_PENDING");
+        validateProcessedTimeAbsent(processedTime, "RETRY_PENDING");
+        validateFailedStatePresent(failedTime, failure, "RETRY_PENDING");
+
+        CollectInboxFailureType failureType = failure.type();
+        if (failureType == CollectInboxFailureType.RETRYABLE
+                || failureType == CollectInboxFailureType.PROCESSING_TIMEOUT) {
+            return;
+        }
+
+        throw new IllegalArgumentException("RETRY_PENDING 상태의 failureType이 올바르지 않습니다.");
+    }
+
+    private static void validateFailedState(
+            int processingAttempt,
+            BoxProcessingLease processingLease,
+            BoxEventTime processedTime,
+            BoxEventTime failedTime,
+            CollectInboxFailureSnapshot failure
+    ) {
+        validateProcessedAttemptStarted(processingAttempt, "FAILED");
+        validateIdleLease(processingLease, "FAILED");
+        validateProcessedTimeAbsent(processedTime, "FAILED");
+        validateFailedStatePresent(failedTime, failure, "FAILED");
+
+        CollectInboxFailureType failureType = failure.type();
+        if (failureType == CollectInboxFailureType.BUSINESS_INVARIANT
+                || failureType == CollectInboxFailureType.RETRY_EXHAUSTED) {
+            return;
+        }
+
+        throw new IllegalArgumentException("FAILED 상태의 failureType이 올바르지 않습니다.");
+    }
+
+    private static void validateProcessedAttemptStarted(int processingAttempt, String statusName) {
+        if (processingAttempt <= 0) {
+            throw new IllegalArgumentException(statusName + " 상태의 processingAttempt는 1 이상이어야 합니다.");
+        }
+    }
+
+    private static void validateIdleLease(BoxProcessingLease processingLease, String statusName) {
+        if (processingLease.isClaimed()) {
+            throw new IllegalArgumentException(statusName + " 상태는 processingLease가 비어 있어야 합니다.");
+        }
+    }
+
+    private static void validateProcessedTimeAbsent(BoxEventTime processedTime, String statusName) {
+        if (processedTime.isPresent()) {
+            throw new IllegalArgumentException(statusName + " 상태는 processedTime이 비어 있어야 합니다.");
+        }
+    }
+
+    private static void validateFailedStateAbsent(
+            BoxEventTime failedTime,
+            CollectInboxFailureSnapshot failure,
+            String statusName
+    ) {
+        if (failedTime.isPresent()) {
+            throw new IllegalArgumentException(statusName + " 상태는 failedTime이 비어 있어야 합니다.");
+        }
+        if (failure.isPresent()) {
+            throw new IllegalArgumentException(statusName + " 상태는 failure가 비어 있어야 합니다.");
+        }
+    }
+
+    private static void validateFailedStatePresent(
+            BoxEventTime failedTime,
+            CollectInboxFailureSnapshot failure,
+            String statusName
+    ) {
+        if (!failedTime.isPresent()) {
+            throw new IllegalArgumentException(statusName + " 상태는 failedTime이 있어야 합니다.");
+        }
+        if (!failure.isPresent()) {
+            throw new IllegalArgumentException(statusName + " 상태는 failure가 있어야 합니다.");
         }
     }
 
@@ -156,10 +404,20 @@ public class CollectInbox extends BaseTimeEntity {
         }
     }
 
-    private void validateFailureType(CollectInboxFailureType failureType) {
-        if (failureType == null) {
-            throw new IllegalArgumentException("failureType은 비어 있을 수 없습니다.");
+    private void validateRetryPendingFailureType(CollectInboxFailureType failureType) {
+        if (failureType != null && failureType.allowedInRetryPending()) {
+            return;
         }
+
+        throw new IllegalArgumentException("RETRY_PENDING failureType이 올바르지 않습니다.");
+    }
+
+    private void validateFailedFailureType(CollectInboxFailureType failureType) {
+        if (failureType != null && failureType.allowedInFailed()) {
+            return;
+        }
+
+        throw new IllegalArgumentException("FAILED failureType이 올바르지 않습니다.");
     }
 
     private void validateTransition(CollectInboxStatus expectedStatus, String targetStatus) {

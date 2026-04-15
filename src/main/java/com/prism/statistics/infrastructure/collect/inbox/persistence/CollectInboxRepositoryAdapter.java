@@ -1,6 +1,6 @@
 package com.prism.statistics.infrastructure.collect.inbox.persistence;
 
-import static com.prism.statistics.infrastructure.collect.inbox.QCollectInbox.collectInbox;
+import static com.prism.statistics.infrastructure.collect.inbox.persistence.QCollectInboxJpaEntity.collectInboxJpaEntity;
 
 import com.prism.statistics.infrastructure.collect.inbox.CollectInbox;
 import com.prism.statistics.infrastructure.collect.inbox.CollectInboxFailureType;
@@ -57,33 +57,43 @@ public class CollectInboxRepositoryAdapter implements CollectInboxRepository {
         }
 
         return queryFactory
-                .selectFrom(collectInbox)
-                .where(collectInbox.status.in(CLAIMABLE_STATUSES))
-                .orderBy(collectInbox.id.asc())
+                .selectFrom(collectInboxJpaEntity)
+                .where(collectInboxJpaEntity.status.in(CLAIMABLE_STATUSES))
+                .orderBy(collectInboxJpaEntity.id.asc())
                 .limit(limit)
-                .fetch();
+                .fetch()
+                .stream()
+                .map(inboxJpaEntity -> inboxJpaEntity.toDomain())
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<CollectInbox> findById(Long inboxId) {
-        return repository.findById(inboxId);
+        return repository.findDomainById(inboxId);
     }
 
     @Override
     @Transactional
     public boolean markProcessingIfClaimable(Long inboxId, Instant processingStartedAt) {
         long updatedCount = queryFactory
-                .update(collectInbox)
-                .set(collectInbox.status, CollectInboxStatus.PROCESSING)
-                .set(collectInbox.processingAttempt, collectInbox.processingAttempt.add(1))
-                .set(collectInbox.processingStartedAt, processingStartedAt)
-                .set(collectInbox.failedAt, Expressions.nullExpression(Instant.class))
-                .set(collectInbox.failureReason, Expressions.nullExpression(String.class))
-                .set(collectInbox.failureType, Expressions.nullExpression(CollectInboxFailureType.class))
+                .update(collectInboxJpaEntity)
+                .set(collectInboxJpaEntity.status, CollectInboxStatus.PROCESSING)
+                .set(
+                        collectInboxJpaEntity.processingAttempt,
+                        collectInboxJpaEntity.processingAttempt.add(1)
+                )
+                .set(collectInboxJpaEntity.processingStartedAt, processingStartedAt)
+                .set(collectInboxJpaEntity.processedAt, Expressions.nullExpression(Instant.class))
+                .set(collectInboxJpaEntity.failedAt, Expressions.nullExpression(Instant.class))
+                .set(collectInboxJpaEntity.failureReason, Expressions.nullExpression(String.class))
+                .set(
+                        collectInboxJpaEntity.failureType,
+                        Expressions.nullExpression(CollectInboxFailureType.class)
+                )
                 .where(
-                        collectInbox.id.eq(inboxId),
-                        collectInbox.status.in(CLAIMABLE_STATUSES)
+                        collectInboxJpaEntity.id.eq(inboxId),
+                        collectInboxJpaEntity.status.in(CLAIMABLE_STATUSES)
                 )
                 .execute();
 
@@ -98,34 +108,36 @@ public class CollectInboxRepositoryAdapter implements CollectInboxRepository {
             String failureReason,
             int maxAttempts
     ) {
-        BooleanExpression timeoutCondition = collectInbox.processingStartedAt.isNull()
-                .or(collectInbox.processingStartedAt.lt(processingStartedBefore));
+        BooleanExpression timeoutCondition = collectInboxJpaEntity.processingStartedAt.isNull()
+                .or(collectInboxJpaEntity.processingStartedAt.lt(processingStartedBefore));
 
         long exhaustedCount = queryFactory
-                .update(collectInbox)
-                .set(collectInbox.status, CollectInboxStatus.FAILED)
-                .set(collectInbox.processingStartedAt, Expressions.nullExpression(Instant.class))
-                .set(collectInbox.failedAt, failedAt)
-                .set(collectInbox.failureReason, failureReason)
-                .set(collectInbox.failureType, CollectInboxFailureType.RETRY_EXHAUSTED)
+                .update(collectInboxJpaEntity)
+                .set(collectInboxJpaEntity.status, CollectInboxStatus.FAILED)
+                .set(collectInboxJpaEntity.processingStartedAt, Expressions.nullExpression(Instant.class))
+                .set(collectInboxJpaEntity.processedAt, Expressions.nullExpression(Instant.class))
+                .set(collectInboxJpaEntity.failedAt, failedAt)
+                .set(collectInboxJpaEntity.failureReason, failureReason)
+                .set(collectInboxJpaEntity.failureType, CollectInboxFailureType.RETRY_EXHAUSTED)
                 .where(
-                        collectInbox.status.eq(CollectInboxStatus.PROCESSING),
+                        collectInboxJpaEntity.status.eq(CollectInboxStatus.PROCESSING),
                         timeoutCondition,
-                        collectInbox.processingAttempt.goe(maxAttempts)
+                        collectInboxJpaEntity.processingAttempt.goe(maxAttempts)
                 )
                 .execute();
 
         long recoveredCount = queryFactory
-                .update(collectInbox)
-                .set(collectInbox.status, CollectInboxStatus.RETRY_PENDING)
-                .set(collectInbox.processingStartedAt, Expressions.nullExpression(Instant.class))
-                .set(collectInbox.failedAt, failedAt)
-                .set(collectInbox.failureReason, failureReason)
-                .set(collectInbox.failureType, Expressions.nullExpression(CollectInboxFailureType.class))
+                .update(collectInboxJpaEntity)
+                .set(collectInboxJpaEntity.status, CollectInboxStatus.RETRY_PENDING)
+                .set(collectInboxJpaEntity.processingStartedAt, Expressions.nullExpression(Instant.class))
+                .set(collectInboxJpaEntity.processedAt, Expressions.nullExpression(Instant.class))
+                .set(collectInboxJpaEntity.failedAt, failedAt)
+                .set(collectInboxJpaEntity.failureReason, failureReason)
+                .set(collectInboxJpaEntity.failureType, CollectInboxFailureType.PROCESSING_TIMEOUT)
                 .where(
-                        collectInbox.status.eq(CollectInboxStatus.PROCESSING),
+                        collectInboxJpaEntity.status.eq(CollectInboxStatus.PROCESSING),
                         timeoutCondition,
-                        collectInbox.processingAttempt.lt(maxAttempts)
+                        collectInboxJpaEntity.processingAttempt.lt(maxAttempts)
                 )
                 .execute();
 
@@ -135,6 +147,16 @@ public class CollectInboxRepositoryAdapter implements CollectInboxRepository {
     @Override
     @Transactional
     public CollectInbox save(CollectInbox inbox) {
-        return repository.save(inbox);
+        Long inboxId = inbox.getId();
+        if (inboxId == null) {
+            CollectInboxJpaEntity newEntity = new CollectInboxJpaEntity();
+            newEntity.apply(inbox);
+            return repository.save(newEntity).toDomain();
+        }
+
+        CollectInboxJpaEntity persistedEntity = repository.findById(inboxId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 collectInbox입니다. id=" + inboxId));
+        persistedEntity.apply(inbox);
+        return repository.save(persistedEntity).toDomain();
     }
 }

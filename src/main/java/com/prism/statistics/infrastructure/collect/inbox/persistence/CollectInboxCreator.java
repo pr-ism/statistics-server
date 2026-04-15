@@ -16,7 +16,9 @@ public class CollectInboxCreator {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveNew(CollectInbox inbox) {
-        repository.save(inbox);
+        CollectInboxJpaEntity entity = new CollectInboxJpaEntity();
+        entity.apply(inbox);
+        repository.save(entity);
         entityManager.flush();
     }
 }
