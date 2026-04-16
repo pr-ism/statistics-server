@@ -25,15 +25,22 @@ USER appuser
 EXPOSE 8080
 
 ENTRYPOINT ["sh", "-c", "\
-    java \
-    -javaagent:${PINPOINT_AGENT_PATH}/pinpoint-bootstrap-${PINPOINT_AGENT_VERSION}.jar \
-    -Dpinpoint.agentId=${PINPOINT_AGENT_ID} \
-    -Dpinpoint.applicationName=${PINPOINT_APPLICATION_NAME} \
-    -Dpinpoint.config=${PINPOINT_AGENT_PATH}/pinpoint-root.config \
-    -Dprofiler.transport.grpc.collector.ip=${PINPOINT_COLLECTOR_IP} \
-    -Dprofiler.transport.grpc.collector.connect.timeout=${PINPOINT_CONNECT_TIMEOUT} \
-    -Dprofiler.transport.grpc.collector.request.timeout=${PINPOINT_REQUEST_TIMEOUT} \
-    -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} \
-    ${JAVA_OPTS} \
-    -jar app.jar \
+    if [ -n \"${PINPOINT_AGENT_PATH}\" ] && [ -f \"${PINPOINT_AGENT_PATH}/pinpoint-bootstrap-${PINPOINT_AGENT_VERSION}.jar\" ]; then \
+        exec java \
+        -javaagent:${PINPOINT_AGENT_PATH}/pinpoint-bootstrap-${PINPOINT_AGENT_VERSION}.jar \
+        -Dpinpoint.agentId=${PINPOINT_AGENT_ID} \
+        -Dpinpoint.applicationName=${PINPOINT_APPLICATION_NAME} \
+        -Dpinpoint.config=${PINPOINT_AGENT_PATH}/pinpoint-root.config \
+        -Dprofiler.transport.grpc.collector.ip=${PINPOINT_COLLECTOR_IP} \
+        -Dprofiler.transport.grpc.collector.connect.timeout=${PINPOINT_CONNECT_TIMEOUT} \
+        -Dprofiler.transport.grpc.collector.request.timeout=${PINPOINT_REQUEST_TIMEOUT} \
+        -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} \
+        ${JAVA_OPTS} \
+        -jar app.jar; \
+    else \
+        exec java \
+        -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} \
+        ${JAVA_OPTS} \
+        -jar app.jar; \
+    fi \
 "]
