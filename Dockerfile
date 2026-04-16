@@ -2,7 +2,7 @@ FROM amazoncorretto:21 AS builder
 WORKDIR /app
 
 COPY gradlew ./
-COPY build.gradle settings.gradle ./
+COPY build.gradle settings.gradle lombok.config ./
 COPY gradle ./gradle
 
 RUN chmod +x gradlew && ./gradlew dependencies --no-daemon || true
