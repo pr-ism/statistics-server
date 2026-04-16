@@ -92,7 +92,10 @@ public class ThroughputStatisticsRepositoryAdapter implements ThroughputStatisti
             return 0L;
         }
         Long value = tuple.get(expression);
-        return value == null ? 0L : value;
+        if (value == null) {
+            return 0L;
+        }
+        return value;
     }
 
     private BooleanExpression closedAtDateRangeCondition(LocalDate startDate, LocalDate endDate) {
