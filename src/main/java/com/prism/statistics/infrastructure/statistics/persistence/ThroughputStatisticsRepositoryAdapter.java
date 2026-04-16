@@ -4,18 +4,16 @@ import com.prism.statistics.domain.analysis.metadata.pullrequest.enums.PullReque
 import com.prism.statistics.domain.statistics.repository.ThroughputStatisticsRepository;
 import com.prism.statistics.domain.statistics.repository.dto.ThroughputStatisticsDto;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static com.prism.statistics.domain.analysis.metadata.pullrequest.QPullRequest.pullRequest;
@@ -35,8 +33,12 @@ public class ThroughputStatisticsRepositoryAdapter implements ThroughputStatisti
             LocalDate startDate,
             LocalDate endDate
     ) {
+        BooleanExpression validMergedCondition = pullRequest.state.eq(PullRequestState.MERGED)
+                .and(pullRequest.timing.githubCreatedAt.isNotNull())
+                .and(pullRequest.timing.githubMergedAt.isNotNull());
+
         NumberExpression<Long> mergedCountExpression = new CaseBuilder()
-                .when(pullRequest.state.eq(PullRequestState.MERGED)).then(1L)
+                .when(validMergedCondition).then(1L)
                 .otherwise(0L)
                 .sumLong()
                 .coalesce(0L);
@@ -47,8 +49,20 @@ public class ThroughputStatisticsRepositoryAdapter implements ThroughputStatisti
                 .sumLong()
                 .coalesce(0L);
 
-        Tuple countTuple = queryFactory
-                .select(mergedCountExpression, closedCountExpression)
+        NumberExpression<Long> totalMergeTimeMinutesExpression = new CaseBuilder()
+                .when(validMergedCondition)
+                .then(Expressions.numberTemplate(
+                        Long.class,
+                        "TIMESTAMPDIFF(MINUTE, {0}, {1})",
+                        pullRequest.timing.githubCreatedAt,
+                        pullRequest.timing.githubMergedAt
+                ))
+                .otherwise(0L)
+                .sumLong()
+                .coalesce(0L);
+
+        Tuple resultTuple = queryFactory
+                .select(mergedCountExpression, closedCountExpression, totalMergeTimeMinutesExpression)
                 .from(pullRequest)
                 .where(
                         pullRequest.projectId.eq(projectId),
@@ -57,32 +71,14 @@ public class ThroughputStatisticsRepositoryAdapter implements ThroughputStatisti
                 )
                 .fetchOne();
 
-        long mergedCount = resolveLong(countTuple, mergedCountExpression);
-        long closedCount = resolveLong(countTuple, closedCountExpression);
+        long mergedCount = resolveLong(resultTuple, mergedCountExpression);
+        long closedCount = resolveLong(resultTuple, closedCountExpression);
 
         if (mergedCount == 0L && closedCount == 0L) {
             return Optional.empty();
         }
 
-        List<Tuple> mergedTimings = queryFactory
-                .select(
-                        pullRequest.timing.githubCreatedAt,
-                        pullRequest.timing.githubMergedAt
-                )
-                .from(pullRequest)
-                .where(
-                        pullRequest.projectId.eq(projectId),
-                        pullRequest.state.eq(PullRequestState.MERGED),
-                        closedAtDateRangeCondition(startDate, endDate)
-                )
-                .fetch();
-
-        long totalMergeTimeMinutes = mergedTimings.stream()
-                .mapToLong(row -> calculateMergeMinutes(
-                        row.get(pullRequest.timing.githubCreatedAt),
-                        row.get(pullRequest.timing.githubMergedAt)
-                ))
-                .sum();
+        long totalMergeTimeMinutes = resolveLong(resultTuple, totalMergeTimeMinutesExpression);
 
         return Optional.of(new ThroughputStatisticsDto(
                 mergedCount,
@@ -97,14 +93,6 @@ public class ThroughputStatisticsRepositoryAdapter implements ThroughputStatisti
         }
         Long value = tuple.get(expression);
         return value == null ? 0L : value;
-    }
-
-    private long calculateMergeMinutes(LocalDateTime createdAt, LocalDateTime mergedAt) {
-        if (createdAt == null || mergedAt == null) {
-            return 0L;
-        }
-
-        return Duration.between(createdAt, mergedAt).toMinutes();
     }
 
     private BooleanExpression closedAtDateRangeCondition(LocalDate startDate, LocalDate endDate) {
