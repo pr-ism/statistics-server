@@ -1,0 +1,47 @@
+[[CollectReview-API]]
+== Collect Review API
+
+GitHub Actions에서 Review 관련 이벤트를 수집하는 API입니다.
+모든 요청에는 `X-API-Key` 헤더가 필요합니다.
+
+[[Collect-Review-Submitted]]
+=== Review Submitted 수집 API
+
+리뷰가 제출되었을 때 호출됩니다.
+
+operation::review-submitted-controller-test/review_submitted_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-ReviewComment-Created]]
+=== Review Comment Created 수집 API
+
+리뷰 코멘트가 생성되었을 때 호출됩니다.
+
+operation::review-comment-created-controller-test/review_comment_created_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-ReviewComment-Edited]]
+=== Review Comment Edited 수집 API
+
+리뷰 코멘트가 수정되었을 때 호출됩니다.
+
+operation::review-comment-edited-controller-test/review_comment_edited_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-ReviewComment-Deleted]]
+=== Review Comment Deleted 수집 API
+
+리뷰 코멘트가 삭제되었을 때 호출됩니다.
+
+operation::review-comment-deleted-controller-test/review_comment_deleted_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-Reviewer-Added]]
+=== Reviewer Added 수집 API
+
+리뷰어가 추가되었을 때 호출됩니다.
+
+operation::reviewer-added-controller-test/reviewer_added_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-Reviewer-Removed]]
+=== Reviewer Removed 수집 API
+
+리뷰어가 제거되었을 때 호출됩니다.
+
+operation::reviewer-removed-controller-test/reviewer_removed_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
