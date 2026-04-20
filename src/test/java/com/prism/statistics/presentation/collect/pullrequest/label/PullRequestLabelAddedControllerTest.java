@@ -4,6 +4,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,6 +21,7 @@ import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
 
 @SuppressWarnings("NonAsciiCharacters")
 class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSupport {
@@ -31,11 +36,14 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
     private PullRequestLabelAddedService pullRequestLabelAddedService;
 
     @Test
-    void Label_added_웹훅_요청을_처리한다() throws Exception {
+    void PullRequest_label_added_이벤트_수집_성공_테스트() throws Exception {
         // given
         String payload = """
                 {
+                    "runId": 12345,
+                    "githubPullRequestId": 100,
                     "pullRequestNumber": 42,
+                    "headCommitSha": "abc123",
                     "label": {
                         "name": "bug"
                     },
@@ -46,7 +54,7 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
         willDoNothing().given(pullRequestLabelAddedService).addPullRequestLabel(any(PullRequestLabelAddedRequest.class));
 
         // when & then
-        mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                         post("/collect/pull-request/label/added")
                                 .header(API_KEY_HEADER, TEST_API_KEY)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -55,6 +63,27 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
                 .andExpect(status().isNoContent());
 
         verify(pullRequestLabelAddedService).addPullRequestLabel(any(PullRequestLabelAddedRequest.class));
+
+        PullRequest_label_added_이벤트_수집_문서화(resultActions);
+    }
+
+    private void PullRequest_label_added_이벤트_수집_문서화(ResultActions resultActions) throws Exception {
+        resultActions.andDo(
+                restDocs.document(
+                        requestHeaders(
+                                headerWithName("X-API-Key").description("프로젝트 API Key")
+                        ),
+                        requestFields(
+                                fieldWithPath("runId").description("GitHub Actions Run ID"),
+                                fieldWithPath("githubPullRequestId").description("GitHub PullRequest ID").optional(),
+                                fieldWithPath("pullRequestNumber").description("PullRequest 번호"),
+                                fieldWithPath("headCommitSha").description("Head 커밋 SHA").optional(),
+                                fieldWithPath("label").description("라벨 정보"),
+                                fieldWithPath("label.name").description("라벨 이름"),
+                                fieldWithPath("labeledAt").description("라벨이 추가된 일시")
+                        )
+                )
+        );
     }
 
     @Test

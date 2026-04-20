@@ -5,6 +5,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +20,7 @@ import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
 
 @SuppressWarnings("NonAsciiCharacters")
 class PullRequestReopenedControllerTest extends CommonControllerSliceTestSupport {
@@ -27,10 +32,11 @@ class PullRequestReopenedControllerTest extends CommonControllerSliceTestSupport
     private ProjectIdResolvingFacade projectIdResolvingFacade;
 
     @Test
-    void Pull_Request_reopened_웹훅_요청을_처리한다() throws Exception {
+    void PullRequest_reopened_이벤트_수집_성공_테스트() throws Exception {
         // given
         String payload = """
                 {
+                    "runId": 12345,
                     "pullRequestNumber": 42,
                     "reopenedAt": "2024-01-15T12:00:00Z"
                 }
@@ -39,7 +45,7 @@ class PullRequestReopenedControllerTest extends CommonControllerSliceTestSupport
         willDoNothing().given(projectIdResolvingFacade).reopenPullRequest(eq(TEST_API_KEY), any(PullRequestReopenedRequest.class));
 
         // when & then
-        mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                         post("/collect/pull-request/reopened")
                                 .header(API_KEY_HEADER, TEST_API_KEY)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -48,6 +54,23 @@ class PullRequestReopenedControllerTest extends CommonControllerSliceTestSupport
                 .andExpect(status().isNoContent());
 
         verify(projectIdResolvingFacade).reopenPullRequest(eq(TEST_API_KEY), any(PullRequestReopenedRequest.class));
+
+        PullRequest_reopened_이벤트_수집_문서화(resultActions);
+    }
+
+    private void PullRequest_reopened_이벤트_수집_문서화(ResultActions resultActions) throws Exception {
+        resultActions.andDo(
+                restDocs.document(
+                        requestHeaders(
+                                headerWithName("X-API-Key").description("프로젝트 API Key")
+                        ),
+                        requestFields(
+                                fieldWithPath("runId").description("GitHub Actions Run ID"),
+                                fieldWithPath("pullRequestNumber").description("PullRequest 번호"),
+                                fieldWithPath("reopenedAt").description("다시 열린 일시")
+                        )
+                )
+        );
     }
 
     @Test

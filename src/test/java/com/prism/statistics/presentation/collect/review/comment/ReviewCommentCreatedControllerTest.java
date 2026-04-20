@@ -3,6 +3,10 @@ package com.prism.statistics.presentation.collect.review.comment;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +20,7 @@ import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
 
 @SuppressWarnings("NonAsciiCharacters")
 class ReviewCommentCreatedControllerTest extends CommonControllerSliceTestSupport {
@@ -30,10 +35,11 @@ class ReviewCommentCreatedControllerTest extends CommonControllerSliceTestSuppor
     private ReviewCommentCreatedService reviewCommentCreatedService;
 
     @Test
-    void Review_comment_created_웹훅_요청을_처리한다() throws Exception {
+    void Review_comment_created_이벤트_수집_성공_테스트() throws Exception {
         // given
         String payload = """
                 {
+                    "runId": 12345,
                     "githubCommentId": 123456789,
                     "githubReviewId": 987654321,
                     "body": "코드 리뷰 댓글입니다.",
@@ -52,7 +58,7 @@ class ReviewCommentCreatedControllerTest extends CommonControllerSliceTestSuppor
                 """;
 
         // when & then
-        mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                         post("/collect/review/comment/created")
                                 .header(API_KEY_HEADER, TEST_API_KEY)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -62,6 +68,34 @@ class ReviewCommentCreatedControllerTest extends CommonControllerSliceTestSuppor
 
         then(reviewCommentCreatedService).should()
                 .createReviewComment(any(ReviewCommentCreatedRequest.class));
+
+        Review_comment_created_이벤트_수집_문서화(resultActions);
+    }
+
+    private void Review_comment_created_이벤트_수집_문서화(ResultActions resultActions) throws Exception {
+        resultActions.andDo(
+                restDocs.document(
+                        requestHeaders(
+                                headerWithName("X-API-Key").description("프로젝트 API Key")
+                        ),
+                        requestFields(
+                                fieldWithPath("runId").description("GitHub Actions Run ID"),
+                                fieldWithPath("githubCommentId").description("GitHub Comment ID").optional(),
+                                fieldWithPath("githubReviewId").description("GitHub Review ID").optional(),
+                                fieldWithPath("body").description("코멘트 내용").optional(),
+                                fieldWithPath("path").description("파일 경로").optional(),
+                                fieldWithPath("line").description("라인 번호"),
+                                fieldWithPath("startLine").description("시작 라인 번호 (멀티라인 코멘트)").optional(),
+                                fieldWithPath("side").description("코멘트 위치 (left, right)").optional(),
+                                fieldWithPath("commitSha").description("커밋 SHA").optional(),
+                                fieldWithPath("inReplyToId").description("답글 대상 코멘트 ID").optional(),
+                                fieldWithPath("author").description("작성자 정보"),
+                                fieldWithPath("author.login").description("작성자 GitHub 로그인"),
+                                fieldWithPath("author.id").description("작성자 GitHub ID").optional(),
+                                fieldWithPath("createdAt").description("생성 일시")
+                        )
+                )
+        );
     }
 
     @Test

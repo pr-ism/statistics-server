@@ -2,6 +2,10 @@ package com.prism.statistics.presentation.collect.review.reviewer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,6 +19,7 @@ import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
 
 @SuppressWarnings("NonAsciiCharacters")
 class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
@@ -29,11 +34,14 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
     private ReviewerRemovedService reviewerRemovedService;
 
     @Test
-    void Reviewer_removed_웹훅_요청을_처리한다() throws Exception {
+    void Reviewer_removed_이벤트_수집_성공_테스트() throws Exception {
         // given
         String payload = """
                 {
+                    "runId": 12345,
+                    "githubPullRequestId": 100,
                     "pullRequestNumber": 42,
+                    "headCommitSha": "abc123",
                     "reviewer": {
                         "login": "reviewer1",
                         "id": 12345
@@ -43,13 +51,35 @@ class ReviewerRemovedControllerTest extends CommonControllerSliceTestSupport {
                 """;
 
         // when & then
-        mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                         post("/collect/review/reviewer/removed")
                                 .header(API_KEY_HEADER, TEST_API_KEY)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(payload)
                 )
                 .andExpect(status().isNoContent());
+
+        Reviewer_removed_이벤트_수집_문서화(resultActions);
+    }
+
+    private void Reviewer_removed_이벤트_수집_문서화(ResultActions resultActions) throws Exception {
+        resultActions.andDo(
+                restDocs.document(
+                        requestHeaders(
+                                headerWithName("X-API-Key").description("프로젝트 API Key")
+                        ),
+                        requestFields(
+                                fieldWithPath("runId").description("GitHub Actions Run ID"),
+                                fieldWithPath("githubPullRequestId").description("GitHub PullRequest ID").optional(),
+                                fieldWithPath("pullRequestNumber").description("PullRequest 번호"),
+                                fieldWithPath("headCommitSha").description("Head 커밋 SHA").optional(),
+                                fieldWithPath("reviewer").description("리뷰어 정보"),
+                                fieldWithPath("reviewer.login").description("리뷰어 GitHub 로그인"),
+                                fieldWithPath("reviewer.id").description("리뷰어 GitHub ID").optional(),
+                                fieldWithPath("removedAt").description("리뷰어 제거 일시")
+                        )
+                )
+        );
     }
 
     @Test
