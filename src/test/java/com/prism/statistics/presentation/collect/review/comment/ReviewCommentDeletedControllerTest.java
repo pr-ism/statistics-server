@@ -68,7 +68,7 @@ class ReviewCommentDeletedControllerTest extends CommonControllerSliceTestSuppor
                         ),
                         requestFields(
                                 fieldWithPath("runId").description("GitHub Actions Run ID"),
-                                fieldWithPath("githubCommentId").description("GitHub Comment ID").optional(),
+                                fieldWithPath("githubCommentId").description("GitHub Comment ID"),
                                 fieldWithPath("updatedAt").description("삭제 일시")
                         )
                 )

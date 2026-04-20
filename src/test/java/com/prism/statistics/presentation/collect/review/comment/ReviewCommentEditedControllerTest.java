@@ -82,6 +82,7 @@ class ReviewCommentEditedControllerTest extends CommonControllerSliceTestSupport
         // given
         String payload = """
                 {
+                    "runId": 12345,
                     "githubCommentId": 123456789,
                     "body": "수정된 댓글 내용입니다.",
                     "updatedAt": "2024-01-15T11:00:00Z"
@@ -102,6 +103,7 @@ class ReviewCommentEditedControllerTest extends CommonControllerSliceTestSupport
         // given
         String payload = """
                 {
+                    "runId": 12345,
                     "githubCommentId": 123456789,
                     "body": "수정된 댓글 내용입니다.",
                     "updatedAt": "2024-01-15T11:00:00Z"
@@ -128,6 +130,7 @@ class ReviewCommentEditedControllerTest extends CommonControllerSliceTestSupport
         // given
         String payload = """
                 {
+                    "runId": 12345,
                     "githubCommentId": 123456789,
                     "body": "수정된 댓글 내용입니다.",
                     "updatedAt": "2024-01-15T11:00:00Z"
