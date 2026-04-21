@@ -5,6 +5,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +20,7 @@ import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
 
 @SuppressWarnings("NonAsciiCharacters")
 class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
@@ -27,10 +32,11 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
     private ProjectIdResolvingFacade projectIdResolvingFacade;
 
     @Test
-    void Pull_Request_closed_웹훅_요청을_처리한다() throws Exception {
+    void PullRequest_closed_이벤트_수집_성공_테스트() throws Exception {
         // given
         String payload = """
                 {
+                    "runId": 12345,
                     "pullRequestNumber": 42,
                     "isMerged": false,
                     "closedAt": "2024-01-15T12:00:00Z",
@@ -41,7 +47,7 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
         willDoNothing().given(projectIdResolvingFacade).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
 
         // when & then
-        mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                         post("/collect/pull-request/closed")
                                 .header(API_KEY_HEADER, TEST_API_KEY)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -50,6 +56,25 @@ class PullRequestClosedControllerTest extends CommonControllerSliceTestSupport {
                 .andExpect(status().isNoContent());
 
         verify(projectIdResolvingFacade).closePullRequest(eq(TEST_API_KEY), any(PullRequestClosedRequest.class));
+
+        PullRequest_closed_이벤트_수집_문서화(resultActions);
+    }
+
+    private void PullRequest_closed_이벤트_수집_문서화(ResultActions resultActions) throws Exception {
+        resultActions.andDo(
+                restDocs.document(
+                        requestHeaders(
+                                headerWithName("X-API-Key").description("프로젝트 API Key")
+                        ),
+                        requestFields(
+                                fieldWithPath("runId").description("GitHub Actions Run ID"),
+                                fieldWithPath("pullRequestNumber").description("PullRequest 번호"),
+                                fieldWithPath("isMerged").description("머지 여부"),
+                                fieldWithPath("closedAt").description("닫힌 일시"),
+                                fieldWithPath("mergedAt").description("머지된 일시 (머지되지 않은 경우 null)").optional()
+                        )
+                )
+        );
     }
 
     @Test
