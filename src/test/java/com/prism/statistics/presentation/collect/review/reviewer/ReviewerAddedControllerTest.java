@@ -70,12 +70,12 @@ class ReviewerAddedControllerTest extends CommonControllerSliceTestSupport {
                         ),
                         requestFields(
                                 fieldWithPath("runId").description("GitHub Actions Run ID"),
-                                fieldWithPath("githubPullRequestId").description("GitHub PullRequest ID").optional(),
+                                fieldWithPath("githubPullRequestId").description("GitHub PullRequest ID"),
                                 fieldWithPath("pullRequestNumber").description("PullRequest 번호"),
                                 fieldWithPath("headCommitSha").description("Head 커밋 SHA"),
                                 fieldWithPath("reviewer").description("리뷰어 정보"),
                                 fieldWithPath("reviewer.login").description("리뷰어 GitHub 로그인"),
-                                fieldWithPath("reviewer.id").description("리뷰어 GitHub ID").optional(),
+                                fieldWithPath("reviewer.id").description("리뷰어 GitHub ID"),
                                 fieldWithPath("requestedAt").description("리뷰 요청 일시")
                         )
                 )

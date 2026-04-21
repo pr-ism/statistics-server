@@ -85,7 +85,7 @@ class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSup
                         ),
                         requestFields(
                                 fieldWithPath("runId").description("GitHub Actions Run ID"),
-                                fieldWithPath("githubPullRequestId").description("GitHub PullRequest ID").optional(),
+                                fieldWithPath("githubPullRequestId").description("GitHub PullRequest ID"),
                                 fieldWithPath("pullRequestNumber").description("PullRequest 번호"),
                                 fieldWithPath("headCommitSha").description("Head 커밋 SHA"),
                                 fieldWithPath("additions").description("추가된 라인 수"),

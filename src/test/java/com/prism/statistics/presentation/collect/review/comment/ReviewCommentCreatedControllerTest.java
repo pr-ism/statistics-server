@@ -80,7 +80,7 @@ class ReviewCommentCreatedControllerTest extends CommonControllerSliceTestSuppor
                         ),
                         requestFields(
                                 fieldWithPath("runId").description("GitHub Actions Run ID"),
-                                fieldWithPath("githubCommentId").description("GitHub Comment ID").optional(),
+                                fieldWithPath("githubCommentId").description("GitHub Comment ID"),
                                 fieldWithPath("githubReviewId").description("GitHub Review ID").optional(),
                                 fieldWithPath("body").description("코멘트 내용").optional(),
                                 fieldWithPath("path").description("파일 경로").optional(),

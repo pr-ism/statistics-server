@@ -69,8 +69,8 @@ class ReviewCommentEditedControllerTest extends CommonControllerSliceTestSupport
                         ),
                         requestFields(
                                 fieldWithPath("runId").description("GitHub Actions Run ID"),
-                                fieldWithPath("githubCommentId").description("GitHub Comment ID").optional(),
-                                fieldWithPath("body").description("수정된 코멘트 내용").optional(),
+                                fieldWithPath("githubCommentId").description("GitHub Comment ID"),
+                                fieldWithPath("body").description("수정된 코멘트 내용"),
                                 fieldWithPath("updatedAt").description("수정 일시")
                         )
                 )

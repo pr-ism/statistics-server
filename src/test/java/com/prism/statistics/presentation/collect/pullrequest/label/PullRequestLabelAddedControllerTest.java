@@ -75,9 +75,9 @@ class PullRequestLabelAddedControllerTest extends CommonControllerSliceTestSuppo
                         ),
                         requestFields(
                                 fieldWithPath("runId").description("GitHub Actions Run ID"),
-                                fieldWithPath("githubPullRequestId").description("GitHub PullRequest ID").optional(),
+                                fieldWithPath("githubPullRequestId").description("GitHub PullRequest ID"),
                                 fieldWithPath("pullRequestNumber").description("PullRequest 번호"),
-                                fieldWithPath("headCommitSha").description("Head 커밋 SHA").optional(),
+                                fieldWithPath("headCommitSha").description("Head 커밋 SHA"),
                                 fieldWithPath("label").description("라벨 정보"),
                                 fieldWithPath("label.name").description("라벨 이름"),
                                 fieldWithPath("labeledAt").description("라벨이 추가된 일시")
