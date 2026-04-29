@@ -5,6 +5,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +20,7 @@ import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
 
 @SuppressWarnings("NonAsciiCharacters")
 class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
@@ -27,20 +32,23 @@ class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
     private ProjectIdResolvingFacade projectIdResolvingFacade;
 
     @Test
-    void Pull_Request_opened_웹훅_요청을_처리한다() throws Exception {
+    void PullRequest_opened_이벤트_수집_성공_테스트() throws Exception {
         // given
         String payload = """
                 {
+                    "runId": 12345,
                     "isDraft": false,
                     "pullRequest": {
+                        "githubPullRequestId": 100,
                         "number": 42,
                         "title": "feat: 새로운 기능 추가",
                         "url": "https://github.com/owner/repo/pull/42",
+                        "headCommitSha": "def456",
                         "additions": 100,
                         "deletions": 50,
                         "changedFiles": 10,
                         "createdAt": "2024-01-15T10:00:00Z",
-                        "author": { "login": "test-author" },
+                        "author": { "login": "test-author", "id": 1 },
                         "commits": {
                             "totalCount": 2,
                             "nodes": [
@@ -59,7 +67,7 @@ class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
         willDoNothing().given(projectIdResolvingFacade).createPullRequest(eq(TEST_API_KEY), any(PullRequestOpenedRequest.class));
 
         // when & then
-        mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                         post("/collect/pull-request/opened")
                                 .header(API_KEY_HEADER, TEST_API_KEY)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -68,6 +76,46 @@ class PullRequestOpenedControllerTest extends CommonControllerSliceTestSupport {
                 .andExpect(status().isNoContent());
 
         verify(projectIdResolvingFacade).createPullRequest(eq(TEST_API_KEY), any(PullRequestOpenedRequest.class));
+
+        PullRequest_opened_이벤트_수집_문서화(resultActions);
+    }
+
+    private void PullRequest_opened_이벤트_수집_문서화(ResultActions resultActions) throws Exception {
+        resultActions.andDo(
+                restDocs.document(
+                        requestHeaders(
+                                headerWithName("X-API-Key").description("프로젝트 API Key")
+                        ),
+                        requestFields(
+                                fieldWithPath("runId").description("GitHub Actions Run ID"),
+                                fieldWithPath("isDraft").description("Draft PR 여부"),
+                                fieldWithPath("pullRequest").description("PullRequest 정보"),
+                                fieldWithPath("pullRequest.githubPullRequestId").description("GitHub PullRequest ID").optional(),
+                                fieldWithPath("pullRequest.number").description("PullRequest 번호"),
+                                fieldWithPath("pullRequest.title").description("PullRequest 제목"),
+                                fieldWithPath("pullRequest.url").description("PullRequest URL"),
+                                fieldWithPath("pullRequest.headCommitSha").description("Head 커밋 SHA").optional(),
+                                fieldWithPath("pullRequest.additions").description("추가된 라인 수"),
+                                fieldWithPath("pullRequest.deletions").description("삭제된 라인 수"),
+                                fieldWithPath("pullRequest.changedFiles").description("변경된 파일 수"),
+                                fieldWithPath("pullRequest.createdAt").description("생성 일시"),
+                                fieldWithPath("pullRequest.author").description("작성자 정보"),
+                                fieldWithPath("pullRequest.author.login").description("작성자 GitHub 로그인"),
+                                fieldWithPath("pullRequest.author.id").description("작성자 GitHub ID").optional(),
+                                fieldWithPath("pullRequest.commits").description("커밋 정보"),
+                                fieldWithPath("pullRequest.commits.totalCount").description("총 커밋 수"),
+                                fieldWithPath("pullRequest.commits.nodes").description("커밋 목록"),
+                                fieldWithPath("pullRequest.commits.nodes[].commit").description("커밋 상세 정보"),
+                                fieldWithPath("pullRequest.commits.nodes[].commit.oid").description("커밋 SHA"),
+                                fieldWithPath("pullRequest.commits.nodes[].commit.committedDate").description("커밋 일시"),
+                                fieldWithPath("files").description("변경된 파일 목록"),
+                                fieldWithPath("files[].filename").description("파일 경로"),
+                                fieldWithPath("files[].status").description("파일 상태 (added, modified, removed 등)"),
+                                fieldWithPath("files[].additions").description("추가된 라인 수"),
+                                fieldWithPath("files[].deletions").description("삭제된 라인 수")
+                        )
+                )
+        );
     }
 
     @Test

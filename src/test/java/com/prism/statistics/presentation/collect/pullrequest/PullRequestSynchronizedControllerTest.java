@@ -4,6 +4,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +20,7 @@ import com.prism.statistics.presentation.CommonControllerSliceTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
 
 @SuppressWarnings("NonAsciiCharacters")
 class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSupport {
@@ -30,10 +35,11 @@ class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSup
     private PullRequestSynchronizedService pullRequestSynchronizedService;
 
     @Test
-    void Pull_Request_synchronized_웹훅_요청을_처리한다() throws Exception {
+    void PullRequest_synchronized_이벤트_수집_성공_테스트() throws Exception {
         // given
         String payload = """
                 {
+                    "runId": 12345,
                     "githubPullRequestId": 100,
                     "pullRequestNumber": 42,
                     "headCommitSha": "sha3",
@@ -49,8 +55,8 @@ class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSup
                         ]
                     },
                     "files": [
-                        {"filename": "src/main/java/Example.java", "status": "modified", "additions": 100, "deletions": 50},
-                        {"filename": "src/main/java/NewFile.java", "status": "added", "additions": 100, "deletions": 30}
+                        {"filename": "src/main/java/Example.java", "status": "modified", "additions": 100, "deletions": 50, "previousFilename": null},
+                        {"filename": "src/main/java/NewFile.java", "status": "added", "additions": 100, "deletions": 30, "previousFilename": null}
                     ]
                 }
                 """;
@@ -58,7 +64,7 @@ class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSup
         willDoNothing().given(pullRequestSynchronizedService).synchronizePullRequest(any(PullRequestSynchronizedRequest.class));
 
         // when & then
-        mockMvc.perform(
+        ResultActions resultActions = mockMvc.perform(
                         post("/collect/pull-request/synchronized")
                                 .header(API_KEY_HEADER, TEST_API_KEY)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -67,6 +73,38 @@ class PullRequestSynchronizedControllerTest extends CommonControllerSliceTestSup
                 .andExpect(status().isNoContent());
 
         verify(pullRequestSynchronizedService).synchronizePullRequest(any(PullRequestSynchronizedRequest.class));
+
+        PullRequest_synchronized_이벤트_수집_문서화(resultActions);
+    }
+
+    private void PullRequest_synchronized_이벤트_수집_문서화(ResultActions resultActions) throws Exception {
+        resultActions.andDo(
+                restDocs.document(
+                        requestHeaders(
+                                headerWithName("X-API-Key").description("프로젝트 API Key")
+                        ),
+                        requestFields(
+                                fieldWithPath("runId").description("GitHub Actions Run ID"),
+                                fieldWithPath("githubPullRequestId").description("GitHub PullRequest ID"),
+                                fieldWithPath("pullRequestNumber").description("PullRequest 번호"),
+                                fieldWithPath("headCommitSha").description("Head 커밋 SHA"),
+                                fieldWithPath("additions").description("추가된 라인 수"),
+                                fieldWithPath("deletions").description("삭제된 라인 수"),
+                                fieldWithPath("changedFiles").description("변경된 파일 수"),
+                                fieldWithPath("commits").description("커밋 정보"),
+                                fieldWithPath("commits.totalCount").description("총 커밋 수"),
+                                fieldWithPath("commits.nodes").description("커밋 목록"),
+                                fieldWithPath("commits.nodes[].sha").description("커밋 SHA"),
+                                fieldWithPath("commits.nodes[].committedDate").description("커밋 일시"),
+                                fieldWithPath("files").description("변경된 파일 목록"),
+                                fieldWithPath("files[].filename").description("파일 경로"),
+                                fieldWithPath("files[].status").description("파일 상태 (added, modified, removed 등)"),
+                                fieldWithPath("files[].additions").description("추가된 라인 수"),
+                                fieldWithPath("files[].deletions").description("삭제된 라인 수"),
+                                fieldWithPath("files[].previousFilename").description("이전 파일명 (rename 시)").optional()
+                        )
+                )
+        );
     }
 
     @Test

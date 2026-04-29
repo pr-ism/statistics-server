@@ -1,0 +1,61 @@
+[[CollectPullRequest-API]]
+== Collect PullRequest API
+
+GitHub Actions에서 PullRequest 관련 이벤트를 수집하는 API입니다.
+모든 요청에는 `X-API-Key` 헤더가 필요합니다.
+
+[[Collect-PullRequest-Opened]]
+=== PullRequest Opened 수집 API
+
+PullRequest가 생성되었을 때 호출됩니다.
+
+operation::pull-request-opened-controller-test/pull-request_opened_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-PullRequest-Closed]]
+=== PullRequest Closed 수집 API
+
+PullRequest가 닫혔을 때 호출됩니다.
+
+operation::pull-request-closed-controller-test/pull-request_closed_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-PullRequest-Reopened]]
+=== PullRequest Reopened 수집 API
+
+PullRequest가 다시 열렸을 때 호출됩니다.
+
+operation::pull-request-reopened-controller-test/pull-request_reopened_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-PullRequest-Synchronized]]
+=== PullRequest Synchronized 수집 API
+
+PullRequest에 새 커밋이 푸시되었을 때 호출됩니다.
+
+operation::pull-request-synchronized-controller-test/pull-request_synchronized_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-PullRequest-ConvertedToDraft]]
+=== PullRequest Converted to Draft 수집 API
+
+PullRequest가 Draft로 변환되었을 때 호출됩니다.
+
+operation::pull-request-converted-to-draft-controller-test/pull-request_converted_to_draft_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-PullRequest-ReadyForReview]]
+=== PullRequest Ready for Review 수집 API
+
+PullRequest가 리뷰 준비 상태가 되었을 때 호출됩니다.
+
+operation::pull-request-ready-for-review-controller-test/pull-request_ready_for_review_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-PullRequest-LabelAdded]]
+=== PullRequest Label Added 수집 API
+
+PullRequest에 라벨이 추가되었을 때 호출됩니다.
+
+operation::pull-request-label-added-controller-test/pull-request_label_added_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
+
+[[Collect-PullRequest-LabelRemoved]]
+=== PullRequest Label Removed 수집 API
+
+PullRequest에서 라벨이 제거되었을 때 호출됩니다.
+
+operation::pull-request-label-removed-controller-test/pull-request_label_removed_이벤트_수집_성공_테스트[snippets='http-request,request-headers,request-fields,http-response']
